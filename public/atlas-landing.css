@@ -1229,7 +1229,7 @@ input::placeholder{color:#6B6585}
 .am-head h3{font-family:var(--display);font-size:var(--fs-21);font-weight:800;letter-spacing:.05em}
 .am-head small{display:block;font-size:var(--fs-14);color:var(--muted-l);line-height:1.4}
 .am-head .x{margin-left:auto;border-color:var(--line-l);color:var(--text-l);flex:none}
-.am-body{padding:22px 24px;display:flex;flex-direction:column;gap:14px;max-height:62vh;overflow:auto}
+.am-body{padding:22px 24px;display:flex;flex-direction:column;gap:14px;max-height:calc(62vh / var(--z,1));overflow:auto}
 .am-out{font-family:var(--display);font-size:var(--fs-21);font-weight:700;line-height:1.3}
 .am-desc{font-size:var(--fs-16);color:var(--muted-l)}
 .am-meta{display:flex;gap:12px}
@@ -1726,7 +1726,7 @@ details.tech .for-it{background:var(--p50);border-color:var(--p100);color:var(--
 
 /* ---- H-01: headline, sub-copy and CTA are visible on first load ---- */
 @media (min-width:1181px){
-  .hero-pic-wrap{height:min(calc(100svh - 77px - 64px),760px);min-height:560px}
+  .hero-pic-wrap{height:min(calc(100svh / var(--z,1) - 77px - 64px),760px);min-height:560px}
   .hero-pic{height:100%;min-height:0;object-fit:cover;object-position:50% 38%}
 }
 /* ---- H-02: phones crop to the portal, where the baked-in labels are not cut off ---- */
@@ -2449,10 +2449,10 @@ details.tech:has(> summary .tsum),   /* Explore technical architecture, Technica
    words light up as you scroll through it); without it, it is simply one
    screen tall. Replaces the sizing of the earlier overview block.
    ===================================================================== */
-#overview.ov-stage{padding:0;min-height:100svh;display:block}
-.ov-pin{position:relative;min-height:100svh;display:flex;align-items:center;justify-content:center;padding:calc(var(--space-sec-sm) + 40px) 0 var(--space-sec-sm);box-sizing:border-box;overflow:clip}
-#overview.ov-pinned{height:260svh;min-height:0}
-#overview.ov-pinned .ov-pin{position:sticky;top:0;height:100svh;min-height:0;padding:96px 0 40px}
+#overview.ov-stage{padding:0;min-height:calc(100svh / var(--z,1));display:block}
+.ov-pin{position:relative;min-height:calc(100svh / var(--z,1));display:flex;align-items:center;justify-content:center;padding:calc(var(--space-sec-sm) + 40px) 0 var(--space-sec-sm);box-sizing:border-box;overflow:clip}
+#overview.ov-pinned{height:calc(260svh / var(--z,1));min-height:0}
+#overview.ov-pinned .ov-pin{position:sticky;top:0;height:calc(100svh / var(--z,1));min-height:0;padding:96px 0 40px}
 
 .ov-title{display:flex;justify-content:center;margin:0;font-size:0;line-height:0}
 .ov-title .eyebrow{align-self:auto}
@@ -2865,3 +2865,75 @@ details.tech:has(> summary .tsum),   /* Explore technical architecture, Technica
 .sec .hero-bg{-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 260px,#000 calc(100% - 260px),transparent 100%);mask-image:linear-gradient(180deg,transparent 0,#000 260px,#000 calc(100% - 260px),transparent 100%)}
 #pricing.sec{background:radial-gradient(1000px 560px at 50% 36%,rgba(124,58,237,.30),transparent 70%),var(--ink)}
 #integrations.sec.sec-alt{background:linear-gradient(180deg,var(--ink) 0,var(--ink-3) 260px)}
+
+
+/* =====================================================================
+   LARGE SCREENS · everything scales, not only the layout
+   Wide screens (high-resolution laptops at 100%, external monitors, TVs) show the same 1,264px column
+   as small type with big empty sides. Here the whole page is zoomed by one factor per width band, so type,
+   icons, spacing, radii and images grow together and the content keeps its proportion of the screen.
+   --z is the same factor, so viewport-tall pieces (hero image, pinned overview) can divide it back out.
+   ===================================================================== */
+.atlas-landing{--z:1}
+@media (min-width:1600px){.atlas-landing{--z:1.06;zoom:1.06}}
+@media (min-width:1760px){.atlas-landing{--z:1.16;zoom:1.16}}
+@media (min-width:1920px){.atlas-landing{--z:1.25;zoom:1.25}}
+@media (min-width:2112px){.atlas-landing{--z:1.38;zoom:1.38}}
+@media (min-width:2304px){.atlas-landing{--z:1.5;zoom:1.5}}
+@media (min-width:2560px){.atlas-landing{--z:1.67;zoom:1.67}}
+@media (min-width:2816px){.atlas-landing{--z:1.83;zoom:1.83}}
+@media (min-width:3072px){.atlas-landing{--z:2;zoom:2}}
+@media (min-width:3456px){.atlas-landing{--z:2.25;zoom:2.25}}
+@media (min-width:3840px){.atlas-landing{--z:2.5;zoom:2.5}}
+@media (min-width:4480px){.atlas-landing{--z:2.9;zoom:2.9}}
+@media (min-width:5120px){.atlas-landing{--z:3.33;zoom:3.33}}
+
+
+/* =====================================================================
+   HOW IT WORKS · timeline on tablet and phone
+   The four steps read as one sequence: a numbered icon on a continuous line, the step on its right,
+   the loop-back as the last node. Replaces the 2x2 grid, which hid every description.
+   Phones stack title and text; tablets set the title and the text side by side.
+   ===================================================================== */
+@media (max-width:1180px){
+  .atlas-landing .loop4{display:flex!important;flex-direction:column;gap:0;margin-top:44px;padding:0}
+  .atlas-landing .loop4 > .lstep{position:relative;display:grid;grid-template-columns:56px minmax(0,1fr);column-gap:20px;row-gap:0;padding:0 0 34px;border:0;border-radius:0;background:none;box-shadow:none;min-height:0}
+  /* the connector runs from this icon to the next node */
+  .atlas-landing .loop4 > .lstep:after{content:"";position:absolute;left:27px;top:64px;bottom:8px;width:2px;border-radius:2px;background:linear-gradient(var(--p400),rgba(167,139,250,.28))}
+  .atlas-landing .lstep .lico{grid-column:1;grid-row:1 / span 4;align-self:start;width:56px;height:56px;border-radius:var(--r-inner)}
+  .atlas-landing .lstep .lk{grid-column:2;justify-content:flex-start;align-items:center;gap:10px;margin:2px 0 6px}
+  .atlas-landing .lstep .lflow{display:inline-flex}
+  .atlas-landing .lstep h3{grid-column:2;margin:0;font-size:var(--fs-24);line-height:1.15}
+  .atlas-landing .lstep .lby{grid-column:2;margin:8px 0 0}
+  .atlas-landing .lstep p{display:block;grid-column:2;margin:12px 0 0;min-height:0;max-width:56ch;font-size:var(--fs-16);line-height:1.6}
+  .atlas-landing .lstep .chev,.atlas-landing .lstep .lback{display:none}
+
+  /* loop-back: the last node of the same line, drawn as a dashed circle (the loop) with its sentence */
+  .atlas-landing .loopback{height:auto;margin:0}
+  .atlas-landing .lb-path,.atlas-landing .lb-dot{display:none}
+  .atlas-landing .lb-label{position:static;transform:none;white-space:normal;display:grid;grid-template-columns:56px minmax(0,1fr);column-gap:20px;row-gap:2px;align-items:center;width:auto;padding:0;border:0;border-radius:0;background:none;text-align:left}
+  .atlas-landing .lb-label > svg{grid-row:1 / span 2;width:56px;height:56px;padding:17px;border:2px dashed var(--p400);border-radius:50%;box-sizing:border-box;color:var(--p200)}
+  .atlas-landing .lb-label b{grid-column:2;font-size:var(--fs-14);color:#fff}
+  .atlas-landing .lb-label span{display:block!important;grid-column:2;max-width:56ch;font-size:var(--fs-16);line-height:1.55;color:var(--muted-d)}
+}
+@media (min-width:721px) and (max-width:1180px){
+  .atlas-landing .loop4 > .lstep{grid-template-columns:56px minmax(170px,210px) minmax(0,1fr);column-gap:24px}
+  .atlas-landing .lstep .lk{grid-column:2;grid-row:1}
+  .atlas-landing .lstep h3{grid-column:2;grid-row:2}
+  .atlas-landing .lstep .lby{grid-column:2;grid-row:3}
+  .atlas-landing .lstep p{grid-column:3;grid-row:2 / span 2;margin:2px 0 0;max-width:none}
+  .atlas-landing .lb-label{grid-template-columns:56px minmax(170px,210px) minmax(0,1fr);column-gap:24px}
+  .atlas-landing .lb-label b{grid-column:2;grid-row:1 / span 2}
+  .atlas-landing .lb-label span{grid-column:3;grid-row:1 / span 2;max-width:none}
+}
+@media (max-width:720px){
+  .atlas-landing .loop4{margin-top:36px}
+  .atlas-landing .loop4 > .lstep{grid-template-columns:48px minmax(0,1fr);column-gap:16px;padding-bottom:28px}
+  .atlas-landing .loop4 > .lstep:after{left:23px;top:56px}
+  .atlas-landing .lstep .lico{width:48px;height:48px}
+  .atlas-landing .lstep h3{font-size:var(--fs-21)}
+  .atlas-landing .lstep p{font-size:var(--fs-14);line-height:1.6}
+  .atlas-landing .lb-label{grid-template-columns:48px minmax(0,1fr);column-gap:16px}
+  .atlas-landing .lb-label > svg{width:48px;height:48px;padding:14px}
+  .atlas-landing .lb-label span{font-size:var(--fs-14)}
+}

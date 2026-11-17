@@ -673,8 +673,8 @@ $('#mcta-x').onclick=()=>{mcta.classList.add('gone');store.set('mcta','x');};
 /* mobile: long secondary blocks fold behind one toggle (design fix M-03) */
 (function(){
   const mq=matchMedia('(max-width:720px)');
+  /* '.shift' (How operations change) is no longer folded: the table stays open on phones and tablets */
   const BLOCKS=[
-    ['.shift','Show how operations change','Hide how operations change'],
     ['.roles-row','Show the four views','Hide the four views'],
     ['.dep3','Show deployment options','Hide deployment options']
   ];
@@ -839,7 +839,7 @@ railify($('.prob-grid'));initStage();renderBrowse();renderGantt();renderOG(0);ap
   const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
   /* values below are for a FONT_PX label; every label rescales them by (its font size / FONT_PX) */
   /* a fine, tightly packed hexagonal lattice: about 23 rows across the capital height, dots almost touching */
-  const FONT_PX=104, B_STEP=3.3, B_DOT_R=1.3, B_PAD=130, B_REACH=125, B_PUSH=10, MAX_CHARS=40, MIN_FONT_PX=52, SS=4, ROW=.866, WEIGHT=600;
+  const FONT_PX=104, B_STEP=3.3, B_DOT_R=1.3, B_PAD=130, B_REACH=125, B_PUSH=10, MAX_CHARS=40, MIN_FONT_PX=30, LINE_BREAK_PX=40, SS=4, ROW=.866, WEIGHT=600;
   const SPRING=.065, DAMP=.82, COOL=.93;
 
   const lum=c=>{const m=c.match(/\d+(\.\d+)?/g)||[0,0,0];const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4);};return .2126*f(+m[0])+.7152*f(+m[1])+.0722*f(+m[2]);};
@@ -858,18 +858,30 @@ railify($('.prob-grid'));initStage();renderBrowse();renderGantt();renderOG(0);ap
     const off=document.createElement('canvas'),octx=off.getContext('2d',{willReadFrequently:true});
     const avail=(el.parentElement&&el.parentElement.clientWidth)||Infinity;
     const base=+el.dataset.dmSize||FONT_PX;                        /* a label may ask for its own starting size */
-    octx.font=WEIGHT+' '+base+'px Sora, Manrope, system-ui, sans-serif';
-    const fit=Math.min(1,avail/(octx.measureText(text).width+2));   /* never wider than its column */
-    const fpx=Math.floor(base*fit);
-    if(fpx<MIN_FONT_PX)return;                                      /* too small to read as dots: keep the plain label */
-    const k=fpx/FONT_PX, STEP=B_STEP*k, DOT_R=B_DOT_R*k, PAD=Math.round(B_PAD*k), REACH=B_REACH*k, PUSH=B_PUSH*k;
     const fontAt=px=>WEIGHT+' '+px+'px Sora, Manrope, system-ui, sans-serif';
-    octx.font=fontAt(fpx);
-    const w=Math.ceil(octx.measureText(text).width)+2, h=Math.ceil(fpx*1.3);
+    const widthAt=(s,px)=>{octx.font=fontAt(px);return octx.measureText(s).width;};
+    /* one line that never runs wider than its column. When that would shrink the dots too small (phones),
+       split into two balanced lines so the same dot-matrix label is used at every screen size */
+    let lines=[text];
+    let fpx=Math.floor(base*Math.min(1,avail/(widthAt(text,base)+2)));
+    if(fpx<LINE_BREAK_PX&&text.indexOf(' ')>0){
+      const words=text.split(' ');let best=null;
+      for(let i=1;i<words.length;i++){
+        const a=words.slice(0,i).join(' '),b=words.slice(i).join(' ');
+        const wide=Math.max(widthAt(a,base),widthAt(b,base));
+        if(!best||wide<best.wide)best={lines:[a,b],wide};
+      }
+      if(best){const f2=Math.floor(base*Math.min(1,avail/(best.wide+2)));if(f2>=fpx*1.25){lines=best.lines;fpx=f2;}}
+    }
+    if(fpx<MIN_FONT_PX)return;                                      /* truly too small to read as dots: keep the plain label */
+    /* on small sizes the lattice keeps a minimum pitch, so the dots stay visible instead of fusing into grey */
+    const k=fpx/FONT_PX, STEP=Math.max(B_STEP*k,2.2), DOT_R=Math.min(Math.max(B_DOT_R*k,.95),STEP*.42), PAD=Math.round(B_PAD*k), REACH=B_REACH*k, PUSH=B_PUSH*k;
+    const LH=Math.round(fpx*1.06);
+    const w=Math.ceil(Math.max(...lines.map(s=>widthAt(s,fpx))))+2, h=Math.ceil(fpx*1.3)+(lines.length-1)*LH;
     /* draw 4x so each dot can be decided from the coverage of its whole cell, which keeps edges clean */
     off.width=w*SS;off.height=h*SS;
     octx.font=fontAt(fpx*SS);octx.textBaseline='alphabetic';octx.fillStyle='#000';
-    octx.fillText(text,SS,Math.round(fpx*.98*SS));
+    lines.forEach((s,i)=>octx.fillText(s,SS,Math.round(fpx*.98*SS)+i*LH*SS));
     const data=octx.getImageData(0,0,w*SS,h*SS).data, W=w*SS;
     /* hexagonal lattice: every other row is shifted by half a step, rows sit 0.866 steps apart */
     const box=Math.max(2,Math.round(STEP*SS*.75)), half=box>>1, H=h*SS;
