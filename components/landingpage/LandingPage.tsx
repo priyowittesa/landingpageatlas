@@ -51,6 +51,9 @@ let glideFrame = 0;
 // scales with distance (1.1s – 2.2s), easing in and out; any user input cancels it.
 function glideTo(targetY: number) {
   cancelAnimationFrame(glideFrame);
+  // The wheel inertia may still be easing toward the spot the user scrolled to. Both loops call
+  // scrollTo every frame, so without this the wheel one wins and drags the page back.
+  window.dispatchEvent(new Event("atlas:scroll-jump"));
   const startY = window.scrollY;
   const maxY = document.documentElement.scrollHeight - window.innerHeight;
   const endY = Math.min(Math.max(0, targetY), Math.max(0, maxY));
@@ -290,7 +293,7 @@ export function LandingPage({ html }: { html: string }) {
 
   useEffect(() => {
     const script = document.createElement("script");
-    script.src = "/atlas-landing.js?v=20261117d";
+    script.src = "/atlas-landing.js?v=20261117e";
     script.dataset.atlasLanding = "true";
     document.body.appendChild(script);
     return () => script.remove();
