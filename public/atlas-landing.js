@@ -221,7 +221,10 @@ function initStage(){
     w.classList.remove('dragging');w.style.transform='';w.style.opacity='';
     if(Math.abs(dx)>110||v>.5)go(idx+(dx<0?1:-1),true);
   };
-  deck.addEventListener('pointerup',release);deck.addEventListener('pointercancel',release);
+  deck.addEventListener('pointerup',release);deck.addEventListener('pointercancel',release);deck.addEventListener('lostpointercapture',release);
+  /* the browser's own image drag would start a ghost picture and cancel ours */
+  deck.addEventListener('dragstart',e=>e.preventDefault());
+  deck.addEventListener('selectstart',e=>{if(drag)e.preventDefault();});
 
   /* decorative lean toward the pointer, eased so it has weight */
   if(matchMedia('(hover: hover) and (pointer: fine)').matches&&!RM()){
@@ -354,7 +357,18 @@ function buildBrowseTabs(){
   const items=[...fns.map(f=>[f,f,FN[f].length]),['all','All applications',ALL_CODES.length]];
   tabs.innerHTML='<span class="sol-ind" aria-hidden="true"></span>'+items.map(([v,label,n],i)=>
     `<button type="button" role="tab" id="sol-tab-${i}" class="sol-tab${v==='all'?' sol-tab-all':''}" data-v="${esc(v)}" aria-controls="sol-panel"><span>${esc(label)}</span><span class="sol-n">${n}</span></button>`).join('');
-  const pick=btn=>{const v=btn.dataset.v;BF.fn=v==='all'?new Set():new Set([v]);bfAll=false;renderBrowse(true);};
+  const pick=btn=>{const v=btn.dataset.v;BF.fn=v==='all'?new Set():new Set([v]);bfAll=false;renderBrowse(true);resultsIntoView();};
+  /* a new filter starts a new list: if the user had scrolled down the old one, bring the first card back into view */
+  const resultsIntoView=()=>{
+    const head=$('#bf-count');if(!head)return;
+    const stuck=getComputedStyle(tabs).flexDirection.indexOf('row')===0;      /* phone: the chip row is sticky above the list */
+    const gap=stuck?tabs.getBoundingClientRect().bottom+8:112;
+    const top=head.getBoundingClientRect().top;
+    if(top>=gap)return;
+    /* the wheel glide may still be easing toward an old target and would drag the page back: stop it, then jump */
+    dispatchEvent(new CustomEvent('atlas:scroll-jump'));
+    scrollTo({top:Math.max(0,scrollY+top-gap),behavior:'auto'});
+  };
   tabs.addEventListener('click',ev=>{const b=ev.target.closest('.sol-tab');if(b)pick(b);});
   tabs.addEventListener('keydown',ev=>{
     const step={ArrowDown:1,ArrowRight:1,ArrowUp:-1,ArrowLeft:-1};

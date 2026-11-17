@@ -1934,7 +1934,8 @@ details.tech .for-it{background:var(--p50);border-color:var(--p100);color:var(--
 .stage-deck{--o:1;position:relative;width:calc(100% - 140px);aspect-ratio:2/1;transform:rotateX(3deg) rotateY(-8deg);transform-style:preserve-3d;touch-action:pan-y}
 .deck-win{position:absolute;inset:0;display:flex;flex-direction:column;margin:0;overflow:hidden;border:1px solid var(--line-d2);border-radius:var(--r-inner);background:#fff;box-shadow:0 44px 80px -40px rgba(0,0,0,.85);transform-origin:50% 100%;will-change:transform;transition:transform .85s var(--ease-deck),opacity .5s var(--ease-out-strong)}
 .deck-win:after{content:"";position:absolute;inset:0;background:var(--ink);opacity:var(--shade,0);transition:opacity .85s var(--ease-deck);pointer-events:none}
-.deck-win img{display:block;flex:1;min-height:0;width:100%;object-fit:cover;object-position:left top}
+.deck-win{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.deck-win img{display:block;flex:1;min-height:0;width:100%;object-fit:cover;object-position:left top;-webkit-user-drag:none;user-drag:none}
 .deck-win[data-pos="0"]{z-index:7;opacity:1;transform:translate3d(0,0,0);cursor:grab}
 .deck-win[data-pos="0"]:active{cursor:grabbing}
 .deck-win[data-pos="1"]{z-index:6;--shade:.34;transform:translate3d(calc(6% * var(--o)),calc(-9% * var(--o)),-90px) scale(.95)}
@@ -1958,13 +1959,19 @@ details.tech .for-it{background:var(--p50);border-color:var(--p100);color:var(--
   .stage-side{gap:20px}
   .stage-deck{--o:.75;width:calc(100% - 96px)}
   .stage-tp p{max-width:48ch}
+  /* the window is exactly the screenshot (1000x492) plus a chrome bar that scales with it, so nothing is cropped */
+  .stage-deck{container-type:inline-size;aspect-ratio:1000/532}
+  .stage-chrome{height:4cqw;padding:0 1.6cqw;gap:.8cqw}
+  .stage-chrome i{width:max(4px,1.1cqw);height:max(4px,1.1cqw)}
+  .stage-chrome span{margin-left:1.2cqw;font-size:max(8px,1.6cqw)}
+  .deck-win img{flex:none;height:auto;object-fit:contain}
 }
 @media (max-width:720px){
   .stage{--sw:calc(100vw - 32px);margin-top:36px;padding:20px 16px 24px}
   .stage-ctl{display:none}
   .stage-rail{gap:20px}
   .stage-names{margin:24px 0 6px}
-  .stage-deck{--o:.55;width:calc(100% - 44px);transform:rotateX(2deg) rotateY(-5deg)}
+  .stage-deck{--o:.55;width:calc(100% - 32px);transform:rotateX(2deg) rotateY(-5deg)}
   .stage-tp p{font-size:var(--fs-16)}
 }
 @media (prefers-reduced-motion:reduce){
@@ -2433,9 +2440,11 @@ details.tech:has(> summary .tsum),   /* Explore technical architecture, Technica
   #solutions .sol{grid-template-columns:1fr;gap:28px;margin-top:36px}
   .sol-tabs{position:relative;top:auto;flex-direction:row;gap:8px;overflow-x:auto;margin:0 -16px;padding:2px 16px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
   .sol-tabs::-webkit-scrollbar{display:none}
-  .sol-ind{border-radius:999px;top:2px;left:0}
-  .sol-tab{width:auto;flex:none;white-space:nowrap;min-height:44px;padding:0 16px;border:1px solid var(--line-l);border-radius:999px;background:transparent}
-  .sol-tab[aria-selected="true"]{border-color:transparent}
+  /* the JS-positioned highlight drifts on phones (font load, rotate, scroll) so the chip paints its own state */
+  .sol-ind{display:none}
+  .sol-tabs{scroll-snap-type:x proximity;scroll-padding:0 16px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
+  .sol-tab{width:auto;flex:none;gap:8px;scroll-snap-align:center;white-space:nowrap;min-height:44px;padding:0 16px;border:1px solid var(--line-l);border-radius:999px;background:#fff;transition:background-color .2s ease,border-color .2s ease,color .2s ease}
+  .sol-tab[aria-selected="true"]{background:var(--p600);border-color:var(--p600)}
   .sol-tab-all{margin-top:0}
   .sol-tab-all:before{display:none}
   .sol-title{font-size:var(--fs-24)}
@@ -2619,7 +2628,7 @@ details.tech:has(> summary .tsum),   /* Explore technical architecture, Technica
    overflow:hidden on .sec makes it a scroll container and silently disables position:sticky; clip does not. */
 #solutions.sec{overflow:clip}
 #solutions .sol-tabs{position:sticky;top:104px;align-self:start}
-@media (max-width:900px){#solutions .sol-tabs{position:sticky;top:84px;z-index:5;margin-top:0;background:linear-gradient(180deg,#fff 78%,rgba(255,255,255,0));padding-top:8px;padding-bottom:14px}}
+@media (max-width:900px){#solutions .sol-tabs{position:sticky;top:84px;z-index:5;margin-top:0;background:#fff;padding-top:8px;padding-bottom:10px}}
 
 /* ===== PRICING: no numbers. Quote-based packages + "what shapes your quote" ===== */
 .plan .price.quote{padding:14px 0;gap:0}
@@ -2937,3 +2946,62 @@ details.tech:has(> summary .tsum),   /* Explore technical architecture, Technica
   .atlas-landing .lb-label > svg{width:48px;height:48px;padding:14px}
   .atlas-landing .lb-label span{font-size:var(--fs-14)}
 }
+
+/* ---- NEXA: the decision is shown as the real product screen, on a slowly moving stage ---- */
+#nexa .dc-shot{--gx:0px;position:relative;isolation:isolate;overflow:hidden;margin:48px auto 0;max-width:1180px;padding:clamp(20px,4.5vw,56px);border-radius:var(--r-card);border:1px solid var(--line-d);
+  background:radial-gradient(70% 60% at 50% 0%,rgba(124,58,237,.35),transparent 70%),linear-gradient(180deg,#1C1545,#0F0A2A)}
+/* dot grid drifts diagonally, faded toward the edges */
+#nexa .dc-shot:before{content:"";position:absolute;inset:-40px;z-index:-2;background-image:radial-gradient(rgba(196,181,253,.38) 1.2px,transparent 1.6px);background-size:26px 26px;
+  -webkit-mask-image:radial-gradient(75% 75% at 50% 50%,#000 30%,transparent 100%);mask-image:radial-gradient(75% 75% at 50% 50%,#000 30%,transparent 100%);animation:dcGrid 18s linear infinite}
+/* two soft light orbs orbit behind the screen, and a beam sweeps across */
+#nexa .dc-shot:after{content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;
+  background:radial-gradient(340px 340px at var(--ox1,20%) var(--oy1,30%),rgba(139,92,246,.55),transparent 70%),radial-gradient(300px 300px at var(--ox2,80%) var(--oy2,70%),rgba(52,211,153,.25),transparent 70%);
+  animation:dcOrbs 14s ease-in-out infinite alternate}
+#nexa .dc-shot img{position:relative;display:block;width:100%;height:auto;border-radius:var(--r-card);box-shadow:0 40px 80px -30px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.12);animation:dcFloat 7s ease-in-out infinite}
+@property --ox1{syntax:"<percentage>";inherits:false;initial-value:20%}
+@property --oy1{syntax:"<percentage>";inherits:false;initial-value:30%}
+@property --ox2{syntax:"<percentage>";inherits:false;initial-value:80%}
+@property --oy2{syntax:"<percentage>";inherits:false;initial-value:70%}
+@keyframes dcGrid{to{background-position:26px 26px}}
+@keyframes dcOrbs{0%{--ox1:15%;--oy1:25%;--ox2:85%;--oy2:75%}50%{--ox1:55%;--oy1:70%;--ox2:40%;--oy2:20%}100%{--ox1:85%;--oy1:30%;--ox2:15%;--oy2:80%}}
+@keyframes dcFloat{0%,100%{translate:0 0}50%{translate:0 -8px}}
+@media (prefers-reduced-motion:reduce){#nexa .dc-shot:before,#nexa .dc-shot:after,#nexa .dc-shot img{animation:none}}
+
+
+/* =====================================================================
+   "How operations change" on tablet and phone: each row is a before → after pair of cards.
+   Tablet: side by side with an arrow between them. Phone: stacked, arrow pointing down.
+   (Desktop keeps the two-column table above.)
+   ===================================================================== */
+@media (max-width:900px){
+  .atlas-landing .shift{overflow:visible;border:0;box-shadow:none;background:none}
+  .atlas-landing .shift-head{border:1px solid var(--line-l);border-radius:var(--r-card);margin-bottom:16px;padding:24px 22px}
+  .atlas-landing .shift-cols{display:none}
+  .atlas-landing .shift-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;position:relative;margin-bottom:14px;border:0;min-height:0}
+  .atlas-landing .shift-row > div{min-height:0;border:0;border-radius:var(--r-card);padding:18px 20px;box-sizing:border-box}
+  .atlas-landing .shift-row .b{display:flex;flex-wrap:wrap;align-content:flex-start;gap:8px 10px;align-items:flex-start;font-size:var(--fs-14);border:1px dashed var(--line-l);background:var(--tint)}
+  .atlas-landing .shift-row .b:before{content:"Before";flex:0 0 100%;font:600 var(--fs-12)/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--faint-l,var(--muted-l));opacity:.8}
+  .atlas-landing .shift-row .b > span{flex:1;min-width:0}
+  .atlas-landing .shift-row .a{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"k chip" "t t";gap:10px 12px;align-items:center;align-content:start;font-size:var(--fs-16);padding:18px 20px;box-shadow:0 18px 36px -22px rgba(76,29,149,.7);background:linear-gradient(160deg,#1C1545,var(--ink))}
+  .atlas-landing .shift-row .a:before{content:"With ATLAS";grid-area:k;position:static;width:auto;height:auto;margin:0;border-radius:0;background:none;box-shadow:none;font:600 var(--fs-12)/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--p300)}
+  .atlas-landing .shift-row .a > span:not(.lchip){grid-area:t;align-self:start;line-height:1.4}
+  .atlas-landing .shift-row .a .lchip{grid-area:chip;min-width:0}
+  .atlas-landing .shift-row .a svg.arr{display:none}
+  /* the connector sits on the card edge so it never depends on the card height */
+  .atlas-landing .shift-row .b{position:relative}
+  .atlas-landing .shift-row .b:after{content:"";position:absolute;right:-31px;top:50%;width:30px;height:30px;margin-top:-15px;border-radius:50%;z-index:2;background:var(--p600) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E") center/16px no-repeat;box-shadow:0 0 0 4px var(--shift-ring,#fff),0 8px 18px -6px rgba(109,40,217,.7)}
+}
+@media (max-width:600px){
+  .atlas-landing .shift-row{grid-template-columns:minmax(0,1fr);gap:28px;margin-bottom:20px}
+  .atlas-landing .shift-row .b{padding:14px 18px}
+  .atlas-landing .shift-row .a{padding:16px 18px 18px}
+  .atlas-landing .shift-row .b:after{right:auto;left:22px;top:auto;bottom:-29px;margin:0;rotate:90deg}
+}
+
+
+/* Integration methods: when the box stacks (tablet and phone) the 280px basis became a 280px HEIGHT and left a big empty gap */
+@media (max-width:1180px){
+  .imethods{flex-direction:column;align-items:stretch;gap:18px}
+  .im-h{flex:0 0 auto}
+}
+@media (max-width:560px){.im-list{grid-template-columns:minmax(0,1fr)}}

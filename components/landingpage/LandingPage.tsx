@@ -154,9 +154,18 @@ function attachSmoothWheel() {
     if (!frame) target = position = window.scrollY;
   };
 
+  // The page moves itself (a filter change jumps back to the list): drop the glide so it cannot undo the jump.
+  const onJump = () => {
+    cancelAnimationFrame(frame);
+    frame = 0;
+    target = position = window.scrollY;
+  };
+
   window.addEventListener("wheel", onWheel, { passive: false });
   window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("atlas:scroll-jump", onJump);
   return () => {
+    window.removeEventListener("atlas:scroll-jump", onJump);
     cancelAnimationFrame(frame);
     window.removeEventListener("wheel", onWheel);
     window.removeEventListener("scroll", onScroll);
@@ -281,7 +290,7 @@ export function LandingPage({ html }: { html: string }) {
 
   useEffect(() => {
     const script = document.createElement("script");
-    script.src = "/atlas-landing.js";
+    script.src = "/atlas-landing.js?v=20261117d";
     script.dataset.atlasLanding = "true";
     document.body.appendChild(script);
     return () => script.remove();
