@@ -1,0 +1,58 @@
+.signals-page,
+.signals-detail {
+  --signals-accent: var(--atlas-primary-700);
+}
+
+.signals-hero {
+  background: linear-gradient(
+    166.34deg,
+    var(--atlas-primary-800),
+    var(--atlas-primary-700) 50%,
+    var(--atlas-primary-500)
+  );
+}
+
+.signals-results input,
+.signals-results select,
+.signals-results details {
+  border-radius: 8px;
+}
+
+.signals-setup-card {
+  display: grid;
+  align-items: center;
+  gap: 20px;
+}
+
+.signals-onboarding {
+  container-type: inline-size;
+}
+
+@container (min-width: 850px) {
+  .signals-setup-card {
+    grid-template-columns: minmax(0, 1fr) 360px;
+  }
+}
+
+.signals-formula-summary {
+  list-style: none;
+}
+
+.signals-formula-summary::-webkit-details-marker {
+  display: none;
+}
+
+.signals-formula-summary .signals-formula-chevron {
+  transform: rotate(180deg);
+  transition: transform 150ms ease;
+}
+
+details[open] > .signals-formula-summary .signals-formula-chevron {
+  transform: rotate(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signals-formula-summary .signals-formula-chevron {
+    transition: none;
+  }
+}

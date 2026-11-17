@@ -1,0 +1,221 @@
+import { BridgingRow, OvertimeRow } from "../types";
+
+export interface CapacityRow {
+  line: string;
+  ct: number;
+  efficiency: string;
+  pcsPerHour: number;
+  maxCap: string;
+  n: string;
+  nAfter: string;
+  n1: string;
+  n2: string;
+  n3: string;
+}
+
+export const TABLE_ROWS = [
+  {
+    line: "ASCC 01",
+    ct: 36,
+    eff: "78%",
+    pcsH: 78,
+    maxCap: "39,780",
+    n: "26,118",
+    nAfter: "26,118",
+    n1: "24,101",
+    n2: "27,232",
+    n3: "26,125",
+  },
+  {
+    line: "ASCC 02",
+    ct: 36,
+    eff: "78%",
+    pcsH: 78,
+    maxCap: "39,780",
+    n: "20,950",
+    nAfter: "20,950",
+    n1: "36,525",
+    n2: "24,591",
+    n3: "24,098",
+  },
+  {
+    line: "ASCC 03",
+    ct: 32,
+    eff: "91%",
+    pcsH: 102,
+    maxCap: "52,211",
+    n: "44,902",
+    nAfter: "42,735",
+    n1: "44,463",
+    n2: "47,877",
+    n3: "43,630",
+  },
+  {
+    line: "ASCC 04",
+    ct: 56,
+    eff: "80%",
+    pcsH: 51,
+    maxCap: "26,229",
+    n: "2,312",
+    nAfter: "2,312",
+    n1: "1,997",
+    n2: "2,708",
+    n3: "2,928",
+  },
+  {
+    line: "ASCC 05",
+    ct: 39,
+    eff: "82%",
+    pcsH: 76,
+    maxCap: "38,603",
+    n: "31,752",
+    nAfter: "33,919",
+    n1: "24,538",
+    n2: "31,011",
+    n3: "31,322",
+  },
+];
+
+export const CAPACITY_ROWS: CapacityRow[] = [
+  {
+    line: "ASCC 01",
+    ct: 36,
+    efficiency: "78%",
+    pcsPerHour: 78,
+    maxCap: "39,780",
+    n: "26,118",
+    nAfter: "26,118",
+    n1: "24,101",
+    n2: "27,232",
+    n3: "26,125",
+  },
+  {
+    line: "ASCC 02",
+    ct: 36,
+    efficiency: "78%",
+    pcsPerHour: 78,
+    maxCap: "39,780",
+    n: "20,950",
+    nAfter: "20,950",
+    n1: "36,525",
+    n2: "24,591",
+    n3: "24,098",
+  },
+  {
+    line: "ASCC 03",
+    ct: 32,
+    efficiency: "91%",
+    pcsPerHour: 102,
+    maxCap: "52,211",
+    n: "44,902",
+    nAfter: "42,735",
+    n1: "44,463",
+    n2: "47,877",
+    n3: "43,630",
+  },
+  {
+    line: "ASCC 04",
+    ct: 56,
+    efficiency: "80%",
+    pcsPerHour: 51,
+    maxCap: "26,229",
+    n: "2,312",
+    nAfter: "2,312",
+    n1: "1,997",
+    n2: "2,708",
+    n3: "2,928",
+  },
+  {
+    line: "ASCC 05",
+    ct: 39,
+    efficiency: "82%",
+    pcsPerHour: 76,
+    maxCap: "38,603",
+    n: "31,752",
+    nAfter: "33,919",
+    n1: "24,538",
+    n2: "31,011",
+    n3: "31,322",
+  },
+];
+
+export const OVERTIME_ROWS: OvertimeRow[] = [
+  {
+    id: "OT-001",
+    line: "ASCC 02",
+    shiftType: "Weekend",
+    date: "Oct 25, 2025",
+    hours: "8h",
+    workers: 12,
+    reason: "Post-bridging capacity gap",
+  },
+  {
+    id: "OT-002",
+    line: "ASCC 05",
+    shiftType: "Night OT",
+    date: "Oct 26, 2025",
+    hours: "4h",
+    workers: 8,
+    reason: "Extended shift for NG backlog",
+  },
+  {
+    id: "OT-003",
+    line: "ASCC 04",
+    shiftType: "Saturday",
+    date: "Oct 27, 2025",
+    hours: "6h",
+    workers: 10,
+    reason: "Weekend maintenance run",
+  },
+];
+
+export const BRIDGING_ROWS: BridgingRow[] = [
+  {
+    id: "BR-9082",
+    sourceLine: "ASCC 01",
+    targetLine: "ASCC 03",
+    partNumber: "PN-D3086",
+    qtyMoved: "4,500 pcs",
+    beforeCap: 240,
+    beforeStatus: "NG",
+    afterCap: 245,
+    afterStatus: "Normal",
+    date: "Oct 22, 2025",
+  },
+  {
+    id: "BR-9083",
+    sourceLine: "ASCC 05",
+    targetLine: "ASCC 01",
+    partNumber: "PN-A1042",
+    qtyMoved: "3,000 pcs",
+    beforeCap: 280,
+    beforeStatus: "NG",
+    afterCap: 190,
+    afterStatus: "Normal",
+    date: "Oct 23, 2025",
+  },
+  {
+    id: "BR-9084",
+    sourceLine: "ASCC 02",
+    targetLine: "ASCC 06",
+    partNumber: "PN-C2057",
+    qtyMoved: "2,200 pcs",
+    beforeCap: 310,
+    beforeStatus: "NG",
+    afterCap: 215,
+    afterStatus: "Normal",
+    date: "Oct 24, 2025",
+  },
+  {
+    id: "BR-9085",
+    sourceLine: "ASCC 05",
+    targetLine: "ASCC 04",
+    partNumber: "PN-B7023",
+    qtyMoved: "5,000 pcs",
+    beforeCap: 395,
+    beforeStatus: "NG",
+    afterCap: 260,
+    afterStatus: "NG",
+    date: "Oct 25, 2025",
+  },
+];

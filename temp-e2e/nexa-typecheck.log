@@ -1,0 +1,33 @@
+app/app/daily-diaries/daily-activities/components/DailyDiariesList.test.tsx(71,36): error TS2345: Argument of type '{ id: string; code: string; title: string; start_date: string; end_date: string; address: string; client_name: string; description: string; location: string; priority: string; project_manager_id: string; status: string; tags: string[]; type: string; project_team: { ...; }[]; }' is not assignable to parameter of type 'Project'.
+  Types of property 'status' are incompatible.
+    Type 'string' is not assignable to type 'ProjectStatus'.
+app/app/daily-diaries/daily-activities/components/DailyDiariesList.test.tsx(75,52): error TS2322: Type '{ id: string; code: string; title: string; start_date: string; end_date: string; address: string; client_name: string; description: string; location: string; priority: string; project_manager_id: string; status: string; tags: string[]; type: string; project_team: { ...; }[]; }' is not assignable to type 'Project'.
+  Types of property 'status' are incompatible.
+    Type 'string' is not assignable to type 'ProjectStatus'.
+app/app/daily-diaries/daily-activities/project-diary-summary.test.ts(37,36): error TS2345: Argument of type '{ id: string; start_date: string; end_date: string; address: string; client_name: string; code: string; description: string; location: string; priority: string; project_manager_id: string; status: string; tags: string[]; title: string; type: string; project_team: { ...; }[]; }' is not assignable to parameter of type 'Project'.
+  Types of property 'status' are incompatible.
+    Type 'string' is not assignable to type 'ProjectStatus'.
+app/app/daily-diaries/daily-activities/project-diary-summary.test.ts(57,36): error TS2345: Argument of type '{ id: string; start_date: string; end_date: string; address: string; client_name: string; code: string; description: string; location: string; priority: string; project_manager_id: string; status: string; tags: string[]; title: string; type: string; project_team: { ...; }[]; }' is not assignable to parameter of type 'Project'.
+  Types of property 'status' are incompatible.
+    Type 'string' is not assignable to type 'ProjectStatus'.
+app/app/daily-diaries/daily-activities/project-diary-summary.test.ts(65,36): error TS2345: Argument of type '{ start_date: string; end_date: string; id: string; address: string; client_name: string; code: string; description: string; location: string; priority: string; project_manager_id: string; status: string; tags: string[]; title: string; type: string; project_team: { ...; }[]; }' is not assignable to parameter of type 'Project'.
+  Types of property 'status' are incompatible.
+    Type 'string' is not assignable to type 'ProjectStatus'.
+app/app/daily-diaries/daily-activities/project-diary-summary.test.ts(68,36): error TS2345: Argument of type '{ end_date: string; id: string; start_date: string; address: string; client_name: string; code: string; description: string; location: string; priority: string; project_manager_id: string; status: string; tags: string[]; title: string; type: string; project_team: { ...; }[]; }' is not assignable to parameter of type 'Project'.
+  Types of property 'status' are incompatible.
+    Type 'string' is not assignable to type 'ProjectStatus'.
+app/app/daily-diaries/daily-activities/project-diary-summary.test.ts(76,36): error TS2345: Argument of type '{ id: string; start_date: string; end_date: string; address: string; client_name: string; code: string; description: string; location: string; priority: string; project_manager_id: string; status: string; tags: string[]; title: string; type: string; project_team: { ...; }[]; }' is not assignable to parameter of type 'Project'.
+  Types of property 'status' are incompatible.
+    Type 'string' is not assignable to type 'ProjectStatus'.
+app/app/daily-diaries/daily-activities/project-diary-summary.test.ts(85,36): error TS2345: Argument of type '{ id: string; start_date: string; end_date: string; address: string; client_name: string; code: string; description: string; location: string; priority: string; project_manager_id: string; status: string; tags: string[]; title: string; type: string; project_team: { ...; }[]; }' is not assignable to parameter of type 'Project'.
+  Types of property 'status' are incompatible.
+    Type 'string' is not assignable to type 'ProjectStatus'.
+app/app/daily-diaries/daily-activities/project-diary-summary.test.ts(95,36): error TS2345: Argument of type '{ id: string; start_date: string; end_date: string; address: string; client_name: string; code: string; description: string; location: string; priority: string; project_manager_id: string; status: string; tags: string[]; title: string; type: string; project_team: { ...; }[]; }' is not assignable to parameter of type 'Project'.
+  Types of property 'status' are incompatible.
+    Type 'string' is not assignable to type 'ProjectStatus'.
+app/app/daily-diaries/daily-activities/project-diary-summary.test.ts(105,47): error TS2345: Argument of type '{ end_date: string; id: string; start_date: string; address: string; client_name: string; code: string; description: string; location: string; priority: string; project_manager_id: string; status: string; tags: string[]; title: string; type: string; project_team: { ...; }[]; }' is not assignable to parameter of type 'Project'.
+  Types of property 'status' are incompatible.
+    Type 'string' is not assignable to type 'ProjectStatus'.
+app/app/daily-diaries/daily-activities/project-diary-summary.test.ts(115,38): error TS2345: Argument of type '{ progress: number; id: string; start_date: string; end_date: string; address: string; client_name: string; code: string; description: string; location: string; priority: string; project_manager_id: string; ... 4 more ...; project_team: { ...; }[]; }' is not assignable to parameter of type 'Project'.
+  Types of property 'status' are incompatible.
+    Type 'string' is not assignable to type 'ProjectStatus'.

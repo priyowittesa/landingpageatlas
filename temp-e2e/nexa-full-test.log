@@ -1,0 +1,429 @@
+
+> atlas-frontend@0.1.0 test D:\@repo\atlas-frontend
+> node scripts/require-pnpm.mjs && node --test scripts/verify-package-manager.mjs lib/rbac-access.test.mjs components/layout/dasbhoard/navigation.test.mjs && vitest run && pnpm test:seo
+
+TAP version 13
+# (node:34992) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/@repo/atlas-frontend/components/layout/dasbhoard/navigation.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to D:\\@repo\\atlas-frontend\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Master Data moves into Others while Settings remains a menu item
+ok 1 - Master Data moves into Others while Settings remains a menu item
+  ---
+  duration_ms: 1.4545
+  type: 'test'
+  ...
+# Subtest: Others preserves role and subscription navigation
+ok 2 - Others preserves role and subscription navigation
+  ---
+  duration_ms: 0.5813
+  type: 'test'
+  ...
+# Subtest: Data Access stays hidden unless is_admin is explicitly true
+ok 3 - Data Access stays hidden unless is_admin is explicitly true
+  ---
+  duration_ms: 0.2871
+  type: 'test'
+  ...
+# Subtest: Data Access appears once in Others for admins regardless of modules or subscription
+ok 4 - Data Access appears once in Others for admins regardless of modules or subscription
+  ---
+  duration_ms: 0.2039
+  type: 'test'
+  ...
+# Subtest: NEXA Evaluation preview appears in Others only for explicit admins
+ok 5 - NEXA Evaluation preview appears in Others only for explicit admins
+  ---
+  duration_ms: 0.2696
+  type: 'test'
+  ...
+# Subtest: Master Data stays hidden without RBAC modules
+ok 6 - Master Data stays hidden without RBAC modules
+  ---
+  duration_ms: 0.1645
+  type: 'test'
+  ...
+# Subtest: Intelligence uses Pertamina branding only for Pertamina Group
+ok 7 - Intelligence uses Pertamina branding only for Pertamina Group
+  ---
+  duration_ms: 0.3028
+  type: 'test'
+  ...
+# Subtest: nested Intelligence modules use the same company-specific branding
+ok 8 - nested Intelligence modules use the same company-specific branding
+  ---
+  duration_ms: 0.2032
+  type: 'test'
+  ...
+# Subtest: Predictive Actions and Well Performance require RBAC navigation entries
+ok 9 - Predictive Actions and Well Performance require RBAC navigation entries
+  ---
+  duration_ms: 0.41
+  type: 'test'
+  ...
+# Subtest: auth/me Operation Intelligence payload renders a nested RBAC menu for any company
+ok 10 - auth/me Operation Intelligence payload renders a nested RBAC menu for any company
+  ---
+  duration_ms: 0.5308
+  type: 'test'
+  ...
+# Subtest: ungranted leaves cannot appear or restore procurement fallback links
+ok 11 - ungranted leaves cannot appear or restore procurement fallback links
+  ---
+  duration_ms: 0.5063
+  type: 'test'
+  ...
+# Subtest: a no_access Well Performance module does not appear in navigation
+ok 12 - a no_access Well Performance module does not appear in navigation
+  ---
+  duration_ms: 0.0922
+  type: 'test'
+  ...
+# Subtest: denied submodules stay hidden while allowed siblings remain visible
+ok 13 - denied submodules stay hidden while allowed siblings remain visible
+  ---
+  duration_ms: 0.0945
+  type: 'test'
+  ...
+# Subtest: fallback navigation cannot restore explicitly denied Well Performance pages
+ok 14 - fallback navigation cannot restore explicitly denied Well Performance pages
+  ---
+  duration_ms: 0.0788
+  type: 'test'
+  ...
+# Subtest: procurement fallback links do not restore denied submodules
+ok 15 - procurement fallback links do not restore denied submodules
+  ---
+  duration_ms: 0.0994
+  type: 'test'
+  ...
+# Subtest: API icon names work for modules and sub-modules without key mappings
+ok 16 - API icon names work for modules and sub-modules without key mappings
+  ---
+  duration_ms: 0.1485
+  type: 'test'
+  ...
+# Subtest: Breakdown Triage is added to Asset Management right after Procurement
+ok 17 - Breakdown Triage is added to Asset Management right after Procurement
+  ---
+  duration_ms: 0.2496
+  type: 'test'
+  ...
+# Subtest: Breakdown Triage is appended when Asset Management has no Procurement
+ok 18 - Breakdown Triage is appended when Asset Management has no Procurement
+  ---
+  duration_ms: 0.0877
+  type: 'test'
+  ...
+# Subtest: a denied Breakdown Triage module from the API is not re-added
+ok 19 - a denied Breakdown Triage module from the API is not re-added
+  ---
+  duration_ms: 0.1184
+  type: 'test'
+  ...
+# Subtest: a Breakdown Triage leaf from the API gets the triage pages
+ok 20 - a Breakdown Triage leaf from the API gets the triage pages
+  ---
+  duration_ms: 0.1253
+  type: 'test'
+  ...
+# Subtest: unknown API icon names retain a fallback icon
+ok 21 - unknown API icon names retain a fallback icon
+  ---
+  duration_ms: 0.0865
+  type: 'test'
+  ...
+# (node:34828) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/@repo/atlas-frontend/lib/rbac-access.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to D:\\@repo\\atlas-frontend\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: predictive actions requires a module grant
+ok 22 - predictive actions requires a module grant
+  ---
+  duration_ms: 1.3847
+  type: 'test'
+  ...
+# Subtest: missing and invalid child grants cannot inherit access from a granted parent
+ok 23 - missing and invalid child grants cannot inherit access from a granted parent
+  ---
+  duration_ms: 0.3816
+  type: 'test'
+  ...
+# Subtest: an ungranted container alone cannot unlock predictive actions
+ok 24 - an ungranted container alone cannot unlock predictive actions
+  ---
+  duration_ms: 0.2183
+  type: 'test'
+  ...
+# Subtest: all supported child grants work under an ungranted container
+ok 25 - all supported child grants work under an ungranted container
+  ---
+  duration_ms: 0.1444
+  type: 'test'
+  ...
+# Subtest: only granted modules unlock Well Performance
+ok 26 - only granted modules unlock Well Performance
+  ---
+  duration_ms: 0.2403
+  type: 'test'
+  ...
+# Subtest: route hrefs match even when the backend uses a different key
+ok 27 - route hrefs match even when the backend uses a different key
+  ---
+  duration_ms: 0.1228
+  type: 'test'
+  ...
+# Subtest: no_access modules and descendants do not unlock routes
+ok 28 - no_access modules and descendants do not unlock routes
+  ---
+  duration_ms: 0.1412
+  type: 'test'
+  ...
+# Subtest: no_access blocks direct module URLs, details, and forms
+ok 29 - no_access blocks direct module URLs, details, and forms
+  ---
+  duration_ms: 0.8468
+  type: 'test'
+  ...
+# Subtest: view, edit, and full access still permit module URLs
+ok 30 - view, edit, and full access still permit module URLs
+  ---
+  duration_ms: 0.3167
+  type: 'test'
+  ...
+# Subtest: a denied submodule is blocked without blocking allowed siblings
+ok 31 - a denied submodule is blocked without blocking allowed siblings
+  ---
+  duration_ms: 0.3281
+  type: 'test'
+  ...
+# Subtest: a denied parent blocks allowed descendants at every depth
+ok 32 - a denied parent blocks allowed descendants at every depth
+  ---
+  duration_ms: 0.1388
+  type: 'test'
+  ...
+# Subtest: missing grants do not unlock modules or similarly named routes
+ok 33 - missing grants do not unlock modules or similarly named routes
+  ---
+  duration_ms: 0.0891
+  type: 'test'
+  ...
+# Subtest: API hrefs support relative, nested and app-prefixed submodules
+ok 34 - API hrefs support relative, nested and app-prefixed submodules
+  ---
+  duration_ms: 0.1066
+  type: 'test'
+  ...
+# Subtest: query strings and trailing slashes cannot bypass a denial
+ok 35 - query strings and trailing slashes cannot bypass a denial
+  ---
+  duration_ms: 0.048
+  type: 'test'
+  ...
+# Subtest: URL-encoded paths cannot bypass a denied module in shared navigation
+ok 36 - URL-encoded paths cannot bypass a denied module in shared navigation
+  ---
+  duration_ms: 0.0408
+  type: 'test'
+  ...
+# Subtest: root grouping hrefs do not grant every unrelated module
+ok 37 - root grouping hrefs do not grant every unrelated module
+  ---
+  duration_ms: 0.0552
+  type: 'test'
+  ...
+# Subtest: an operational dashboard denial cannot be bypassed through its alias
+ok 38 - an operational dashboard denial cannot be bypassed through its alias
+  ---
+  duration_ms: 0.0611
+  type: 'test'
+  ...
+# Subtest: duplicate or separately listed grants do not override denials
+ok 39 - duplicate or separately listed grants do not override denials
+  ---
+  duration_ms: 0.0538
+  type: 'test'
+  ...
+# Subtest: capacity and Well Performance use their canonical module routes
+ok 40 - capacity and Well Performance use their canonical module routes
+  ---
+  duration_ms: 0.0994
+  type: 'test'
+  ...
+# Subtest: shared workspace and account pages remain reachable without module grants
+ok 41 - shared workspace and account pages remain reachable without module grants
+  ---
+  duration_ms: 0.0623
+  type: 'test'
+  ...
+# Subtest: Data Access and its edit routes require an explicit admin flag, not module grants
+ok 42 - Data Access and its edit routes require an explicit admin flag, not module grants
+  ---
+  duration_ms: 0.1668
+  type: 'test'
+  ...
+# Subtest: an explicit denial also applies to modules rendered in static navigation
+ok 43 - an explicit denial also applies to modules rendered in static navigation
+  ---
+  duration_ms: 0.0639
+  type: 'test'
+  ...
+# Subtest: NEXA Evaluation preview requires admin access, including direct navigation
+ok 44 - NEXA Evaluation preview requires admin access, including direct navigation
+  ---
+  duration_ms: 0.094
+  type: 'test'
+  ...
+# Subtest: Breakdown Triage follows Asset Management access until RBAC ships it
+ok 45 - Breakdown Triage follows Asset Management access until RBAC ships it
+  ---
+  duration_ms: 0.3157
+  type: 'test'
+  ...
+# Subtest: Breakdown Triage stays blocked without accessible Asset Management
+ok 46 - Breakdown Triage stays blocked without accessible Asset Management
+  ---
+  duration_ms: 0.1259
+  type: 'test'
+  ...
+# Subtest: a Breakdown Triage RBAC entry takes over from the Asset Management fallback
+ok 47 - a Breakdown Triage RBAC entry takes over from the Asset Management fallback
+  ---
+  duration_ms: 0.0723
+  type: 'test'
+  ...
+# Subtest: local development accepts pnpm
+ok 48 - local development accepts pnpm
+  ---
+  duration_ms: 63.2295
+  type: 'test'
+  ...
+# Subtest: local development rejects other or missing package managers
+ok 49 - local development rejects other or missing package managers
+  ---
+  duration_ms: 240.9551
+  type: 'test'
+  ...
+# Subtest: the guard does not block CI or non-development scripts
+ok 50 - the guard does not block CI or non-development scripts
+  ---
+  duration_ms: 229.1626
+  type: 'test'
+  ...
+# Subtest: package scripts invoke the guard without requiring it during installation
+ok 51 - package scripts invoke the guard without requiring it during installation
+  ---
+  duration_ms: 4.6105
+  type: 'test'
+  ...
+1..51
+# tests 51
+# suites 0
+# pass 51
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 633.6443
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mD:/@repo/atlas-frontend[39m
+
+ [32m✓[39m app/app/operation-intelligence/predictive-actions/assets.test.ts [2m([22m[2m57 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m app/app/role-access-management/components/role-edit-form.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[32m 109[2mms[22m[39m
+ [32m✓[39m app/app/workspace-dashboard/review-order/review-selection.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[32m 106[2mms[22m[39m
+ [32m✓[39m app/app/workspace-dashboard/review-order/checkout.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[32m 116[2mms[22m[39m
+ [32m✓[39m app/app/workspace-dashboard/review-order/payment-methods.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[32m 242[2mms[22m[39m
+ [32m✓[39m app/app/inspection/run-inspection/components/inspection-list.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[32m 72[2mms[22m[39m
+ [32m✓[39m app/app/data-access/components/DataAccessList.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 119[2mms[22m[39m
+ [31m❯[39m components/ai-assistant/panel-cancellation.test.tsx [2m([22m[2m7 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 204[2mms[22m[39m
+   [32m✓[39m panel cancellation lifecycle[2m > [22mclears the pending request only after cancellation succeeds[32m 82[2mms[22m[39m
+   [32m✓[39m panel cancellation lifecycle[2m > [22mkeeps the chat requesting after a failed cancellation[32m 4[2mms[22m[39m
+   [32m✓[39m panel cancellation lifecycle[2m > [22mdoes not submit duplicate cancellation requests[32m 2[2mms[22m[39m
+   [32m✓[39m panel cancellation lifecycle[2m > [22mhandles a cancelled socket event before the HTTP response only once[32m 6[2mms[22m[39m
+   [32m✓[39m panel cancellation lifecycle[2m > [22mdoes not clear a newer request when an old cancel response arrives[32m 14[2mms[22m[39m
+   [32m✓[39m panel cancellation lifecycle[2m > [22mkeeps a completed response when completion wins the cancellation race[32m 62[2mms[22m[39m
+[31m   [31m×[31m project overview composer[2m > [22mstarts a chat in the selected project with attachments and skills[39m[32m 31[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'props')[39m
+ [32m✓[39m components/ai-assistant/chat-cancellation.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[33m 433[2mms[22m[39m
+ [32m✓[39m app/app/data-access/components/ConnectionCatalogPicker.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 467[2mms[22m[39m
+ [32m✓[39m lib/auth-refresh.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m app/app/operation-intelligence/predictive-actions/activated-signals.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 340[2mms[22m[39m
+ [32m✓[39m app/app/operation-intelligence/predictive-actions/signal-formula.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 52[2mms[22m[39m
+ [32m✓[39m app/app/operation-intelligence/predictive-actions/onboarding-schedule-api.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m components/layout/dasbhoard/Sidebar.test.tsx [2m([22m[2m19 tests[22m[2m)[22m[32m 64[2mms[22m[39m
+ [32m✓[39m app/app/inspection/templates/components/template-form.test.tsx [2m([22m[2m40 tests[22m[2m)[22m[33m 924[2mms[22m[39m
+ [32m✓[39m components/auth/logout.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m lib/page-routes.test.ts [2m([22m[2m168 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+ [32m✓[39m app/app/data-access/components/DataAccessSelection.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[32m 56[2mms[22m[39m
+ [32m✓[39m components/layout/Breadcrumbs.test.tsx [2m([22m[2m14 tests[22m[2m)[22m[32m 49[2mms[22m[39m
+ [32m✓[39m app/api/auth/keycloak-logout/route.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m app/app/master-data/projects/components/project-list.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 212[2mms[22m[39m
+ [32m✓[39m components/ai-assistant/history-notification.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 36[2mms[22m[39m
+ [32m✓[39m app/app/operation-intelligence/predictive-actions/signals-experience.test.tsx [2m([22m[2m14 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+ [32m✓[39m components/settings/SettingsPage.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m app/app/data-access/use-module-connections.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m app/app/operation-intelligence/predictive-actions/formulas-dialog.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m components/settings/PaymentHistorySettings.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 364[2mms[22m[39m
+ [32m✓[39m proxy.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m app/app/workspace-dashboard/review-order/payment-countdown.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m components/ai-assistant/project-composer.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m app/app/data-access/components/DataAccessEditor.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 467[2mms[22m[39m
+ [32m✓[39m components/auth/ModuleAccessGuard.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m app/app/operation-intelligence/predictive-actions/onboarding-api.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 46[2mms[22m[39m
+ [32m✓[39m app/app/master-data/equipment/form-schema.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m lib/text-network/__tests__/buildGraph.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 86[2mms[22m[39m
+ [32m✓[39m app/app/inspection/templates/use-templates.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m app/app/data-access/catalog.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m lib/require-auth.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m app/app/operation-intelligence/predictive-actions/onboarding-signals.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m app/app/data-access/use-data-access.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m app/app/operation-intelligence/predictive-actions/use-onboarding.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m components/settings/PaymentMethodSettings.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m app/app/operation-intelligence/predictive-actions/use-signal-schedule.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m components/settings/payment-method-storage.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m lib/text-network/__tests__/buildEntityGraph.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m app/app/data-access/connection-catalog.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m app/app/daily-diaries/daily-activities/hooks/useProjectDiarySummaries.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m app/app/operation-intelligence/predictive-actions/signal-schedule.test.tsx [2m([22m[2m22 tests[22m[2m)[22m[33m 706[2mms[22m[39m
+ [32m✓[39m app/app/data-access/use-update-module.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m lib/text-network/__tests__/tokenize.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m app/app/layout.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m app/app/master-data/projects/use-projects.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m app/app/operation-intelligence/predictive-actions/setup-progress.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m app/app/operation-intelligence/predictive-actions/signal-filters.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m app/app/data-access/use-submodules.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m lib/branding-api.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m app/app/asset-management/breakdown-triage/lib/scoring.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m hooks/useAuthMe.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m app/app/data-access/use-module-detail.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m app/app/master-data/equipment/location-options.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m app/app/operation-intelligence/predictive-actions/page.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m app/app/nexa-evaluation/mock-data.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m app/app/daily-diaries/daily-activities/components/DailyDiariesList.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[32m 182[2mms[22m[39m
+ [32m✓[39m app/app/daily-diaries/daily-activities/project-diary-summary.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m app/app/inspection/run-inspection/components/run-inspection-dialog.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[32m 261[2mms[22m[39m
+ [32m✓[39m app/app/workspace-dashboard/analytics-dashboard/LabourRosteringTab.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 108[2mms[22m[39m
+ [32m✓[39m app/app/nexa-evaluation/components/NexaEvaluationPage.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[32m 84[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m components/ai-assistant/panel-cancellation.test.tsx[2m > [22mproject overview composer[2m > [22mstarts a chat in the selected project with attachments and skills
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'props')[39m
+[36m [2m❯[22m components/ai-assistant/panel-cancellation.test.tsx:[2m245:75[22m[39m
+    [90m243| [39m    )[33m;[39m
+    [90m244| [39m
+    [90m245| [39m    const composer = captureMemoBrowser.mock.lastCall![0].projectCompo…
+    [90m   | [39m                                                                          [31m^[39m
+    [90m246| [39m    [34mexpect[39m(composer[33m.[39mcompact)[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+    [90m247| [39m    [34mexpect[39m(composer[33m.[39mprojectSelectionEnabled)[33m.[39m[34mtoBe[39m([35mfalse[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m67 passed[39m[22m[90m (68)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m773 passed[39m[22m[90m (774)[39m
+[2m   Start at [22m 11:14:54
+[2m   Duration [22m 13.45s[2m (transform 28.36s, setup 0ms, collect 125.70s, tests 6.71s, environment 17ms, prepare 14.06s)[22m
+
+ ELIFECYCLE  Test failed. See above for more details.

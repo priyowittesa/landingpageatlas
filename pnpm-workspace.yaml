@@ -1,0 +1,7 @@
+allowBuilds:
+  protobufjs: set this to true or false
+  sharp: true
+  unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@xyflow/react@12.11.1'
+  - '@xyflow/system@0.0.78'
