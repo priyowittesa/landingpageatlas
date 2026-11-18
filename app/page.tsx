@@ -1,6 +1,5 @@
 import "../public/atlas-landing.css";
 import { LandingPage } from "@/components/landingpage/LandingPage";
-import { landingPageMarkup } from "@/components/landingpage/landing-content";
 import {
   getPublicMetadata,
   getStructuredData,
@@ -18,7 +17,7 @@ export default function HomePage() {
           __html: serializeJsonLd(getStructuredData())
         }}
       />
-      <LandingPage html={landingPageMarkup} />
+      <LandingPage />
     </>
   );
 }

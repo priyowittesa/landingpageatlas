@@ -2,16 +2,47 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
+import { NavBrand } from "./NavBrand";
 
-type LandingNavbarProps = { markup: string };
+const LOGIN_HREF = "/api/auth/signin/keycloak?callbackUrl=%2Fauth%2Fredirect";
 
-export function LandingNavbar({ markup }: LandingNavbarProps) {
+// `sections` lists the section ids the scroll-spy maps onto each link (see public/atlas-landing.js).
+const NAV_LINKS = [
+  { href: "#how-it-works", label: "How It Works", sections: "how-it-works" },
+  { href: "#solutions", label: "Solutions", sections: "solutions" },
+  {
+    href: "#platform",
+    label: "Platform",
+    sections: "platform integrations ontrix nexa get-started"
+  },
+  { href: "#pricing", label: "Pricing", sections: "pricing" },
+  { href: "#trust", label: "Trust", sections: "trust" }
+];
+
+function NavLinks() {
+  return NAV_LINKS.map((link) => (
+    <a key={link.href} href={link.href} data-sec={link.sections}>
+      {link.label}
+    </a>
+  ));
+}
+
+function NavActions() {
+  return (
+    <>
+      <a className="btn btn-ghost btn-sm" href={LOGIN_HREF}>
+        Log in
+      </a>
+      <a className="btn btn-primary btn-sm" href="#walkthrough">
+        Book an ATLAS walkthrough
+      </a>
+    </>
+  );
+}
+
+export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
-  const match = markup.match(/^\s*<header\b([^>]*)>([\s\S]*)<\/header>\s*$/i);
-  const className = match && /\bclass\s*=\s*(["'])(.*?)\1/i.exec(match[1])?.[2];
-  const navMarkup = match?.[2].match(/<nav\b[^>]*class=["']nav-links["'][^>]*>([\s\S]*?)<\/nav>/i)?.[1] ?? "";
-  const ctaMarkup = match?.[2].match(/<div\b[^>]*class=["']nav-cta["'][^>]*>([\s\S]*?)<\/div>/i)?.[1] ?? "";
 
   useEffect(() => {
     if (!isOpen) return;
@@ -37,11 +68,19 @@ export function LandingNavbar({ markup }: LandingNavbarProps) {
     };
   }, [isOpen]);
 
-  if (!match) return null;
-
   return (
-    <header ref={headerRef} className={className || undefined}>
-      <div dangerouslySetInnerHTML={{ __html: match[2] }} />
+    <header ref={headerRef} className="nav">
+      <div>
+        <div className="wrap nav-in">
+          <NavBrand />
+          <nav className="nav-links" aria-label="Primary">
+            <NavLinks />
+          </nav>
+          <div className="nav-cta">
+            <NavActions />
+          </div>
+        </div>
+      </div>
       <button
         type="button"
         className="atlas-menu-toggle"
@@ -61,8 +100,12 @@ export function LandingNavbar({ markup }: LandingNavbarProps) {
           if (event.target instanceof Element && event.target.closest("a")) setIsOpen(false);
         }}
       >
-        <div dangerouslySetInnerHTML={{ __html: navMarkup }} />
-        <div className="atlas-mobile-menu-cta" dangerouslySetInnerHTML={{ __html: ctaMarkup }} />
+        <div>
+          <NavLinks />
+        </div>
+        <div className="atlas-mobile-menu-cta">
+          <NavActions />
+        </div>
       </nav>
     </header>
   );

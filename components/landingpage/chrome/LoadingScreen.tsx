@@ -1,4 +1,4 @@
-export function LandingLoadingScreen() {
+export function LoadingScreen() {
   return (
     <div
       role="status"

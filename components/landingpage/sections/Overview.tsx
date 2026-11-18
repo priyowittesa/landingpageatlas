@@ -14,7 +14,7 @@ const FLOATING_TERMS = [
   { label: "International markets", x: 74, y: 89, depth: 0.5, blur: 0 }
 ];
 
-export function AtlasOverview() {
+export function Overview() {
   return (
     <section
       className="sec tint ov-stage"
