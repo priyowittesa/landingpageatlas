@@ -8,7 +8,7 @@ import { useEffect } from "react";
 export function useLegacyLandingScript() {
   useEffect(() => {
     const script = document.createElement("script");
-    script.src = "/atlas-landing.js?v=20261117e";
+    script.src = "/atlas-landing.js?v=20261118a";
     script.dataset.atlasLanding = "true";
     document.body.appendChild(script);
     return () => script.remove();

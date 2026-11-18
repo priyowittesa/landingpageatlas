@@ -617,13 +617,21 @@ trapDialog(modal,closeModal);
 /* ---------- navbar: highlight the section that fills most of the viewport ---------- */
 const SPY=['how-it-works','solutions','platform','integrations','ontrix','nexa','get-started','pricing','trust','faq','walkthrough'].map(id=>document.getElementById(id));
 let spyRaf=0, spyCur='';
-function spyUpdate(){spyRaf=0;const top=$('.nav').offsetHeight, refY=top+(innerHeight-top)*0.3;let best='';
-  SPY.forEach(el=>{const r=el.getBoundingClientRect();if(r.top<=refY&&r.bottom>refY)best=el.id;});
-  spyCur=best;
-  $$('.nav-links a, .atlas-mobile-menu > div:first-child a').forEach(a=>{const on=!!best&&(a.dataset.sec||'').split(' ').includes(best);a.classList.toggle('on',on);on?a.setAttribute('aria-current','true'):a.removeAttribute('aria-current');});}
+/* Section bounds are cached in document coordinates and refreshed only when the page resizes, so
+   scrolling never forces a layout read (it used to call getBoundingClientRect on every section each frame). */
+let spyBounds=[],spyNavH=0,spyLinks=[],spyDirty=true;
+function spyMeasure(){const y=scrollY;spyNavH=$('.nav').offsetHeight;spyLinks=$$('.nav-links a, .atlas-mobile-menu > div:first-child a');
+  spyBounds=SPY.map(el=>{const r=el.getBoundingClientRect();return {id:el.id,top:r.top+y,bottom:r.bottom+y};});spyDirty=true;}
+function spyUpdate(){spyRaf=0;const refY=scrollY+spyNavH+(innerHeight-spyNavH)*0.3;let best='';
+  spyBounds.forEach(b=>{if(b.top<=refY&&b.bottom>refY)best=b.id;});
+  if(best===spyCur&&!spyDirty)return;
+  spyCur=best;spyDirty=false;
+  spyLinks.forEach(a=>{const on=!!best&&(a.dataset.sec||'').split(' ').includes(best);a.classList.toggle('on',on);on?a.setAttribute('aria-current','true'):a.removeAttribute('aria-current');});}
 addEventListener('scroll',()=>{if(!spyRaf)spyRaf=requestAnimationFrame(spyUpdate);},{passive:true});
-addEventListener('resize',()=>{if(!spyRaf)spyRaf=requestAnimationFrame(spyUpdate);});
-spyUpdate();
+const spyRemeasure=()=>{spyMeasure();if(!spyRaf)spyRaf=requestAnimationFrame(spyUpdate);};
+addEventListener('resize',spyRemeasure);
+if('ResizeObserver' in window)new ResizeObserver(spyRemeasure).observe($('main'));
+spyMeasure();spyUpdate();
 
 /* mobile sticky CTA: compact, dismissible; hidden over the hero, the final form and while typing */
 const mcta=$('#mcta'); let heroVis=true, formVis=false, typing=false;
@@ -985,20 +993,22 @@ railify($('.prob-grid'));initStage();renderBrowse();renderGantt();renderOG(0);ap
   /* --nav-t runs 0..1 as the bar leaves the dark hero and crosses onto light sections.
      It is eased toward its target every frame, so the glass changes gradually, never in a step. */
   const hero=$('.hero2');
-  let cur=0,tgt=0,raf=0;
-  const measure=()=>{
-    const end=hero?hero.offsetHeight:900;
-    tgt=Math.max(0,Math.min(1,(scrollY-(end-210))/260));
-  };
+  let cur=0,tgt=0,raf=0,end=900,written='';
+  /* the hero height is cached: reading offsetHeight on every scroll event forced a layout each frame */
+  const readEnd=()=>{end=hero?hero.offsetHeight:900;};
+  const measure=()=>{tgt=Math.max(0,Math.min(1,(scrollY-(end-210))/260));};
   const tick=()=>{
     raf=0;cur+=(tgt-cur)*.16;
     if(Math.abs(tgt-cur)<.002)cur=tgt;
-    nav.style.setProperty('--nav-t',cur.toFixed(3));
+    const v=cur.toFixed(3);
+    if(v!==written){written=v;nav.style.setProperty('--nav-t',v);}
     if(cur!==tgt)raf=requestAnimationFrame(tick);
   };
-  const kick=()=>{measure();if(!raf)raf=requestAnimationFrame(tick);};
-  addEventListener('scroll',kick,{passive:true});addEventListener('resize',kick);
-  measure();cur=tgt;nav.style.setProperty('--nav-t',cur);
+  const kick=()=>{measure();if(cur!==tgt&&!raf)raf=requestAnimationFrame(tick);};
+  const rekick=()=>{readEnd();kick();};
+  addEventListener('scroll',kick,{passive:true});addEventListener('resize',rekick);
+  if(hero&&'ResizeObserver' in window)new ResizeObserver(rekick).observe(hero);
+  readEnd();measure();cur=tgt;written=String(cur);nav.style.setProperty('--nav-t',cur);
 })();
 
 /* ---------- hero video ----------
