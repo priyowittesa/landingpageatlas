@@ -1,22 +1,34 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis
+} from "recharts";
 import { formatPercent, formatRupiahMillions } from "../../format";
-import type { CostCategoryPoint } from "../../types";
+import type { CostUsagePoint } from "../../types";
 import { AXIS_TICK, CHART_COLORS, GRID } from "./chartTheme";
+import { CategoryTick } from "./CategoryTick";
 import { ChartLegend } from "./ChartLegend";
-import { formatRupiahCompact } from "./formatters";
+import { formatPercentAxis, niceTicks } from "./formatters";
 import { useChartAnimation } from "./useChartAnimation";
 
-type BulletChartProps = {
-  points: CostCategoryPoint[];
-};
+const ROW_HEIGHT = 40;
+const LABEL_WIDTH = 190;
 
-const ROW_HEIGHT = 46;
-
-/** Bullet bars: the wide light bar is the RAP budget, the narrow dark bar is realised cost. Axis from zero. */
-export function BulletChart({ points }: BulletChartProps) {
+/**
+ * Share of each RAP category already used (0-100%, marker at 100%). Shares keep small
+ * categories readable; only a category over its RAP turns red. Rp amounts are in the tooltip.
+ */
+export function RapUsageChart({ points }: { points: CostUsagePoint[] }) {
   const animation = useChartAnimation();
+  const ticks = niceTicks(Math.max(100, ...points.map((point) => point.usedPct)));
   return (
     <div>
       <div style={{ height: points.length * ROW_HEIGHT + 40 }} className="w-full">
@@ -25,46 +37,44 @@ export function BulletChart({ points }: BulletChartProps) {
             <CartesianGrid horizontal={false} {...GRID} />
             <XAxis
               type="number"
-              domain={[0, "dataMax"]}
+              domain={[0, ticks[ticks.length - 1] ?? 100]}
+              ticks={ticks}
               tickLine={false}
               axisLine={false}
               tick={AXIS_TICK}
-              tickFormatter={formatRupiahCompact}
+              tickFormatter={formatPercentAxis}
             />
             <YAxis
-              yAxisId="rap"
               type="category"
               dataKey="category"
-              width={196}
+              width={LABEL_WIDTH}
               tickLine={false}
               axisLine={false}
-              tick={AXIS_TICK}
               interval={0}
+              tick={<CategoryTick />}
             />
-            <YAxis yAxisId="cost" type="category" dataKey="category" hide />
+            <ReferenceLine x={100} stroke={CHART_COLORS.plan} strokeDasharray="4 3" />
             <Tooltip
               cursor={{ fill: "var(--color-primary-50)" }}
               content={({ active, payload }) => {
-                const point = payload?.[0]?.payload as CostCategoryPoint | undefined;
+                const point = payload?.[0]?.payload as CostUsagePoint | undefined;
                 if (!active || !point) return null;
                 return (
                   <div className="rounded-lg border border-border bg-background p-3 text-xs shadow-md">
                     <p className="mb-1 font-semibold">{point.category}</p>
                     <p className="tabular-nums">RAP budget {formatRupiahMillions(point.rapPlanned)}</p>
                     <p className="tabular-nums">Realised cost {formatRupiahMillions(point.cost)}</p>
-                    {point.rapPlanned > 0 && (
-                      <p className="tabular-nums font-semibold">
-                        {formatPercent(point.cost / point.rapPlanned, 2)} of RAP used
-                      </p>
-                    )}
+                    <p className="tabular-nums font-semibold">
+                      {point.rapPlanned > 0 ? `${formatPercent(point.usedPct / 100, 2)} of RAP used` : "No RAP budget"}
+                      {point.over ? ", over RAP" : ""}
+                    </p>
                   </div>
                 );
               }}
             />
-            <Bar yAxisId="rap" dataKey="rapPlanned" name="RAP budget" fill={CHART_COLORS.primaryLight} barSize={26} radius={6} {...animation} />
-            <Bar yAxisId="cost" dataKey="cost" name="Realised cost" barSize={10} {...animation}>
+            <Bar dataKey="usedPct" maxBarSize={20} radius={4} {...animation}>
               {points.map((point) => (
-                <Cell key={point.category} fill={point.cost > point.rapPlanned ? CHART_COLORS.bad : CHART_COLORS.actual} />
+                <Cell key={point.category} fill={point.over ? CHART_COLORS.bad : CHART_COLORS.actual} />
               ))}
             </Bar>
           </BarChart>
@@ -72,9 +82,9 @@ export function BulletChart({ points }: BulletChartProps) {
       </div>
       <ChartLegend
         items={[
-          { label: "RAP budget", color: CHART_COLORS.primaryLight },
-          { label: "Realised cost", color: CHART_COLORS.actual },
-          { label: "Cost over RAP", color: CHART_COLORS.bad }
+          { label: "RAP used", color: CHART_COLORS.actual },
+          { label: "Over RAP", color: CHART_COLORS.bad },
+          { label: "100% of RAP (dashed line)", color: CHART_COLORS.plan }
         ]}
       />
     </div>

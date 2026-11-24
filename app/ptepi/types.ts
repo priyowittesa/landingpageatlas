@@ -849,8 +849,15 @@ export type DeficitChartData = {
   table: ChartTable;
 };
 
+/** A RAP category as a share of its budget used, for readable small categories. */
+export type CostUsagePoint = CostCategoryPoint & {
+  /** cost / RAP budget x 100; 0 when there is no budget */
+  usedPct: number;
+  over: boolean;
+};
+
 export type CostChartData = {
-  points: CostCategoryPoint[];
+  points: CostUsagePoint[];
   takeaway: string | null;
   table: ChartTable;
 };

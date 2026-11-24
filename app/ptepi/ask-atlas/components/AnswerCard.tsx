@@ -109,9 +109,12 @@ function ActionRow({ action }: { action: NewEpiAction }) {
         {created ? "Tracked" : "Create action"}
       </Button>
       {match && (
-        <Link href="/ptepi/actions" className="w-full text-xs font-medium text-primary-700 hover:underline">
-          Already tracked: {match.id}. Open the action tracker
-        </Link>
+        <p className="w-full text-xs">
+          Already tracked as {match.id}.{" "}
+          <Link href="/ptepi/actions" className="font-medium text-primary-700 hover:underline">
+            View in the action tracker
+          </Link>
+        </p>
       )}
     </li>
   );

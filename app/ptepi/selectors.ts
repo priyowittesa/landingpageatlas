@@ -2026,7 +2026,11 @@ export function getCostChart(data: EpiDemoData, projectId: string): CostChartDat
   const over = used.filter((point) => point.cost > point.rapPlanned).length;
   const top = [...used].sort((a, b) => b.cost / b.rapPlanned - a.cost / a.rapPlanned)[0];
   return {
-    points,
+    points: points.map((point) => ({
+      ...point,
+      usedPct: point.rapPlanned > 0 ? round((point.cost / point.rapPlanned) * 100, 2) : 0,
+      over: point.rapPlanned > 0 && point.cost > point.rapPlanned
+    })),
     takeaway: top
       ? `${over} of ${used.length} categories are over RAP; ${top.category} has used the most of its budget (${formatPercent(top.cost / top.rapPlanned, 2)}).`
       : null,

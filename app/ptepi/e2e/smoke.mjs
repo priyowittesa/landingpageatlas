@@ -265,7 +265,7 @@ async function flows() {
   await page.getByRole("button", { name: /Stage 2 Confirmation Order/ }).click();
   const dialog = page.getByRole("dialog");
   await dialog.waitFor();
-  await dialog.getByRole("link", { name: /Already tracked: EXC-03/ }).waitFor();
+  await dialog.getByText(/Already tracked as EXC-03/).waitFor();
   await page.keyboard.press("Escape");
 
   // S2: blocked rows link to the evidence gate.
@@ -293,7 +293,7 @@ async function flows() {
   if ((await page.getByRole("button", { name: "Create action" }).count()) > 0) {
     fail("S7", "billing actions should dedupe to the seeded exceptions");
   }
-  await page.getByRole("link", { name: /Already tracked: EXC-/ }).first().waitFor();
+  await page.getByText(/Already tracked as EXC-/).first().waitFor();
   await page.getByRole("link", { name: "Action Tracker", exact: true }).first().click();
   await page.waitForURL("**/ptepi/actions");
   if ((await page.getByText("EXC-01").count()) === 0) fail("S8", "seeded EXC-01 missing");

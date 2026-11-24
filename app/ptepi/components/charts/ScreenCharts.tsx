@@ -26,7 +26,7 @@ import type {
   AgingBucket,
   OwnerStatusPoint
 } from "../../store/action-helpers";
-import { BulletChart } from "./BulletChart";
+import { RapUsageChart } from "./RapUsageChart";
 import { CHART_COLORS } from "./chartTheme";
 import { ChartCard } from "./ChartCard";
 import { DumbbellChart } from "./DumbbellChart";
@@ -233,9 +233,9 @@ export function CostBulletCard({ chart, badge, className }: CardProps<CostChartD
       badge={badge}
       className={className}
       empty={chart.points.length === 0 ? { title: "No budget or cost yet" } : null}
-      ariaLabel="Bullet bars per RAP category: the RAP budget as a wide bar and the realised cost as a narrow bar"
+      ariaLabel="Bar chart per RAP category: share of the RAP budget used, with a marker at 100%; categories over RAP are red"
     >
-      <BulletChart points={chart.points} />
+      <RapUsageChart points={chart.points} />
     </ChartCard>
   );
 }

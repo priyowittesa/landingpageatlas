@@ -219,12 +219,12 @@ function StageDialogBody({ stage, suggestion }: StageDialogBodyProps) {
       {blocked && suggestion && (
         <DialogFooter className="items-center gap-3 sm:justify-between">
           {created ? (
-            <Link
-              href="/ptepi/actions"
-              className="text-sm font-medium text-primary-700 hover:underline"
-            >
-              {createdId === match?.id ? `${createdId} added` : `Already tracked: ${match?.id}`}: view in the action tracker
-            </Link>
+            <p className="text-sm">
+              {createdId === match?.id ? `Added as ${createdId}` : `Already tracked as ${match?.id}`}.{" "}
+              <Link href="/ptepi/actions" className="font-medium text-primary-700 hover:underline">
+                View in the action tracker
+              </Link>
+            </p>
           ) : (
             <span className="text-xs text-muted-foreground">
               Adds the action to the Action tracker.
