@@ -18,8 +18,9 @@ export function formatRupiah(value: number): string {
   return `${sign}Rp ${integerFormat.format(Math.abs(Math.round(value)))}`;
 }
 
-/** 6683144041 -> "Rp 6.683,1 m" */
+/** 6683144041 -> "Rp 6.683,1 m"; 0 -> "Rp 0" */
 export function formatRupiahMillions(value: number): string {
+  if (value === 0) return "Rp 0";
   const sign = value < 0 ? "-" : "";
   return `${sign}Rp ${oneDecimalFormat.format(Math.abs(value) / 1_000_000)} m`;
 }
@@ -30,8 +31,13 @@ const percentTwoFormat = new Intl.NumberFormat("id-ID", {
 });
 
 /** Fraction to percent: 0.73487 -> "73,487%", 1 -> "100%". Pass 2 for "22,26%". */
-export function formatPercent(fraction: number, maxDigits: 2 | 3 = 3): string {
-  const format = maxDigits === 2 ? percentTwoFormat : percentFormat;
+const percentOneFormat = new Intl.NumberFormat("id-ID", {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1
+});
+
+export function formatPercent(fraction: number, maxDigits: 1 | 2 | 3 = 3): string {
+  const format = maxDigits === 1 ? percentOneFormat : maxDigits === 2 ? percentTwoFormat : percentFormat;
   return `${format.format(fraction * 100)}%`;
 }
 

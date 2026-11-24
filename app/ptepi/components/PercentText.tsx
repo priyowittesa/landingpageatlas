@@ -5,7 +5,7 @@ type PercentTextProps = {
   /** A fraction: 0.5 renders as "50%". */
   fraction: number | null | undefined;
   /** Max decimals, 3 by default */
-  digits?: 2 | 3;
+  digits?: 1 | 2 | 3;
   className?: string;
 };
 

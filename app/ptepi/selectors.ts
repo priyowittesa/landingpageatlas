@@ -1036,8 +1036,7 @@ export function getCostMargin(data: EpiDemoData, projectId: string): CostMargin 
     profit: recognisedRevenue - cost,
     margin: recognisedRevenue > 0 ? (recognisedRevenue - cost) / recognisedRevenue : null,
     vendorAdvances: advances,
-    marginExAdvances:
-      recognisedRevenue > 0 ? (recognisedRevenue - (cost - advances)) / recognisedRevenue : null
+    advancesShareOfCost: cost > 0 ? advances / cost : null
   };
 }
 
@@ -1281,7 +1280,8 @@ export function getSuggestedAction(
     ownerRole: OWNER_ROLE,
     dueDate: addDays(data.asAt, urgent ? DUE_DAYS_MISSING : DUE_DAYS_PENDING),
     source: `Evidence gate: ${projectId} stage ${stage.stageNo}`,
-    autonomy: "L1"
+    autonomy: "L1",
+    issue: `evidence-stage-${stage.stageNo}`
   };
 }
 
@@ -1643,7 +1643,14 @@ export function getBastGate(data: EpiDemoData, projectId: string): BastGate {
       label: "BA Comtest signed (BA Testing and Commissioning)",
       ok: hasSignedDocument(data, projectId, "BA Testing and Commissioning")
     },
-    { rule: "C3-D1", label: "Progress at 100%", ok: progress !== null && progress >= 1 }
+    {
+      rule: "C3-D1",
+      label:
+        progress !== null && progress >= 1
+          ? "Progress is 100%"
+          : `Progress is ${formatPercent(progress ?? 0)}, 100% needed`,
+      ok: progress !== null && progress >= 1
+    }
   ];
   return { allowed: checks.every((check) => check.ok), progress, checks };
 }

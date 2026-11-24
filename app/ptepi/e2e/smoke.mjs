@@ -18,7 +18,9 @@ const MAIN_ROUTES = [
   "/ptepi/project/PNP126",
   "/ptepi/project/PNP126/evidence",
   "/ptepi/commercial",
+  "/ptepi/commercial?project=PNP126",
   "/ptepi/cost",
+  "/ptepi/cost?project=PNP126",
   "/ptepi/ask-atlas",
   "/ptepi/actions",
   "/ptepi/service-contracts"
@@ -258,12 +260,12 @@ async function flows() {
   await page.getByRole("link", { name: /Critical item/ }).click();
   await page.waitForURL("**/ptepi/project/PNP126/evidence");
 
-  // S4: a blocked stage opens a dialog and creates an action.
+  // S4: a blocked stage opens a dialog; the transformer PO issue is already tracked by EXC-03
+  // (seeded when the tracker was visited above), so no duplicate is created.
   await page.getByRole("button", { name: /Stage 2 Confirmation Order/ }).click();
   const dialog = page.getByRole("dialog");
   await dialog.waitFor();
-  await dialog.getByRole("button", { name: "Create action" }).click();
-  await dialog.getByText(/ACT-\d+ added/).waitFor();
+  await dialog.getByRole("link", { name: /Already tracked: EXC-03/ }).waitFor();
   await page.keyboard.press("Escape");
 
   // S2: blocked rows link to the evidence gate.
@@ -287,10 +289,13 @@ async function flows() {
   await page.goto(`${BASE}/ptepi/ask-atlas`, { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "What is blocked from billing?" }).first().click();
   await page.getByText(/payment stages worth/).first().waitFor();
-  await page.getByRole("button", { name: "Create action" }).first().click();
-  await page.getByRole("link", { name: "Action Tracker" }).click();
+  // Every billing issue is already tracked by a seeded exception: no duplicates.
+  if ((await page.getByRole("button", { name: "Create action" }).count()) > 0) {
+    fail("S7", "billing actions should dedupe to the seeded exceptions");
+  }
+  await page.getByRole("link", { name: /Already tracked: EXC-/ }).first().waitFor();
+  await page.getByRole("link", { name: "Action Tracker", exact: true }).first().click();
   await page.waitForURL("**/ptepi/actions");
-  await page.getByText(/Unblock Tagihan/).first().waitFor();
   if ((await page.getByText("EXC-01").count()) === 0) fail("S8", "seeded EXC-01 missing");
 
   // S8: role switcher disables Close for a Project Manager on a Finance action, Director can close.
@@ -305,7 +310,7 @@ async function flows() {
 try {
   await flows();
 } catch (error) {
-  fail("flow", error instanceof Error ? error.message.split("\n")[0] : String(error));
+  fail("flow", error instanceof Error ? error.message.split("\n").slice(0, 3).join(" | ") : String(error));
 }
 
 await browser.close();

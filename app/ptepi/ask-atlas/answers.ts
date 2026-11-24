@@ -40,9 +40,17 @@ const HANDOVER_DUE_DAYS = 14;
 const questionLabel = (id: QuestionId): string =>
   QUESTIONS.find((question) => question.id === id)?.label ?? id;
 
+/** The seeded-exception issue a blocked billing row belongs to. */
+function billingIssueOf(requiredDocument: string | null): string {
+  if (requiredDocument === null) return "billing-progress-condition";
+  if (requiredDocument.startsWith("BAST I")) return "billing-bast-i";
+  if (requiredDocument.startsWith("Monthly")) return "billing-monthly-report";
+  return "billing-blocked";
+}
+
 function draft(
   data: EpiDemoData,
-  input: Pick<NewEpiAction, "title" | "projectId" | "ownerRole" | "source"> & { dueInDays?: number }
+  input: Pick<NewEpiAction, "title" | "projectId" | "ownerRole" | "source" | "issue"> & { dueInDays?: number }
 ): NewEpiAction {
   return {
     title: input.title,
@@ -50,7 +58,8 @@ function draft(
     ownerRole: input.ownerRole,
     dueDate: addDays(data.asAt, input.dueInDays ?? ACTION_DUE_DAYS),
     source: input.source,
-    autonomy: "L1"
+    autonomy: "L1",
+    ...(input.issue ? { issue: input.issue } : {})
   };
 }
 
@@ -127,7 +136,8 @@ function behind(data: EpiDemoData): Answer {
             title: `Confirm FAT and delivery dates for ${critical.label} with the vendor (${HERO_PROJECT_ID})`,
             projectId: HERO_PROJECT_ID,
             ownerRole: "Project Manager",
-            source: `Nexa Intelligence: ${HERO_PROJECT_ID} behind plan`
+            source: `Nexa Intelligence: ${HERO_PROJECT_ID} behind plan`,
+            issue: "critical-item"
           })
         ]
       : [],
@@ -152,15 +162,17 @@ function billing(data: EpiDemoData): Answer {
     )
   ];
 
-  const byProject = new Map<string, string>();
+  const byProject = new Map<string, { reason: string; issue: string }>();
   for (const row of blocked) {
-    if (!byProject.has(row.projectId)) byProject.set(row.projectId, row.reason ?? "held");
+    if (!byProject.has(row.projectId)) {
+      byProject.set(row.projectId, { reason: row.reason ?? "held", issue: billingIssueOf(row.requiredDocument) });
+    }
   }
 
   return {
     questionId: "billing",
     question: questionLabel("billing"),
-    conclusion: `${summary.blocked.count} payment stages worth ${formatRupiahMillions(summary.blocked.amount)} are blocked from billing; ${summary.billable.count} worth ${formatRupiahMillions(summary.billable.amount)} can be billed now; ${summary["awaiting-bast"].count} Retensi worth ${formatRupiahMillions(summary["awaiting-bast"].amount)} are due, awaiting BAST II.`,
+    conclusion: `${summary.blocked.count} payment stages worth ${formatRupiahMillions(summary.blocked.amount)} are blocked from billing; ${summary.billable.count === 0 ? "nothing can be billed now" : `${summary.billable.count} worth ${formatRupiahMillions(summary.billable.amount)} can be billed now`}; ${summary["awaiting-bast"].count} Retensi worth ${formatRupiahMillions(summary["awaiting-bast"].amount)} are due, awaiting BAST II.`,
     figures: [
       { label: "Blocked", value: formatRupiahMillions(summary.blocked.amount) },
       { label: "Billable now", value: formatRupiahMillions(summary.billable.amount) },
@@ -173,12 +185,13 @@ function billing(data: EpiDemoData): Answer {
       { kind: "rule", label: "KR-08 billing needs the signed BA" },
       { kind: "document", label: "BA Kick Off Meeting (payment documents)" }
     ],
-    actions: [...byProject.entries()].map(([projectId, reason]) =>
+    actions: [...byProject.entries()].map(([projectId, { reason, issue }]) =>
       draft(data, {
         title: `Unblock Tagihan ${projectId}: ${reason}`,
         projectId,
         ownerRole: "SM Operasi dan Teknik",
-        source: `Nexa Intelligence: billing ${projectId}`
+        source: `Nexa Intelligence: billing ${projectId}`,
+        issue
       })
     ),
     refreshedAt: data.asAt
@@ -202,7 +215,8 @@ function next(data: EpiDemoData): Answer {
         title: `Confirm FAT and delivery dates for ${critical.label} with the vendor (${HERO_PROJECT_ID})`,
         projectId: HERO_PROJECT_ID,
         ownerRole: "Project Manager",
-        source: `Nexa Intelligence: ${HERO_PROJECT_ID} behind plan`
+        source: `Nexa Intelligence: ${HERO_PROJECT_ID} behind plan`,
+        issue: "critical-item"
       })
     );
   }
@@ -288,7 +302,7 @@ function bast(data: EpiDemoData): Answer {
       { label: "Checks failed", value: `${failed.length} of ${gate.checks.length}` },
       { label: "Progress", value: gate.progress === null ? "-" : formatPercent(gate.progress) }
     ],
-    points: gate.checks.map((check) => `${check.rule}: ${check.label}: ${check.ok ? "met" : "missing"}.`),
+    points: gate.checks.map((check) => `${check.label}: ${check.ok ? "met" : "missing"}.`),
     sources: [
       { kind: "rule", label: "KR-06 handover needs a physical inspection BA" },
       { kind: "rule", label: "KR-07 BAST I needs Rikmatek and Comtest" },
@@ -346,7 +360,8 @@ function inspections(data: EpiDemoData): Answer {
         title: `Schedule the missing ${row.scopeItem} (${row.contractId})`,
         projectId: row.contractId,
         ownerRole: "Jr Manager Pengendalian Investasi dan Pemeliharaan",
-        source: `Nexa Intelligence: inspection ${row.scopeId}`
+        source: `Nexa Intelligence: inspection ${row.scopeId}`,
+        issue: "inspection-missed"
       })
     ),
     refreshedAt: data.asAt
@@ -396,7 +411,8 @@ function rap(data: EpiDemoData): Answer {
           title: `Review the cost overrun on ${project.projectId}`,
           projectId: project.projectId,
           ownerRole: "Manager Pengendalian Teknik",
-          source: `Nexa Intelligence: over RAP ${project.projectId}`
+          source: `Nexa Intelligence: over RAP ${project.projectId}`,
+          issue: "cost-over-rap"
         })
       ),
     refreshedAt: data.asAt

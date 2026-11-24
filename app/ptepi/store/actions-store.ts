@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
-import { stripScreenCode } from "./action-helpers";
+import { issueForActionId, stripScreenCode } from "./action-helpers";
 import type { ActionAutonomy } from "../types";
 
 export type ActionStatus = "open" | "in-progress" | "done";
@@ -17,6 +17,8 @@ export type EpiAction = {
   /** Where the action came from, e.g. "S4 Evidence gate: PNP126 stage 2" */
   source: string;
   autonomy: ActionAutonomy;
+  /** What the action resolves, e.g. "evidence-stage-2"; with projectId it dedupes across screens */
+  issue?: string;
 };
 
 export type NewEpiAction = Omit<EpiAction, "id" | "status"> & {
@@ -75,9 +77,7 @@ export const useActionsStore = create<ActionsState>()(
       ...INITIAL_STATE,
 
       addAction: (input) => {
-        const existing = get().actions.find(
-          (action) => action.source === input.source && action.status !== "done"
-        );
+        const existing = findOpenMatch(get().actions, input);
         if (existing) return existing;
 
         const { nextNumber } = get();
@@ -123,14 +123,16 @@ export const useActionsStore = create<ActionsState>()(
     {
       name: ACTIONS_STORAGE_KEY,
       // v2: sources name the screen instead of an internal code ("S4 Evidence gate" -> "Evidence gate").
-      version: 2,
+      // v3: seeded actions carry the issue they track, so S4 and S7 actions dedupe to them.
+      version: 3,
       migrate: (persisted) => {
         const state = persisted as { actions?: EpiAction[] } | null;
         return {
           ...state,
           actions: (state?.actions ?? []).map((action) => ({
             ...action,
-            source: stripScreenCode(action.source)
+            source: stripScreenCode(action.source),
+            issue: action.issue ?? issueForActionId(action.id)
           }))
         } as never;
       },
@@ -149,3 +151,25 @@ export const useActionsStore = create<ActionsState>()(
 /** True when an unfinished action with this source exists. */
 export const selectHasOpenAction = (source: string) => (state: ActionsState) =>
   state.actions.some((action) => action.source === source && action.status !== "done");
+
+/**
+ * The open action that already tracks this one: same source, or same project and
+ * issue (an Evidence gate or Nexa action for an issue a seeded exception tracks).
+ */
+export function findOpenMatch(
+  actions: EpiAction[],
+  input: Pick<EpiAction, "source" | "projectId" | "issue">
+): EpiAction | undefined {
+  return actions.find(
+    (action) =>
+      action.status !== "done" &&
+      (action.source === input.source ||
+        (input.issue !== undefined &&
+          action.issue === input.issue &&
+          action.projectId === input.projectId))
+  );
+}
+
+export const selectOpenMatch =
+  (input: Pick<EpiAction, "source" | "projectId" | "issue">) => (state: ActionsState) =>
+    findOpenMatch(state.actions, input);

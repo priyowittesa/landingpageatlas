@@ -257,10 +257,10 @@ export const METRICS = [
     screens: ["S3", "S5"]
   },
   {
-    id: "marginExAdvances",
-    label: "Margin excluding advances",
-    unit: "%",
-    formula: "(Recognised revenue - (cost - vendor advances)) / recognised revenue. Vendor advances = PO uang muka with an advance number and no SES yet.",
+    id: "advancesNoSes",
+    label: "Advances paid, SES not yet issued",
+    unit: "Rp",
+    formula: "PO uang muka paid with no SES yet; share = advances / realised cost. Not a margin: material cost is only recognised on SES.",
     threshold: null,
     owner: "selectors.getCostMargin",
     screens: ["S5"]

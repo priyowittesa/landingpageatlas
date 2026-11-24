@@ -23,3 +23,20 @@ export function formatPercentFromFraction(fraction: number, maxDigits = 1): stri
 export function formatPercentAxis(points: number): string {
   return `${new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(points)}%`;
 }
+
+/**
+ * Round axis ticks from zero: the step is 1, 2, 2,5 or 5 x 10^n so there are about
+ * four intervals, and the last tick is the max rounded up. 93 -> [0, 25, 50, 75, 100].
+ */
+export function niceTicks(max: number, intervals = 4): number[] {
+  if (max <= 0) return [0, 1];
+  const raw = max / intervals;
+  const magnitude = 10 ** Math.floor(Math.log10(raw));
+  const step =
+    [1, 2, 2.5, 5, 10].map((factor) => factor * magnitude).find((candidate) => candidate >= raw) ??
+    10 * magnitude;
+  const top = Math.ceil(max / step) * step;
+  const ticks: number[] = [];
+  for (let value = 0; value <= top + step / 2; value += step) ticks.push(Math.round(value * 1000) / 1000);
+  return ticks;
+}

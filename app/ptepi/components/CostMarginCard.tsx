@@ -51,15 +51,18 @@ export function CostMarginCard({ money, detailed = false }: CostMarginCardProps)
         )}
       </div>
       {detailed && money.vendorAdvances > 0 && (
-        <div>
+        <div className="col-span-2 rounded-lg bg-amber-50/60 p-3">
           <dt className="text-muted-foreground">
-            <MetricLabel metricId="marginExAdvances" />
+            <MetricLabel metricId="advancesNoSes" />
           </dt>
           <dd className="text-lg font-bold">
-            <PercentText fraction={money.marginExAdvances} digits={2} />
+            <RupiahText value={money.vendorAdvances} millions />{" "}
+            <span className="text-sm font-medium text-muted-foreground">
+              (<PercentText fraction={money.advancesShareOfCost} digits={1} /> of realised cost)
+            </span>
           </dd>
           <dd className="text-xs text-muted-foreground">
-            Without <RupiahText value={money.vendorAdvances} millions /> of advances
+            Not a margin: revenue is progress-based while material cost is only recognised on SES.
           </dd>
         </div>
       )}

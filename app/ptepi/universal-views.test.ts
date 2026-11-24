@@ -63,17 +63,17 @@ describe("no-progress wording", () => {
   });
 });
 
-describe("S5 margin excluding vendor advances", () => {
-  it("keeps the PNP126 margin at 22,26% and adds the margin without uang muka", async () => {
+describe("S5 vendor advances", () => {
+  it("keeps the PNP126 margin at 22,26% and shows advances paid without an SES", async () => {
     const { getCostMargin, getVendorAdvances } = await import("./selectors");
     const { getMetric } = await import("./metrics");
     const money = getCostMargin(epiData, "PNP126");
     expect(money.cost).toBe(239_270_000);
     expect(Math.round((money.margin ?? 0) * 10000) / 100).toBe(22.26);
     expect(getVendorAdvances(epiData, "PNP126")).toBe(204_600_000);
-    const expected = (money.recognisedRevenue - (money.cost - 204_600_000)) / money.recognisedRevenue;
-    expect(money.marginExAdvances).toBeCloseTo(expected, 10);
-    expect(money.marginExAdvances ?? 0).toBeGreaterThan(money.margin ?? 0);
-    expect(getMetric("marginExAdvances").formula).toContain("cost - vendor advances");
+    expect(money.vendorAdvances).toBe(204_600_000);
+    expect(Math.round((money.advancesShareOfCost ?? 0) * 1000) / 10).toBe(85.5);
+    expect(getMetric("advancesNoSes").label).toBe("Advances paid, SES not yet issued");
+    expect(getMetric("advancesNoSes").formula).toContain("Not a margin");
   });
 });

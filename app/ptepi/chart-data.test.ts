@@ -239,3 +239,12 @@ describe("S1 hero headline", () => {
     expect(getPortfolioHeadline(changed).atRisk).toBeLessThan(3);
   });
 });
+
+describe("round value-axis ticks", () => {
+  it("rounds the max up to a round step", async () => {
+    const { niceTicks } = await import("./components/charts/formatters");
+    expect(niceTicks(93)).toEqual([0, 25, 50, 75, 100]);
+    expect(niceTicks(13)).toEqual([0, 5, 10, 15]);
+    expect(niceTicks(0)).toEqual([0, 1]);
+  });
+});

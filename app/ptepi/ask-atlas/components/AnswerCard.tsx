@@ -3,7 +3,9 @@
 import { Check, FileText, Plus, Scale, Table2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { selectHasOpenAction, useActionsStore, type NewEpiAction } from "../../store/actions-store";
+import { formatDate } from "../../format";
+import Link from "next/link";
+import { selectOpenMatch, useActionsStore, type NewEpiAction } from "../../store/actions-store";
 import type { Answer, AnswerSource } from "../types";
 
 const SOURCE_ICON: Record<AnswerSource["kind"], typeof Table2> = {
@@ -49,7 +51,7 @@ export function AnswerCard({ answer }: AnswerCardProps) {
 
       <div className="space-y-2">
         <p className="text-xs font-medium text-muted-foreground">
-          Sources, data as at {answer.refreshedAt}
+          Sources, data as at {formatDate(answer.refreshedAt)}
         </p>
         <ul className="flex flex-wrap gap-2">
           {answer.sources.map((source) => {
@@ -85,14 +87,15 @@ export function AnswerCard({ answer }: AnswerCardProps) {
 
 function ActionRow({ action }: { action: NewEpiAction }) {
   const addAction = useActionsStore((state) => state.addAction);
-  const created = useActionsStore(selectHasOpenAction(action.source));
+  const match = useActionsStore(selectOpenMatch(action));
+  const created = match !== undefined;
 
   return (
     <li className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3">
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium">{action.title}</p>
         <p className="text-xs text-muted-foreground">
-          Owner {action.ownerRole}, due {action.dueDate}, autonomy {action.autonomy}
+          Owner {action.ownerRole}, due {formatDate(action.dueDate)}, autonomy {action.autonomy}
         </p>
       </div>
       <Button
@@ -103,8 +106,13 @@ function ActionRow({ action }: { action: NewEpiAction }) {
         onClick={() => addAction(action)}
       >
         {created ? <Check size={16} aria-hidden /> : <Plus size={16} aria-hidden />}
-        {created ? "Action created" : "Create action"}
+        {created ? "Tracked" : "Create action"}
       </Button>
+      {match && (
+        <Link href="/ptepi/actions" className="w-full text-xs font-medium text-primary-700 hover:underline">
+          Already tracked: {match.id}. Open the action tracker
+        </Link>
+      )}
     </li>
   );
 }

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { ATTACHMENT_NOTES, STAGE_STATUS_LABELS } from "../labels";
-import { selectHasOpenAction, useActionsStore } from "../store/actions-store";
+import { selectOpenMatch, useActionsStore } from "../store/actions-store";
 import type { EvidenceStage, EvidenceStatus, SuggestedAction } from "../types";
 import { PercentText } from "./PercentText";
 import { RupiahText } from "./RupiahText";
@@ -127,7 +127,14 @@ type StageDialogBodyProps = {
 
 function StageDialogBody({ stage, suggestion }: StageDialogBodyProps) {
   const addAction = useActionsStore((state) => state.addAction);
-  const created = useActionsStore(selectHasOpenAction(suggestion?.source ?? ""));
+  const match = useActionsStore(
+    selectOpenMatch({
+      source: suggestion?.source ?? "",
+      projectId: suggestion?.projectId ?? "",
+      issue: suggestion?.issue
+    })
+  );
+  const created = match !== undefined;
   const [createdId, setCreatedId] = useState<string | null>(null);
   const blocked = stage.gate.result === "blocked";
 
@@ -174,7 +181,7 @@ function StageDialogBody({ stage, suggestion }: StageDialogBodyProps) {
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {unit.baId
-                    ? `${unit.baId}, ${unit.documentNo ?? "no number"}, signed ${unit.status === "earned" ? formatDate(unit.documentDate) : "-"}, signer ${unit.signerRole ?? "-"}`
+                    ? `${unit.baId}, ${unit.documentNo ?? "no number"}, ${unit.status === "earned" ? `signed ${formatDate(unit.documentDate)}` : "not signed"}, signer ${unit.signerRole ?? "-"}`
                     : "No BA in the register"}
                 </p>
                 {unit.issue && <p className="text-xs text-destructive">{unit.issue}</p>}
@@ -202,7 +209,7 @@ function StageDialogBody({ stage, suggestion }: StageDialogBodyProps) {
             <p className="font-semibold">Recommended action</p>
             <p>{suggestion.title}</p>
             <p className="text-xs text-muted-foreground">
-              Owner: {suggestion.ownerRole}. Due {suggestion.dueDate}. Autonomy {suggestion.autonomy},
+              Owner: {suggestion.ownerRole}. Due {formatDate(suggestion.dueDate)}. Autonomy {suggestion.autonomy},
               recommend only: a person approves and closes.
             </p>
           </div>
@@ -216,7 +223,7 @@ function StageDialogBody({ stage, suggestion }: StageDialogBodyProps) {
               href="/ptepi/actions"
               className="text-sm font-medium text-primary-700 hover:underline"
             >
-              {createdId ? `${createdId} added` : "Action already open"}: view in the action tracker
+              {createdId === match?.id ? `${createdId} added` : `Already tracked: ${match?.id}`}: view in the action tracker
             </Link>
           ) : (
             <span className="text-xs text-muted-foreground">
@@ -229,7 +236,7 @@ function StageDialogBody({ stage, suggestion }: StageDialogBodyProps) {
             className="bg-primary-700 text-white hover:bg-primary-800"
             onClick={() => setCreatedId(addAction(suggestion).id)}
           >
-            {created ? "Action created" : "Create action"}
+            {created ? "Already tracked" : "Create action"}
           </Button>
         </DialogFooter>
       )}

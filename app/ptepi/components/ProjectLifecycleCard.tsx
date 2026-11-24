@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { ArrowRight, Check, Flag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ProjectLifecycle } from "../types";
@@ -6,14 +7,17 @@ import { SectionCard } from "./SectionCard";
 type ProjectLifecycleCardProps = {
   lifecycle: ProjectLifecycle;
   className?: string;
+  /** A link in the header, e.g. "Open billing" */
+  action?: ReactNode;
 };
 
 /** Where the project sits between offer and close, and what moves it forward. Every project has one. */
-export function ProjectLifecycleCard({ lifecycle, className }: ProjectLifecycleCardProps) {
+export function ProjectLifecycleCard({ lifecycle, className, action }: ProjectLifecycleCardProps) {
   return (
     <SectionCard
       title="Project lifecycle"
       subtitle={`Now: ${lifecycle.currentLabel}`}
+      badge={action}
       className={className}
     >
       <ol className="grid grid-cols-4 gap-y-5 sm:grid-cols-8" aria-label="Lifecycle steps">

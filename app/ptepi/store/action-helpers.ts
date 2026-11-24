@@ -53,6 +53,28 @@ export const STATUS_LABELS: Record<ActionStatus, string> = {
 
 const STATUS_RANK: Record<ActionStatus, number> = { open: 0, "in-progress": 1, done: 2 };
 
+/** The issue each seeded exception tracks; S4 and S7 actions with the same key dedupe to it. */
+const EXCEPTION_ISSUE: Record<number, string> = {
+  1: "schedule-deviation",
+  2: "critical-item",
+  3: "evidence-stage-2",
+  4: "billing-progress-condition",
+  5: "cost-over-rap",
+  6: "billing-bast-i",
+  7: "billing-overdue",
+  8: "retention-aged",
+  9: "inspection-missed",
+  10: "billing-monthly-report",
+  11: "bamk-draft",
+  12: "register-gaps"
+};
+
+/** Issue of a seeded action from its id ("EXC-03" -> "evidence-stage-2"); undefined otherwise. */
+export function issueForActionId(id: string): string | undefined {
+  const match = /^EXC-(\d+)$/.exec(id);
+  return match ? EXCEPTION_ISSUE[Number(match[1])] : undefined;
+}
+
 /** The detected seeded exceptions as actions; ids EXC-01 to EXC-12. */
 export function buildSeedActions(data: EpiDemoData): EpiAction[] {
   return data.seededExceptions
@@ -73,7 +95,8 @@ export function buildSeedActions(data: EpiDemoData): EpiAction[] {
         dueDate: addDays(data.asAt, DUE_DAYS[severity]),
         status: "open" as const,
         source: `${screen.name}: exception #${item.exceptionNo}`,
-        autonomy: owner.autonomy
+        autonomy: owner.autonomy,
+        issue: EXCEPTION_ISSUE[item.exceptionNo]
       };
     });
 }

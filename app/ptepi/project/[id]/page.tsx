@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowRight } from "lucide-react";
 import { ProjectFilter } from "../../components/ProjectFilter";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import { CostMarginCard } from "../../components/CostMarginCard";
@@ -76,7 +78,18 @@ export default async function ProjectCockpitPage({ params }: ProjectPageProps) {
 
       {critical && <CriticalItemCallout projectId={id} item={critical} />}
 
-      <ProjectLifecycleCard lifecycle={lifecycle} />
+      <ProjectLifecycleCard
+        lifecycle={lifecycle}
+        action={
+          <Link
+            href={`/ptepi/commercial?project=${id}`}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-700 hover:underline"
+          >
+            Open billing
+            <ArrowRight size={16} aria-hidden />
+          </Link>
+        }
+      />
 
       {sCurve.points.length > 0 && (
         <div className={week ? "grid grid-cols-1 gap-5 xl:grid-cols-3" : undefined}>
@@ -114,6 +127,13 @@ export default async function ProjectCockpitPage({ params }: ProjectPageProps) {
           badge={<SyntheticDataBadge />}
         >
           <CostMarginCard money={money} />
+          <Link
+            href={`/ptepi/cost?project=${id}`}
+            className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-700 hover:underline"
+          >
+            Open cost detail
+            <ArrowRight size={16} aria-hidden />
+          </Link>
         </SectionCard>
         {exceptions.length > 0 ? (
           <SectionCard

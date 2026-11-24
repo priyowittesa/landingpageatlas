@@ -158,10 +158,10 @@ const EXACT: Record<string, string> = {
   "BAST I belum ditandatangani pemberi pekerjaan": "BAST I not yet signed by the customer",
   "Nomor berakhiran PTP-24 tampak disalin dari dokumen lain; perlu konfirmasi": "Number ending PTP-24 looks copied from another document; needs confirmation",
   "Nomor tidak lengkap; laporan mingguan mencatat mulai 7 Jul 2026": "Incomplete number; the weekly report records a start from 7 Jul 2026",
-  "Salinan PO belum ditandatangani pemberi kerja; bobot 1,560% sudah diakui di laporan": "PO copy not yet signed by the customer; weight of 1.560% is already counted in the report",
+  "Salinan PO belum ditandatangani pemberi kerja; bobot 1,560% sudah diakui di laporan": "PO copy not yet signed by the customer; weight of 1,560% is already counted in the report",
   "Belum disetujui: inspeksi mingguan jaringan kabel TM/TR (KHA) tidak dilaksanakan": "Not approved: the weekly MV/LV cable network (KHA) inspection was not carried out",
   "BAMK direncanakan 16 Nov 2026": "BAMK planned for 16 Nov 2026",
-  "Progres fisik 28,50% belum mencapai syarat 50%": "Physical progress of 28.50% has not reached the 50% condition",
+  "Progres fisik 28,50% belum mencapai syarat 50%": "Physical progress of 28,50% has not reached the 50% condition",
   "Laporan bulanan belum disetujui (lingkup inspeksi KHA tidak dilaksanakan)": "Monthly report not approved (the KHA inspection scope was not carried out)",
 
   // Signatory roles

@@ -6,7 +6,7 @@ import { SectionCard } from "../components/SectionCard";
 import { ServiceTables } from "../components/ServiceTables";
 import { SyntheticDataBadge } from "../components/SyntheticDataBadge";
 import { epiData } from "../data";
-import { formatPercent } from "../format";
+import { formatDate, formatPercent } from "../format";
 import {
   getCoverageChart,
   getNextInspections,
@@ -52,7 +52,7 @@ export default function ServiceContractsPage() {
         <KpiCard
           title="Next inspections"
           subtitle="Scheduled after the as-at date"
-          value={`${summary.upcomingCount} from ${summary.nextDate ?? "-"}`}
+          value={`${summary.upcomingCount} from ${formatDate(summary.nextDate)}`}
           icon={CalendarClock}
         />
       </div>
@@ -70,7 +70,7 @@ export default function ServiceContractsPage() {
             {next.map((row) => (
               <li key={row.inspectionId} className="p-3">
                 <p className="text-sm font-medium">
-                  {row.inspectionDate}: {row.contractId}
+                  {formatDate(row.inspectionDate)}: {row.contractId}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {row.scopeNo}. {row.scopeItem}

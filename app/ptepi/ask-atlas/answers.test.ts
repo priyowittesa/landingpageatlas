@@ -53,7 +53,7 @@ describe("scripted answers", () => {
   it("lists what is blocked from billing", () => {
     const answer = answers.billing;
     expect(answer.conclusion).toBe(
-      "4 payment stages worth Rp 752,5 m are blocked from billing; 0 worth Rp 0,0 m can be billed now; 2 Retensi worth Rp 37,9 m are due, awaiting BAST II."
+      "4 payment stages worth Rp 752,5 m are blocked from billing; nothing can be billed now; 2 Retensi worth Rp 37,9 m are due, awaiting BAST II."
     );
     expect(answer.points.some((p) => p.includes("PTP1125") && p.includes("BAST I still draft, not signed"))).toBe(true);
     expect(answer.points.some((p) => p.includes("PNP126") && p.includes("Progress 28,498% below the 50% condition"))).toBe(true);
@@ -83,8 +83,10 @@ describe("scripted answers", () => {
   it("blocks the BAST draft on KR-06", () => {
     const answer = answers.bast;
     expect(answer.conclusion).toBe("The BAST for PNP126 cannot be drafted yet: 4 of 4 checks fail.");
-    expect(answer.points).toContain("KR-06: BA Pemeriksaan Fisik signed: missing.");
+    expect(answer.points).toContain("BA Pemeriksaan Fisik signed: missing.");
     expect(answer.sources.some((s) => s.kind === "rule" && s.label.startsWith("KR-06"))).toBe(true);
+    expect(answer.points).toContain("Progress is 28,498%, 100% needed: missing.");
+    expect(answer.points.join(" ")).not.toMatch(/C3-D1|KR-0\d/);
     expect(answer.actions[0]?.dueDate).toBe("2026-11-22");
   });
 

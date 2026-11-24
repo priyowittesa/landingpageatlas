@@ -45,6 +45,8 @@ type StackedBarChartProps<T extends object> = {
   tickInterval?: number;
   /** Turn the legend off when the colours carry no separate meaning */
   showLegend?: boolean;
+  /** Fixed value-axis ticks, e.g. from niceTicks(); the axis ends at the last one */
+  valueTicks?: number[];
 };
 
 /** One stacked bar chart for every screen. The value axis always starts at zero. */
@@ -63,8 +65,12 @@ export function StackedBarChart<T extends object>({
   height,
   allowDecimals = true,
   showLegend = true,
-  tickInterval = 0
+  tickInterval = 0,
+  valueTicks
 }: StackedBarChartProps<T>) {
+  const valueDomain: [number, number | "dataMax"] = valueTicks
+    ? [0, valueTicks[valueTicks.length - 1] ?? 0]
+    : [0, "dataMax"];
   const animation = useChartAnimation();
   const bars = orientation === "bars";
   const chartHeight = height ?? (bars ? data.length * rowHeight + 40 : 280);
@@ -84,9 +90,10 @@ export function StackedBarChart<T extends object>({
               <>
                 <XAxis
                   type="number"
-                  domain={[0, "dataMax"]}
+                  domain={valueDomain}
+                  ticks={valueTicks}
                   allowDecimals={allowDecimals}
-                  tickCount={4}
+                  tickCount={valueTicks ? undefined : 4}
                   tickLine={false}
                   axisLine={false}
                   tick={AXIS_TICK}
@@ -114,7 +121,8 @@ export function StackedBarChart<T extends object>({
                 />
                 <YAxis
                   type="number"
-                  domain={[0, "dataMax"]}
+                  domain={valueDomain}
+                  ticks={valueTicks}
                   allowDecimals={allowDecimals}
                   width={88}
                   tickLine={false}

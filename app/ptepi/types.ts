@@ -465,8 +465,8 @@ export type CostMargin = {
   margin: number | null;
   /** Vendor advances (uang muka) paid without an SES: in cost, not yet delivered */
   vendorAdvances: number;
-  /** (revenue - (cost - vendor advances)) / revenue */
-  marginExAdvances: number | null;
+  /** Vendor advances / realised cost */
+  advancesShareOfCost: number | null;
 };
 
 export type CriticalItem = {
@@ -548,6 +548,7 @@ export type SuggestedAction = {
   dueDate: string;
   source: string;
   autonomy: ActionAutonomy;
+  issue?: string;
 };
 
 export type RegisterRow = {

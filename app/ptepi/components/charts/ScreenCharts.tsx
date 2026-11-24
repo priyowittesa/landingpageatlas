@@ -30,7 +30,7 @@ import { BulletChart } from "./BulletChart";
 import { CHART_COLORS } from "./chartTheme";
 import { ChartCard } from "./ChartCard";
 import { DumbbellChart } from "./DumbbellChart";
-import { formatRupiahCompact } from "./formatters";
+import { formatRupiahCompact, niceTicks } from "./formatters";
 import { SCurveChart } from "./SCurveChart";
 import { StackedBarChart } from "./StackedBarChart";
 import { WaterfallChart } from "./WaterfallChart";
@@ -275,6 +275,7 @@ export function CoverageCard({ chart, badge, className }: CardProps<CoverageChar
         orientation="bars"
         labelWidth={90}
         allowDecimals={false}
+        valueTicks={niceTicks(Math.max(0, ...chart.points.map((p) => p.done + p.upcoming + p.overdue)))}
         series={[
           { key: "done", name: "Done", color: CHART_COLORS.actual },
           { key: "upcoming", name: "Due (scheduled)", color: CHART_COLORS.primaryLight },

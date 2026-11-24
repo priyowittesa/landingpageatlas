@@ -500,7 +500,8 @@ describe("S4 evidence gate", () => {
       ownerRole: "Project Manager",
       dueDate: "2026-11-15",
       source: "Evidence gate: PNP126 stage 2",
-      autonomy: "L1"
+      autonomy: "L1",
+      issue: "evidence-stage-2"
     });
     const later = getSuggestedAction(epiData, "PNP126", stages[2]!);
     expect(later.title).toBe("Prepare BA Material On Site for Material On Site (MOS) (PNP126)");
@@ -839,7 +840,7 @@ describe("S7 facts for the scripted answers", () => {
     expect(gate.allowed).toBe(false);
     expect(gate.checks.filter((c) => c.ok).map((c) => c.label)).toEqual([
       "BA Comtest signed (BA Testing and Commissioning)",
-      "Progress at 100%"
+      "Progress is 100%"
     ]);
   });
 
