@@ -90,29 +90,28 @@ export default async function EvidenceGatePage({ params }: EvidencePageProps) {
         <>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
             <KpiCard
-                  title="Stages that can earn"
-              subtitle="Signed BA on file"
+              title="Earned"
+              subtitle="Stages with every BA signed"
               value={`${summary.canEarn} of ${stages.length}`}
               icon={CircleCheck}
             />
             <KpiCard
-                  title="Blocked stages"
-          tone="bad"
-              subtitle="Missing or unsigned BA"
-              value={summary.blocked}
+              title="Blocked"
+              tone="bad"
+              subtitle={`Progress claimed without a signed BA (${summary.claimedWithoutBa} component)`}
+              value={`${summary.blocked} of ${stages.length}`}
               icon={TriangleAlert}
             />
             <KpiCard
-                  title="Claimed without signed BA"
-          tone="bad"
-              subtitle="Components in the weekly report"
-              value={summary.claimedWithoutBa}
+              title="Not started"
+              subtitle="Nothing claimed yet"
+              value={`${summary.notStarted} of ${stages.length}`}
               icon={FileWarning}
             />
             <KpiCard
-                  title="Value at risk"
-          tone="bad"
-              subtitle="Claimed progress without a BA"
+              title="Value at risk"
+              tone="bad"
+              subtitle="Blocked progress value"
               value={formatRupiahMillions(summary.blockedValue)}
               icon={CircleDollarSign}
             />

@@ -126,8 +126,8 @@ export function EarningStagesCard({ chart, badge, className }: CardProps<Earning
         orientation="bars"
         labelWidth={190}
         series={[
-          { key: "earned", name: "Earned (signed BA)", color: CHART_COLORS.actual },
-          { key: "blocked", name: "Claimed, BA unsigned", color: CHART_COLORS.bad },
+          { key: "earned", name: "Earned", color: CHART_COLORS.actual },
+          { key: "blocked", name: "Blocked", color: CHART_COLORS.bad },
           { key: "open", name: "Not started", color: CHART_COLORS.neutral }
         ]}
         formatValue={formatRupiahMillions}

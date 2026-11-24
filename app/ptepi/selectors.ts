@@ -6,6 +6,8 @@ import {
   formatPercent,
   formatPoints,
   formatPointsUnsigned,
+  formatPace,
+  formatWeekRange,
   formatRupiahMillions
 } from "./format";
 import {
@@ -21,6 +23,7 @@ import {
   STATUS_GROUP_LABELS
 } from "./labels";
 import type {
+  RevenueTrio,
   LifecycleStage,
   PaymentSchedule,
   PaymentScheduleTone,
@@ -61,6 +64,7 @@ import type {
   EpiDemoData,
   EvidenceStage,
   EvidenceStatus,
+  EarningStageStatus,
   EvidenceSummary,
   HealthRating,
   HealthSignal,
@@ -181,14 +185,15 @@ export function getBilled(data: EpiDemoData, projectId: string): number {
   );
 }
 
+/** Retensi held = Retensi 5% that is due but waits on a signed BAST II (same rule as S2). */
 export function getRetentionHeld(
   data: EpiDemoData,
   projectId: string
 ): number {
   return sum(
-    data.paymentStages
-      .filter((stage) => stage.projectId === projectId)
-      .map((stage) => stage.retentionHeld)
+    getBillingRows(data)
+      .filter((row) => row.projectId === projectId && row.readiness === "awaiting-bast")
+      .map((row) => row.amount)
   );
 }
 
@@ -657,16 +662,31 @@ function docStatusOf(
 
 const BILLING_RANK: Record<BillingReadiness, number> = {
   billable: 0,
-  blocked: 1,
-  invoiced: 2,
-  "not-due": 3
+  "awaiting-bast": 1,
+  blocked: 2,
+  invoiced: 3,
+  "not-due": 4
 };
 
-function readinessOf(stage: PaymentStage): BillingReadiness | null {
+/**
+ * Billable now = the billing condition is met AND the BA that proves it is signed.
+ * A due Retensi 5% without a signed BAST II is "Due, awaiting BAST II", not billable.
+ */
+function readinessOf(
+  stage: PaymentStage,
+  required: RequiredDocument,
+  docStatus: DocStatus,
+  actualProgress: number | null
+): BillingReadiness | null {
   if (stage.paidDate !== null) return null;
   if (stage.invoiceDate !== null) return "invoiced";
-  if (stage.status === "SIAP DITAGIH") return "billable";
-  if (stage.status === "TERTAHAN") return "blocked";
+  const conditionMet =
+    stage.status === "SIAP DITAGIH" &&
+    (required.kind !== "progress" || (actualProgress ?? 0) >= required.threshold);
+  const baSigned = required.kind !== "document" || docStatus === "signed";
+  if (conditionMet && baSigned) return "billable";
+  if (conditionMet && stage.stageType === "Retensi 5%") return "awaiting-bast";
+  if (conditionMet || stage.status === "TERTAHAN") return "blocked";
   return "not-due";
 }
 
@@ -690,15 +710,16 @@ export function getBillingRows(data: EpiDemoData): BillingRow[] {
   const projects = new Map(data.projects.map((p) => [p.projectId, p]));
   const rows: BillingRow[] = [];
   for (const stage of data.paymentStages) {
-    const readiness = readinessOf(stage);
     const project = projects.get(stage.projectId);
-    if (readiness === null || !project) continue;
+    if (!project) continue;
     const required = requiredDocumentFor(stage.billingCondition);
     const docStatus: DocStatus =
       required.kind === "document"
         ? docStatusOf(data, stage.projectId, required.documentType, required.relatedStage)
         : "none";
     const actual = getProjectProgress(data, stage.projectId).actual;
+    const readiness = readinessOf(stage, required, docStatus, actual);
+    if (readiness === null) continue;
     rows.push({
       paymentId: stage.paymentId,
       projectId: stage.projectId,
@@ -712,7 +733,7 @@ export function getBillingRows(data: EpiDemoData): BillingRow[] {
         required.kind === "document" ? expectedSignerFor(required.documentType) : null,
       docStatus,
       reason:
-        readiness === "blocked" || readiness === "billable"
+        readiness === "blocked" || readiness === "awaiting-bast"
           ? reasonFor(required, docStatus, actual)
           : null,
       dataOrigin: "synthetic"
@@ -727,6 +748,7 @@ export function getBillingRows(data: EpiDemoData): BillingRow[] {
 export function getBillingSummary(rows: BillingRow[]): BillingSummary {
   const summary: BillingSummary = {
     billable: { count: 0, amount: 0 },
+    "awaiting-bast": { count: 0, amount: 0 },
     blocked: { count: 0, amount: 0 },
     invoiced: { count: 0, amount: 0 },
     "not-due": { count: 0, amount: 0 }
@@ -819,14 +841,8 @@ export function getEarningStages(
     }
 
     const stageValue = project.finalContractValue * rule.weight;
-    const status =
-      blockedValue > 0
-        ? "blocked"
-        : earnedValue > 0 && Math.round(earnedValue) >= Math.round(stageValue)
-          ? "earned"
-          : earnedValue > 0
-            ? "in-progress"
-            : "pending";
+    const status: EarningStageStatus =
+      blockedValue > 0 ? "blocked" : earnedValue > 0 ? "earned" : "not-started";
     const dataOrigin: DataOrigin = realEvidence ? "real" : "synthetic";
 
     return {
@@ -945,6 +961,28 @@ export function getWeightBreakdown(data: EpiDemoData, projectId: string): Weight
  * weekly gain achieved and the recent run-rate. Null when the project has no
  * measured progress, is complete, or has no weeks left.
  */
+export type NoProgressPeriod = { fromWeek: number; toWeek: number; weeks: number; label: string };
+
+/**
+ * The latest run of measured weeks whose cumulative actual did not move, read from
+ * progressWeekly. PNP126: weeks 14 to 18 (5 weeks) at 28,498%. Null below 2 weeks.
+ */
+export function getNoProgressPeriod(data: EpiDemoData, projectId: string): NoProgressPeriod | null {
+  const measured = totalRowsOf(data, projectId).filter(
+    (row) => row.weekEnd <= data.asAt && row.actualCumulative !== null
+  );
+  const last = measured[measured.length - 1];
+  if (!last) return null;
+  let fromWeek = last.weekNo;
+  for (const row of [...measured].reverse()) {
+    if (row.actualCumulative !== last.actualCumulative) break;
+    fromWeek = row.weekNo;
+  }
+  const weeks = last.weekNo - fromWeek + 1;
+  if (weeks < 2) return null;
+  return { fromWeek, toWeek: last.weekNo, weeks, label: formatWeekRange(fromWeek, last.weekNo) };
+}
+
 export function getRecoveryRate(data: EpiDemoData, projectId: string): RecoveryRate | null {
   const rows = totalRowsOf(data, projectId);
   const measured = rows.filter(
@@ -965,11 +1003,7 @@ export function getRecoveryRate(data: EpiDemoData, projectId: string): RecoveryR
   const remainingPts = 100 - actualPts;
   const requiredPerWeek = remainingPts / weeksRemaining;
 
-  const flatRun: typeof measured = [];
-  for (const row of [...measured].reverse()) {
-    if (row.actualCumulative !== last.actualCumulative) break;
-    flatRun.push(row);
-  }
+  const flat = getNoProgressPeriod(data, projectId);
   const recent = gains.slice(-4);
 
   return {
@@ -979,9 +1013,9 @@ export function getRecoveryRate(data: EpiDemoData, projectId: string): RecoveryR
     bestPerWeek: round(bestPerWeek, 3),
     ratioToBest: bestPerWeek > 0 ? round(requiredPerWeek / bestPerWeek, 3) : null,
     recentPerWeek: round(sum(recent) / Math.max(1, recent.length), 3),
-    flatWeeks: flatRun.length,
-    flatFromWeek: flatRun[flatRun.length - 1]?.weekNo ?? null,
-    flatToWeek: flatRun[0]?.weekNo ?? null
+    flatWeeks: flat?.weeks ?? 0,
+    flatFromWeek: flat?.fromWeek ?? null,
+    flatToWeek: flat?.toWeek ?? null
   };
 }
 
@@ -991,6 +1025,7 @@ export function getCostMargin(data: EpiDemoData, projectId: string): CostMargin 
   const rapPlanned = sum(rap.map((row) => row.rapPlanned));
   const recognisedRevenue = getRecognisedRevenue(data, projectId);
   const contractValue = getProject(data, projectId).finalContractValue;
+  const advances = getVendorAdvances(data, projectId);
   return {
     contractValue,
     plannedMargin: rapPlanned > 0 ? (contractValue - rapPlanned) / contractValue : null,
@@ -999,8 +1034,30 @@ export function getCostMargin(data: EpiDemoData, projectId: string): CostMargin 
     rapRemaining: rapPlanned - cost,
     recognisedRevenue,
     profit: recognisedRevenue - cost,
-    margin: recognisedRevenue > 0 ? (recognisedRevenue - cost) / recognisedRevenue : null
+    margin: recognisedRevenue > 0 ? (recognisedRevenue - cost) / recognisedRevenue : null,
+    vendorAdvances: advances,
+    marginExAdvances:
+      recognisedRevenue > 0 ? (recognisedRevenue - (cost - advances)) / recognisedRevenue : null
   };
+}
+
+/**
+ * Vendor advances (uang muka) still in cost: a PO advance with an advance number and
+ * no SES yet. Petty cash advances are operating cost and stay in.
+ */
+export function getVendorAdvances(data: EpiDemoData, projectId: string): number {
+  return sum(
+    data.costLines
+      .filter(
+        (line) =>
+          line.projectId === projectId &&
+          line.advanceNo !== null &&
+          line.sesNo === null &&
+          line.poNo !== null &&
+          line.procurementMethod !== PETTY_CASH_METHOD
+      )
+      .map((line) => line.amount)
+  );
 }
 
 /** The heaviest component, when it is more than 20 points behind plan. */
@@ -1142,7 +1199,7 @@ export function getEvidenceStages(data: EpiDemoData, projectId: string): Evidenc
       return {
         unit: target.unit,
         claimed: target.claimed,
-        status: complete ? "complete" : target.claimed ? "missing" : "pending",
+        status: complete ? "earned" : target.claimed ? "blocked" : "not-started",
         issue: complete ? null : unitIssue(ba, rule.document, signerOk),
         baId: ba?.baId ?? null,
         documentNo: ba?.documentNo ?? null,
@@ -1154,16 +1211,16 @@ export function getEvidenceStages(data: EpiDemoData, projectId: string): Evidenc
       };
     });
 
-    const missing = units.filter((u) => u.status === "missing");
-    const complete = units.filter((u) => u.status === "complete");
+    const missing = units.filter((u) => u.status === "blocked");
+    const complete = units.filter((u) => u.status === "earned");
     const status: EvidenceStatus =
-      missing.length > 0 ? "missing" : complete.length === units.length ? "complete" : "pending";
+      missing.length > 0 ? "blocked" : complete.length === units.length ? "earned" : "not-started";
     const signedDates = complete.map((u) => u.documentDate ?? "").filter(Boolean).sort();
 
     const reason =
-      status === "complete"
+      status === "earned"
         ? `${complete.length} of ${units.length} required BA signed by the ${PROGRESS_SIGNER}`
-        : status === "missing"
+        : status === "blocked"
           ? missing.map((u) => `${u.unit}: ${u.issue}`).join("; ")
           : `Not started: ${rule.document} is required before progress can be claimed`;
 
@@ -1175,10 +1232,11 @@ export function getEvidenceStages(data: EpiDemoData, projectId: string): Evidenc
       documentType: rule.document,
       expectedSigner: `Customer ${PROGRESS_SIGNER}`,
       additionalRequirement: requirement?.additional ?? null,
-      signedDate: signedDates[signedDates.length - 1] ?? null,
+      // A date only when every BA of the stage is signed; a missing or draft BA shows "-".
+      signedDate: status === "earned" ? (signedDates[signedDates.length - 1] ?? null) : null,
       status,
       gate: {
-        result: status === "complete" ? "can-earn" : "blocked",
+        result: status === "earned" ? "can-earn" : "blocked",
         reason
       },
       units,
@@ -1196,12 +1254,13 @@ export function getEvidenceStages(data: EpiDemoData, projectId: string): Evidenc
 
 export function getEvidenceSummary(stages: EvidenceStage[]): EvidenceSummary {
   return {
-    canEarn: stages.filter((s) => s.gate.result === "can-earn").length,
-    blocked: stages.filter((s) => s.gate.result === "blocked").length,
+    canEarn: stages.filter((s) => s.status === "earned").length,
+    blocked: stages.filter((s) => s.status === "blocked").length,
     claimedWithoutBa: sum(
-      stages.map((s) => s.units.filter((u) => u.status === "missing").length)
+      stages.map((s) => s.units.filter((u) => u.status === "blocked").length)
     ),
-    blockedValue: sum(stages.map((s) => s.blockedValue))
+    blockedValue: sum(stages.map((s) => s.blockedValue)),
+    notStarted: stages.filter((s) => s.status === "not-started").length
   };
 }
 
@@ -1211,7 +1270,7 @@ export function getSuggestedAction(
   projectId: string,
   stage: EvidenceStage
 ): SuggestedAction {
-  const missing = stage.units.filter((u) => u.status === "missing");
+  const missing = stage.units.filter((u) => u.status === "blocked");
   const urgent = missing.length > 0;
   const title = urgent
     ? `Get ${stage.documentType} signed: ${missing.map((u) => u.unit).join(", ")} (${projectId})`
@@ -1221,7 +1280,7 @@ export function getSuggestedAction(
     projectId,
     ownerRole: OWNER_ROLE,
     dueDate: addDays(data.asAt, urgent ? DUE_DAYS_MISSING : DUE_DAYS_PENDING),
-    source: `S4 Evidence gate: ${projectId} stage ${stage.stageNo}`,
+    source: `Evidence gate: ${projectId} stage ${stage.stageNo}`,
     autonomy: "L1"
   };
 }
@@ -1748,6 +1807,9 @@ function formatSignedMillions(value: number): string {
  * S2: from contract value to cash for a project with an earning rule and signed BAs.
  * Empty when the project has no component schedule.
  */
+/** Waterfall deltas below this share of the contract value are hidden and named in the takeaway. */
+const WATERFALL_MIN_SHARE = 0.01;
+
 export function getRevenueWaterfall(data: EpiDemoData, projectId: string): WaterfallChartData {
   const stages = getEarningStages(data, projectId);
   if (stages.length === 0) return { steps: [], takeaway: null, table: chartTable([], []) };
@@ -1768,15 +1830,15 @@ export function getRevenueWaterfall(data: EpiDemoData, projectId: string): Water
       .map((stage) => stage.amount)
   );
 
+  // A gap under 1% of the contract value is not drawn: the bar would be a sliver.
+  const accrualGap = accrued - earned;
+  const gapLabel = accrualGap >= 0 ? "Accrued above signed BA" : "Signed BA above accrual";
+  const showGap = Math.abs(accrualGap) >= contract * WATERFALL_MIN_SHARE;
   const steps = buildWaterfall([
     { label: "Contract value", value: contract, kind: "total" },
     { label: "Not yet earned", value: earned - contract, kind: "delta" },
-    { label: "Earned (signed BA)", value: earned, kind: "total" },
-    {
-      label: accrued >= earned ? "Accrued above signed BA" : "Signed BA above accrual",
-      value: accrued - earned,
-      kind: "delta"
-    },
+    { label: "Earned with signed BA", value: earned, kind: "total" },
+    ...(showGap ? [{ label: gapLabel, value: accrualGap, kind: "delta" as const }] : []),
     { label: "Accrued", value: accrued, kind: "total" },
     {
       label: billed <= accrued ? "Not yet billed" : "Billed above accrual",
@@ -1789,7 +1851,7 @@ export function getRevenueWaterfall(data: EpiDemoData, projectId: string): Water
 
   return {
     steps,
-    takeaway: `${formatRupiahMillions(earned)} of ${formatRupiahMillions(contract)} is earned with a signed BA (${formatPercent(contract > 0 ? earned / contract : 0, 2)}); ${formatRupiahMillions(billed)} is billed.`,
+    takeaway: `${formatRupiahMillions(earned)} of ${formatRupiahMillions(contract)} is earned with a signed BA (${formatPercent(contract > 0 ? earned / contract : 0, 2)}); ${formatRupiahMillions(billed)} is billed.${showGap ? "" : ` ${gapLabel} by ${formatRupiahMillions(Math.abs(accrualGap))}, under 1% of the contract value, so that bar is not drawn.`}`,
     table: waterfallTable(steps)
   };
 }
@@ -1814,7 +1876,7 @@ export function getEarningStageChart(data: EpiDemoData, projectId: string): Earn
           ? `${formatRupiahMillions(blocked)} is claimed without a signed BA, in stage ${blockedStages.map((stage) => stage.stageNo).join(", ")}.`
           : "Every claimed stage has its signed BA.",
     table: chartTable(
-      ["Stage", "Earned (signed BA)", "Claimed, BA unsigned", "Not started"],
+      ["Stage", "Earned", "Blocked", "Not started"],
       points.map((point) => [
         point.label,
         formatRupiahMillions(point.earned),
@@ -1861,7 +1923,7 @@ export function getSCurveChart(data: EpiDemoData, projectId: string): SCurveChar
     requiredPace: recovery?.requiredPerWeek ?? null,
     takeaway:
       week && deviation !== null
-        ? `Week ${week.weekNo}: ${formatPoints(deviation)} against plan${recovery ? `; finishing on the planned date needs ${formatDecimal(recovery.requiredPerWeek, 1)} points per week, the last 4 weeks averaged ${formatDecimal(recovery.recentPerWeek, 1)}.` : "."}`
+        ? `Week ${week.weekNo}: ${formatPoints(deviation)} against plan${recovery ? `; finishing on the planned date needs ${formatDecimal(recovery.requiredPerWeek, 1)} points per week, the last 4 weeks gained ${formatPace(recovery.recentPerWeek)} per week.` : "."}`
         : null,
     table: chartTable(
       ["Week", "Plan", "Actual", "Gap", "Required pace"],
@@ -1894,15 +1956,14 @@ export function getWeeklyIncrements(data: EpiDemoData, projectId: string): Weekl
     };
   });
 
-  let run = 0;
-  for (let index = points.length - 1; index >= 0 && points[index]?.zero; index -= 1) run += 1;
+  const flat = getNoProgressPeriod(data, projectId);
   const last = points[points.length - 1];
   const best = Math.max(0, ...points.map((point) => point.gain));
   const takeaway =
     points.length === 0 || !last
       ? null
-      : run > 0
-        ? `No progress in the last ${run} weeks (weeks ${last.weekNo - run + 1} to ${last.weekNo}); the best week gained ${formatDecimal(best, 1)} points.`
+      : flat
+        ? `No progress in ${flat.label}; the best week gained ${formatDecimal(best, 1)} points.`
         : `Week ${last.weekNo} gained ${formatDecimal(last.gain, 1)} points; the best week gained ${formatDecimal(best, 1)}.`;
 
   return {
@@ -2173,5 +2234,17 @@ export function getRegisterSummary(data: EpiDemoData, projectId: string): Regist
     notSigned: docs.length - signed,
     latestDocument: latest?.documentType ?? null,
     latestDateLabel: latest?.documentDate ? formatDateLabel(latest.documentDate) : null
+  };
+}
+
+/** Recognised revenue, accrual of this year and value earned with a signed BA, for one project or all. */
+export function getRevenueTrio(data: EpiDemoData, projectId?: string): RevenueTrio {
+  const ids = projectId ? [projectId] : data.projects.map((p) => p.projectId);
+  return {
+    recognisedRevenue: sum(ids.map((id) => getRecognisedRevenue(data, id))),
+    accrualThisYear: sum(ids.map((id) => getRevenueBreakdown(data, id).accruedThisYear)),
+    earnedWithSignedBa: sum(
+      ids.flatMap((id) => getEarningStages(data, id).map((stage) => stage.earnedValue))
+    )
   };
 }

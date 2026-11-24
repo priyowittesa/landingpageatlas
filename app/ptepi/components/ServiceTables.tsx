@@ -6,7 +6,7 @@ import Table from "@/components/Table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { TableColumn, TableFilter } from "@/types/type";
-import { formatPercent } from "../format";
+import { formatDate, formatDateRange, formatPercent } from "../format";
 import { filterInspectionRows, filterScopeRows, getContractOptions } from "../selectors";
 import type { ScopeStatus, ServiceInspectionRow, ServiceScopeRow } from "../types";
 import { StatusBadge, type StatusTone } from "./StatusBadge";
@@ -56,7 +56,7 @@ const SCOPE_COLUMNS: TableColumn<ServiceScopeRow>[] = [
     key: "period",
     header: "Period",
     className: "whitespace-nowrap",
-    render: (row) => `${row.periodStart ?? "-"} to ${row.periodEnd ?? "-"}`
+    render: (row) => formatDateRange(row.periodStart, row.periodEnd)
   },
   { key: "required", header: "Required", className: "text-right", render: (row) => row.required },
   { key: "done", header: "Done", className: "text-right", render: (row) => row.done },
@@ -82,7 +82,7 @@ const SCOPE_COLUMNS: TableColumn<ServiceScopeRow>[] = [
 ];
 
 const INSPECTION_COLUMNS: TableColumn<ServiceInspectionRow>[] = [
-  { key: "inspectionDate", header: "Date", className: "whitespace-nowrap", render: (row) => row.inspectionDate },
+  { key: "inspectionDate", header: "Date", className: "whitespace-nowrap", render: (row) => formatDate(row.inspectionDate) },
   {
     key: "contract",
     header: "Contract",

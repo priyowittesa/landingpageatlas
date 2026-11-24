@@ -67,3 +67,26 @@ export function formatDateLabel(isoDate: string): string {
   const month = match ? MONTHS[Number(match[2]) - 1] : undefined;
   return match && month ? `${Number(match[3])} ${month} ${match[1]}` : isoDate;
 }
+
+/** One wording for a run of weeks: (14, 18) -> "weeks 14 to 18 (5 weeks)". */
+export function formatWeekRange(fromWeek: number, toWeek: number): string {
+  const weeks = toWeek - fromWeek + 1;
+  return fromWeek === toWeek
+    ? `week ${fromWeek} (1 week)`
+    : `weeks ${fromWeek} to ${toWeek} (${weeks} weeks)`;
+}
+
+/** Points per week; a flat pace reads "0 pts", never "0,0". */
+export function formatPace(pointsPerWeek: number): string {
+  return pointsPerWeek === 0 ? "0 pts" : `${formatDecimal(pointsPerWeek, 1)} pts`;
+}
+
+/** The one date format of the prototype: "2026-11-15" -> "15 Nov 2026"; null -> "-". */
+export function formatDate(isoDate: string | null | undefined): string {
+  return isoDate ? formatDateLabel(isoDate) : "-";
+}
+
+/** A date range: "7 Jul 2026 to 2 Jan 2027". */
+export function formatDateRange(from: string | null | undefined, to: string | null | undefined): string {
+  return `${formatDate(from)} to ${formatDate(to)}`;
+}

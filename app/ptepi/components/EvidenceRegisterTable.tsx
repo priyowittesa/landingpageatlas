@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate } from "../format";
 import { useMemo, useState } from "react";
 import Table from "@/components/Table";
 import type { TableColumn } from "@/types/type";
@@ -36,7 +37,7 @@ const COLUMNS: TableColumn<RegisterRow>[] = [
     header: "Component or stage",
     render: (row) => row.component ?? row.relatedStage ?? "-"
   },
-  { key: "documentDate", header: "Date", className: "whitespace-nowrap", render: (row) => row.documentDate ?? "-" },
+  { key: "documentDate", header: "Date", className: "whitespace-nowrap", render: (row) => formatDate(row.documentDate) },
   {
     key: "customerSigner",
     header: "Customer signer",

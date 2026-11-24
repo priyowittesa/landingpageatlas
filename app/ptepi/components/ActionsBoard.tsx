@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate } from "../format";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CircleCheck, Clock, ListTodo, Plus, TriangleAlert, UserCheck, UserRound } from "lucide-react";
@@ -232,7 +233,7 @@ export function ActionsBoard({ seeds, asAt, projectOptions }: ActionsBoardProps)
         </div>
       )
     },
-    { key: "dueDate", header: "Due", className: "whitespace-nowrap", render: (row) => row.dueDate },
+    { key: "dueDate", header: "Due", className: "whitespace-nowrap", render: (row) => formatDate(row.dueDate) },
     { key: "status", header: "Status", render: (row) => <StatusCell action={row} asAt={asAt} /> },
     {
       key: "source",
@@ -285,7 +286,7 @@ export function ActionsBoard({ seeds, asAt, projectOptions }: ActionsBoardProps)
           <div>
             <h2 className="text-base font-semibold">All actions</h2>
             <p className="text-sm text-muted-foreground">
-              Raised by the agents from the seeded exceptions and by S4 and S7. Demo role: {role.label}.
+              Raised by the agents from the seeded exceptions and by the Evidence gate and Nexa Intelligence. Demo role: {role.label}.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">

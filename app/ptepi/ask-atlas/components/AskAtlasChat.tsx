@@ -2,16 +2,12 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
-  CalendarClock,
   FlaskConical,
-  FolderKanban,
   MessageSquare,
   Plus,
-  Search,
   SendHorizontal,
   ShieldCheck,
-  Sparkles,
-  Wand2
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BAHASA_CHIP, QUESTIONS, matchQuestion } from "../questions";
@@ -39,7 +35,6 @@ export function AskAtlasChat({ answers }: AskAtlasChatProps) {
   const [conversations, setConversations] = useState<Conversation[]>([newConversation(0)]);
   const [activeId, setActiveId] = useState("c-0");
   const [draft, setDraft] = useState("");
-  const [search, setSearch] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
 
   const active = conversations.find((item) => item.id === activeId) ?? conversations[0];
@@ -88,10 +83,7 @@ export function AskAtlasChat({ answers }: AskAtlasChatProps) {
     ask(draft);
   };
 
-  const recent = conversations.filter(
-    (item) =>
-      item.messages.length > 0 && item.title.toLowerCase().includes(search.trim().toLowerCase())
-  );
+  const recent = conversations.filter((item) => item.messages.length > 0);
 
   return (
     <div className="relative flex min-h-0 flex-1 overflow-hidden bg-white">
@@ -108,39 +100,9 @@ export function AskAtlasChat({ answers }: AskAtlasChatProps) {
             <Plus size={14} aria-hidden />
             New chat
           </button>
-          <div className="relative">
-            <Search
-              size={14}
-              aria-hidden
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search chats"
-              aria-label="Search chats"
-              className="h-8 w-full rounded-lg border border-gray-200 bg-white pl-8 pr-2 text-xs outline-none focus:border-primary-300 focus:ring-2 focus:ring-primary-100"
-            />
-          </div>
         </div>
 
-        <div className="space-y-0.5 px-2">
-          {[
-            { label: "Projects", icon: FolderKanban },
-            { label: "Skills", icon: Wand2 },
-            { label: "Scheduled", icon: CalendarClock }
-          ].map(({ label, icon: Icon }) => (
-            <div
-              key={label}
-              className="flex h-9 items-center gap-2 rounded-lg px-3 text-xs font-medium text-gray-700"
-            >
-              <Icon size={14} aria-hidden className="text-gray-500" />
-              {label}
-            </div>
-          ))}
-        </div>
-
-        <p className="px-5 pb-1 pt-4 text-[10px] uppercase tracking-wide text-gray-500">Recent</p>
+        <p className="px-5 pb-1 pt-2 text-[10px] uppercase tracking-wide text-gray-500">Recent</p>
         <ul className="min-h-0 flex-1 space-y-0.5 overflow-y-auto px-2 pb-3">
           {recent.length === 0 ? (
             <li className="px-3 py-2 text-[10px] text-gray-500">No chats yet</li>

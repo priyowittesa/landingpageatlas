@@ -71,3 +71,10 @@ export const ATTACHMENT_NOTES: Record<string, { file: string; findings: string[]
     ]
   }
 };
+
+/** One stage vocabulary for S2 and S4 (earning rule and evidence gate). */
+export const STAGE_STATUS_LABELS = {
+  earned: { tone: "good", label: "Earned" },
+  blocked: { tone: "bad", label: "Blocked" },
+  "not-started": { tone: "neutral", label: "Not started" }
+} as const;

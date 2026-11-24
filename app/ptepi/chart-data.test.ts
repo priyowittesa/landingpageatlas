@@ -74,12 +74,17 @@ describe("S2 charts", () => {
     const totals = waterfall.steps.filter((s) => s.kind === "total");
     expect(totals.map((s) => s.label)).toEqual([
       "Contract value",
-      "Earned (signed BA)",
+      "Earned with signed BA",
       "Accrued",
       "Billed",
       "Retensi 5% still to bill"
     ]);
     expect(totals.map((s) => s.value)).toEqual([1_080_000_000, 306_197_998, 307_778_400, 216_000_000, 54_000_000]);
+  });
+
+  it("hides the accrual gap under 1% of contract value and names it in the takeaway", () => {
+    expect(waterfall.steps.some((s) => s.label === "Accrued above signed BA")).toBe(false);
+    expect(waterfall.takeaway).toContain("Accrued above signed BA by Rp 1,6 m, under 1% of the contract value");
   });
 
   it("reconciles each delta with the total that follows it", () => {
@@ -142,7 +147,7 @@ describe("S3 charts", () => {
     expect(zeroWeeks).toContain("W2");
     expect(chart.points.find((p) => p.label === "W18")?.marker).toBe(ZERO_WEEK_MARKER_PTS);
     expect(chart.points.find((p) => p.label === "W13")?.marker).toBe(0);
-    expect(chart.takeaway).toContain("No progress in the last 4 weeks (weeks 15 to 18)");
+    expect(chart.takeaway).toContain("No progress in weeks 14 to 18 (5 weeks)");
     expect(chart.takeaway).toContain("best week gained 11,1 points");
   });
 

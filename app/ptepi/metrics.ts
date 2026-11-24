@@ -128,7 +128,7 @@ export const METRICS = [
     formula: "Final contract value x measured progress, since the start of the contract.",
     threshold: null,
     owner: "selectors.getRecognisedRevenue",
-    screens: ["S1", "S3", "S5"]
+    screens: ["S1", "S2", "S3", "S5"]
   },
   {
     id: "accrualRevenue",
@@ -197,14 +197,14 @@ export const METRICS = [
     id: "retentionHeld",
     label: "Retensi held",
     unit: "Rp",
-    formula: "Retensi 5% whose condition is met and which is not yet paid.",
+    formula: "Retensi 5% that is due but not billable because BAST II is not signed (Due, awaiting BAST II).",
     threshold: `Held more than ${RETENTION_ALERT_DAYS} days.`,
-    owner: "selectors.getPortfolioTotals",
+    owner: "selectors.getRetentionHeld",
     screens: ["S1", "S2"]
   },
   {
     id: "earnedValue",
-    label: "Earned by signed BA",
+    label: "Earned with signed BA",
     unit: "Rp",
     formula: "Contract value x stage weight (15/15/30/30/10) x component share, for stages claimed with a signed BA.",
     threshold: null,
@@ -251,10 +251,19 @@ export const METRICS = [
     id: "margin",
     label: "Margin",
     unit: "%",
-    formula: "(Recognised revenue - cost) / recognised revenue.",
+    formula: "(Recognised revenue - cost) / recognised revenue. Cost includes vendor advances (uang muka, SES not issued).",
     threshold: "Below zero is a loss.",
     owner: "selectors.getCostMargin",
     screens: ["S3", "S5"]
+  },
+  {
+    id: "marginExAdvances",
+    label: "Margin excluding advances",
+    unit: "%",
+    formula: "(Recognised revenue - (cost - vendor advances)) / recognised revenue. Vendor advances = PO uang muka with an advance number and no SES yet.",
+    threshold: null,
+    owner: "selectors.getCostMargin",
+    screens: ["S5"]
   },
   {
     id: "plannedMargin",

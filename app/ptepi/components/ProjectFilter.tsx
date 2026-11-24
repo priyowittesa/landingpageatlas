@@ -24,7 +24,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { formatRupiahMillions } from "../format";
-import { getProjectIdFromPath, switchProjectPath } from "../navigation";
+import { PROJECT_FILTER_PATHS, getProjectIdFromPath, switchProjectPath } from "../navigation";
 import { useProjectStore } from "../store/project-store";
 import type { ProjectFilterOption, StatusGroup } from "../types";
 
@@ -93,12 +93,27 @@ export function ProjectFilter({ options, allowAll = false }: ProjectFilterProps)
   const selected = options.find((option) => option.id === projectId) ?? null;
   const selectedGroup = selected ? GROUPS.find((group) => group.id === selected.statusGroup) : undefined;
 
+  const path = pathname.replace(/\/+$/, "");
+  const filterScreen = PROJECT_FILTER_PATHS.includes(path);
+
+  // Arriving with ?project=<id> (from the cockpit, the evidence gate or the demo path)
+  // pre-filters the screen; "All projects" stays selectable.
+  useEffect(() => {
+    if (!filterScreen) return;
+    const fromQuery = new URLSearchParams(window.location.search).get("project");
+    if (fromQuery && options.some((option) => option.id === fromQuery)) setProject(fromQuery);
+  }, [filterScreen, options, setProject]);
+
   const choose = (next: string | null) => {
     setOpen(false);
     setProject(next);
+    if (filterScreen) {
+      router.replace(next ? `${path}?project=${next}` : path, { scroll: false });
+      return;
+    }
     if (next) {
       const target = switchProjectPath(pathname, next);
-      if (target !== pathname.replace(/\/+$/, "")) router.push(target);
+      if (target !== path) router.push(target);
     }
   };
 

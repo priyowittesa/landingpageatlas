@@ -9,6 +9,7 @@ import { ProjectLifecycleCard } from "../../components/ProjectLifecycleCard";
 import { ProjectExceptionsList } from "../../components/ProjectExceptionsList";
 import { ProjectInfoRow } from "../../components/ProjectInfoRow";
 import { RecoveryCard } from "../../components/RecoveryCard";
+import { RevenueStrip } from "../../components/RevenueStrip";
 import { DeficitCard, SCurveCard, WeeklyIncrementsCard } from "../../components/charts/ScreenCharts";
 import { SectionCard } from "../../components/SectionCard";
 import { SyntheticDataBadge } from "../../components/SyntheticDataBadge";
@@ -25,6 +26,7 @@ import {
   getProjectInfo,
   getProjectLifecycle,
   getRecoveryRate,
+  getRevenueTrio,
   getSCurveChart,
   getWeekCard,
   getWeeklyIncrements,
@@ -69,6 +71,8 @@ export default async function ProjectCockpitPage({ params }: ProjectPageProps) {
       />
 
       <ProjectInfoRow info={info} />
+
+      <RevenueStrip revenue={getRevenueTrio(epiData, id)} scope={info.projectId} />
 
       {critical && <CriticalItemCallout projectId={id} item={critical} />}
 

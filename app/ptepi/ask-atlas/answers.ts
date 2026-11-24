@@ -1,10 +1,12 @@
 import {
+  formatDate,
   formatDecimal,
   formatPercent,
   formatPoints,
   formatPointsUnsigned,
   formatRupiah,
-  formatRupiahMillions
+  formatRupiahMillions,
+  formatWeekRange
 } from "../format";
 import {
   addDays,
@@ -74,12 +76,12 @@ function behind(data: EpiDemoData): Answer {
   const recovery = getRecoveryRate(data, HERO_PROJECT_ID);
   const critical = getCriticalItem(data, HERO_PROJECT_ID);
   const stages = getEvidenceStages(data, HERO_PROJECT_ID);
-  const blockedStage = stages.find((stage) => stage.status === "missing");
+  const blockedStage = stages.find((stage) => stage.status === "blocked");
 
   const points: string[] = [];
   if (recovery && recovery.flatWeeks >= 2) {
     points.push(
-      `No progress in weeks ${recovery.flatFromWeek} to ${recovery.flatToWeek}: the cumulative actual has stayed at ${formatPercent(week.actual)} for ${recovery.flatWeeks} weeks.`
+      `No progress in ${formatWeekRange(recovery.flatFromWeek ?? week.weekNo, recovery.flatToWeek ?? week.weekNo)}: the cumulative actual stayed at ${formatPercent(week.actual)}.`
     );
   }
   if (critical) {
@@ -125,7 +127,7 @@ function behind(data: EpiDemoData): Answer {
             title: `Confirm FAT and delivery dates for ${critical.label} with the vendor (${HERO_PROJECT_ID})`,
             projectId: HERO_PROJECT_ID,
             ownerRole: "Project Manager",
-            source: `S7 Nexa Intelligence: ${HERO_PROJECT_ID} behind plan`
+            source: `Nexa Intelligence: ${HERO_PROJECT_ID} behind plan`
           })
         ]
       : [],
@@ -137,16 +139,16 @@ function billing(data: EpiDemoData): Answer {
   const rows = getBillingRows(data);
   const summary = getBillingSummary(rows);
   const blocked = rows.filter((row) => row.readiness === "blocked");
-  const warned = rows.filter((row) => row.readiness === "billable" && row.reason !== null);
+  const awaiting = rows.filter((row) => row.readiness === "awaiting-bast");
 
   const points = [
     ...blocked.map(
       (row) =>
         `${row.projectId} ${row.stageType} (${formatRupiahMillions(row.amount)}): ${row.reason ?? "held"}.`
     ),
-    ...warned.map(
+    ...awaiting.map(
       (row) =>
-        `${row.projectId} ${row.stageType} (${formatRupiahMillions(row.amount)}) is billable, but ${row.reason}.`
+        `${row.projectId} ${row.stageType} (${formatRupiahMillions(row.amount)}) is due, awaiting BAST II: ${row.reason ?? "BAST II not signed"}.`
     )
   ];
 
@@ -158,7 +160,7 @@ function billing(data: EpiDemoData): Answer {
   return {
     questionId: "billing",
     question: questionLabel("billing"),
-    conclusion: `${summary.blocked.count} payment stages worth ${formatRupiahMillions(summary.blocked.amount)} are blocked from billing; ${summary.billable.count} worth ${formatRupiahMillions(summary.billable.amount)} can be billed now.`,
+    conclusion: `${summary.blocked.count} payment stages worth ${formatRupiahMillions(summary.blocked.amount)} are blocked from billing; ${summary.billable.count} worth ${formatRupiahMillions(summary.billable.amount)} can be billed now; ${summary["awaiting-bast"].count} Retensi worth ${formatRupiahMillions(summary["awaiting-bast"].amount)} are due, awaiting BAST II.`,
     figures: [
       { label: "Blocked", value: formatRupiahMillions(summary.blocked.amount) },
       { label: "Billable now", value: formatRupiahMillions(summary.billable.amount) },
@@ -176,7 +178,7 @@ function billing(data: EpiDemoData): Answer {
         title: `Unblock Tagihan ${projectId}: ${reason}`,
         projectId,
         ownerRole: "SM Operasi dan Teknik",
-        source: `S7 Nexa Intelligence: billing ${projectId}`
+        source: `Nexa Intelligence: billing ${projectId}`
       })
     ),
     refreshedAt: data.asAt
@@ -186,7 +188,7 @@ function billing(data: EpiDemoData): Answer {
 function next(data: EpiDemoData): Answer {
   const stages = getEvidenceStages(data, HERO_PROJECT_ID);
   const summary = getEvidenceSummary(stages);
-  const blockedStage = stages.find((stage) => stage.status === "missing");
+  const blockedStage = stages.find((stage) => stage.status === "blocked");
   const critical = getCriticalItem(data, HERO_PROJECT_ID);
   const termin = getBillingRows(data).find(
     (row) => row.projectId === HERO_PROJECT_ID && row.readiness === "blocked"
@@ -200,7 +202,7 @@ function next(data: EpiDemoData): Answer {
         title: `Confirm FAT and delivery dates for ${critical.label} with the vendor (${HERO_PROJECT_ID})`,
         projectId: HERO_PROJECT_ID,
         ownerRole: "Project Manager",
-        source: `S7 Nexa Intelligence: ${HERO_PROJECT_ID} behind plan`
+        source: `Nexa Intelligence: ${HERO_PROJECT_ID} behind plan`
       })
     );
   }
@@ -208,7 +210,7 @@ function next(data: EpiDemoData): Answer {
     return noEvidence("next", data, `no blocked stage or critical item was found for ${HERO_PROJECT_ID}`);
   }
 
-  const points = actions.map((action) => `${action.title}. Owner ${action.ownerRole}, due ${action.dueDate}.`);
+  const points = actions.map((action) => `${action.title}. Owner ${action.ownerRole}, due ${formatDate(action.dueDate)}.`);
   if (summary.claimedWithoutBa > 0) {
     points.push(`Progress claimed without a signed BA is worth ${formatRupiah(summary.blockedValue)}.`);
   }
@@ -265,7 +267,7 @@ function attention(data: EpiDemoData): Answer {
         title: `Review at-risk project ${row.projectId}: ${row.health.reason}`,
         projectId: row.projectId,
         ownerRole: "ASM Teknik",
-        source: `S7 Nexa Intelligence: at risk ${row.projectId}`
+        source: `Nexa Intelligence: at risk ${row.projectId}`
       })
     ),
     refreshedAt: data.asAt
@@ -300,7 +302,7 @@ function bast(data: EpiDemoData): Answer {
             title: `Prepare the missing handover BAs for ${HERO_PROJECT_ID}: ${failed.map((check) => check.label).join(", ")}`,
             projectId: HERO_PROJECT_ID,
             ownerRole: "Project Manager",
-            source: `S7 Nexa Intelligence: ${HERO_PROJECT_ID} BAST`,
+            source: `Nexa Intelligence: ${HERO_PROJECT_ID} BAST`,
             dueInDays: HANDOVER_DUE_DAYS
           })
         ],
@@ -344,7 +346,7 @@ function inspections(data: EpiDemoData): Answer {
         title: `Schedule the missing ${row.scopeItem} (${row.contractId})`,
         projectId: row.contractId,
         ownerRole: "Jr Manager Pengendalian Investasi dan Pemeliharaan",
-        source: `S7 Nexa Intelligence: inspection ${row.scopeId}`
+        source: `Nexa Intelligence: inspection ${row.scopeId}`
       })
     ),
     refreshedAt: data.asAt
@@ -394,7 +396,7 @@ function rap(data: EpiDemoData): Answer {
           title: `Review the cost overrun on ${project.projectId}`,
           projectId: project.projectId,
           ownerRole: "Manager Pengendalian Teknik",
-          source: `S7 Nexa Intelligence: over RAP ${project.projectId}`
+          source: `Nexa Intelligence: over RAP ${project.projectId}`
         })
       ),
     refreshedAt: data.asAt

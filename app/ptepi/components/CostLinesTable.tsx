@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Table from "@/components/Table";
 import type { TableColumn, TableFilter } from "@/types/type";
+import { formatDate } from "../format";
 import { getCostCategoryOptions } from "../selectors";
 import type { CostLineRow } from "../types";
 import { RupiahText } from "./RupiahText";
@@ -40,7 +41,7 @@ const COLUMNS: TableColumn<CostLineRow>[] = [
     key: "transactionDate",
     header: "Transaction date",
     className: "whitespace-nowrap",
-    render: (row) => dash(row.transactionDate)
+    render: (row) => formatDate(row.transactionDate)
   },
   {
     key: "amount",

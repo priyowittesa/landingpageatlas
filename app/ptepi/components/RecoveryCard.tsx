@@ -1,4 +1,4 @@
-import { formatDecimal, formatPercent, formatPoints } from "../format";
+import { formatDecimal, formatPace, formatPercent, formatPoints, formatWeekRange } from "../format";
 import type { RecoveryRate } from "../types";
 import { StatusBadge } from "./StatusBadge";
 
@@ -16,9 +16,9 @@ export function RecoveryCard({ recovery, actual }: RecoveryCardProps) {
         <div className="space-y-1">
           <StatusBadge tone="bad" label="No progress" />
           <p className="text-sm">
-            Flat
-            {actual !== null && ` at ${formatPercent(actual)}`} in weeks{" "}
-            {recovery.flatFromWeek} to {recovery.flatToWeek} ({recovery.flatWeeks} weeks).
+            No progress in{" "}
+            {formatWeekRange(recovery.flatFromWeek ?? 0, recovery.flatToWeek ?? 0)}
+            {actual !== null && `, flat at ${formatPercent(actual)}`}.
           </p>
         </div>
       )}
@@ -44,7 +44,7 @@ export function RecoveryCard({ recovery, actual }: RecoveryCardProps) {
         </div>
         <div>
           <dt className="text-muted-foreground">Last 4 weeks, per week</dt>
-          <dd className="font-semibold">{formatPoints(recovery.recentPerWeek)}</dd>
+          <dd className="font-semibold">{formatPace(recovery.recentPerWeek)}</dd>
         </div>
       </dl>
     </div>

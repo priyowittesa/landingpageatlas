@@ -109,7 +109,7 @@ function CreateActionForm({
       ownerRole,
       dueDate,
       autonomy,
-      source: `S8 Action tracker: manual ${number}`
+      source: `Action tracker: manual ${number}`
     });
     toast.success(`${created.id} created`, { description: `${created.projectId}: ${created.title}` });
     onOpenChange(false);

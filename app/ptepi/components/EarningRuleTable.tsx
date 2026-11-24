@@ -2,18 +2,14 @@
 
 import Table from "@/components/Table";
 import type { TableColumn } from "@/types/type";
-import type { EarningStageRow, EarningStageStatus } from "../types";
+import { STAGE_STATUS_LABELS } from "../labels";
+import type { EarningStageRow } from "../types";
 import { PercentText } from "./PercentText";
 import { RupiahText } from "./RupiahText";
-import { StatusBadge, type StatusTone } from "./StatusBadge";
+import { StatusBadge } from "./StatusBadge";
 import { SyntheticDataBadge } from "./SyntheticDataBadge";
 
-const STATUS: Record<EarningStageStatus, { tone: StatusTone; label: string }> = {
-  earned: { tone: "good", label: "Earned" },
-  "in-progress": { tone: "watch", label: "Partly earned" },
-  blocked: { tone: "bad", label: "Blocked, BA unsigned" },
-  pending: { tone: "watch", label: "Not started" }
-};
+const STATUS = STAGE_STATUS_LABELS;
 
 const COLUMNS: TableColumn<EarningStageRow>[] = [
   {
@@ -51,7 +47,7 @@ const COLUMNS: TableColumn<EarningStageRow>[] = [
   },
   {
     key: "blockedValue",
-    header: "Claimed, BA unsigned",
+    header: "Blocked",
     className: "text-right whitespace-nowrap",
     render: (row) => <RupiahText value={row.blockedValue} />
   },

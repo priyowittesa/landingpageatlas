@@ -17,6 +17,7 @@ const PAGE_SIZE_OPTIONS = [5, 10, 20];
 
 const READINESS_LABELS: Record<BillingReadiness, string> = {
   billable: "Billable now",
+  "awaiting-bast": "Due, awaiting BAST II",
   blocked: "Blocked",
   invoiced: "Invoiced, awaiting payment",
   "not-due": "Not yet due"
@@ -39,6 +40,9 @@ function DocStatusBadge({ status }: { status: DocStatus }) {
 function ReadinessBadge({ readiness }: { readiness: BillingReadiness }) {
   if (readiness === "billable") {
     return <StatusBadge tone="good" label={READINESS_LABELS.billable} />;
+  }
+  if (readiness === "awaiting-bast") {
+    return <StatusBadge tone="watch" label={READINESS_LABELS["awaiting-bast"]} />;
   }
   if (readiness === "blocked") {
     return <StatusBadge tone="bad" label={READINESS_LABELS.blocked} />;

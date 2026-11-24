@@ -91,7 +91,18 @@ export function switchProjectPath(pathname: string, projectId: string): string {
   return match ? `/ptepi/project/${projectId}${match[2] ?? ""}` : path;
 }
 
-/** Point the sidebar links of the project screens at the selected project. */
-export function withProject(href: string, projectId: string): string {
-  return href.startsWith(HERO_PROJECT_PATH) ? href.replace(HERO_PROJECT_PATH, `/ptepi/project/${projectId}`) : href;
+/** Screens with an "All projects" default that a ?project=<id> link can pre-filter. */
+export const PROJECT_FILTER_PATHS = ["/ptepi/commercial", "/ptepi/cost"];
+
+const HERO_PROJECT_ID = HERO_PROJECT_PATH.split("/").pop() ?? "PNP126";
+
+/**
+ * Sidebar links follow the selected project: the project screens open on it (the hero
+ * project when none is chosen), Commercial and Cost open filtered with ?project=<id>.
+ */
+export function withProject(href: string, projectId: string | null): string {
+  if (href.startsWith(HERO_PROJECT_PATH)) {
+    return href.replace(HERO_PROJECT_PATH, `/ptepi/project/${projectId ?? HERO_PROJECT_ID}`);
+  }
+  return projectId && PROJECT_FILTER_PATHS.includes(href) ? `${href}?project=${projectId}` : href;
 }

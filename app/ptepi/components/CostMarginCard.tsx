@@ -1,3 +1,4 @@
+import { MetricLabel } from "./MetricLabel";
 import type { CostMargin } from "../types";
 import { PercentText } from "./PercentText";
 import { RupiahText } from "./RupiahText";
@@ -22,7 +23,9 @@ export function CostMarginCard({ money, detailed = false }: CostMarginCardProps)
       )}
       {detailed && (
         <div>
-          <dt className="text-muted-foreground">Recognised revenue</dt>
+          <dt className="text-muted-foreground">
+            <MetricLabel metricId="recognisedRevenue" />
+          </dt>
           <dd className="font-semibold">
             <RupiahText value={money.recognisedRevenue} />
           </dd>
@@ -35,11 +38,31 @@ export function CostMarginCard({ money, detailed = false }: CostMarginCardProps)
         </dd>
       </div>
       <div>
-        <dt className="text-muted-foreground">Margin</dt>
+        <dt className="text-muted-foreground">
+          <MetricLabel metricId="margin" />
+        </dt>
         <dd className="text-lg font-bold">
           <PercentText fraction={money.margin} digits={2} />
         </dd>
+        {detailed && money.vendorAdvances > 0 && (
+          <dd className="text-xs text-muted-foreground">
+            Includes vendor advances (uang muka, SES not issued)
+          </dd>
+        )}
       </div>
+      {detailed && money.vendorAdvances > 0 && (
+        <div>
+          <dt className="text-muted-foreground">
+            <MetricLabel metricId="marginExAdvances" />
+          </dt>
+          <dd className="text-lg font-bold">
+            <PercentText fraction={money.marginExAdvances} digits={2} />
+          </dd>
+          <dd className="text-xs text-muted-foreground">
+            Without <RupiahText value={money.vendorAdvances} millions /> of advances
+          </dd>
+        </div>
+      )}
       {detailed && (
         <div>
           <dt className="text-muted-foreground">Profit to date</dt>
@@ -70,7 +93,9 @@ export function CostMarginCard({ money, detailed = false }: CostMarginCardProps)
       </div>
       {!detailed && (
         <div>
-          <dt className="text-muted-foreground">Recognised revenue</dt>
+          <dt className="text-muted-foreground">
+            <MetricLabel metricId="recognisedRevenue" />
+          </dt>
           <dd className="font-semibold">
             <RupiahText value={money.recognisedRevenue} />
           </dd>

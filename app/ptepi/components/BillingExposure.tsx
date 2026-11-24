@@ -1,6 +1,7 @@
 import { Progress } from "@/components/ui/progress";
 import { formatPercent } from "../format";
 import type { PortfolioTotals } from "../types";
+import { MetricLabel } from "./MetricLabel";
 import { RupiahText } from "./RupiahText";
 
 type BillingExposureProps = {
@@ -23,7 +24,9 @@ export function BillingExposure({ totals }: BillingExposureProps) {
       />
       <dl className="mt-4 grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
         <div>
-          <dt className="text-muted-foreground">Recognised revenue</dt>
+          <dt className="text-muted-foreground">
+            <MetricLabel metricId="recognisedRevenue" />
+          </dt>
           <dd className="font-semibold">
             <RupiahText value={totals.recognisedRevenue} millions />
           </dd>
@@ -43,7 +46,9 @@ export function BillingExposure({ totals }: BillingExposureProps) {
           </dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Retensi held</dt>
+          <dt className="text-muted-foreground">
+            <MetricLabel metricId="retentionHeld" />
+          </dt>
           <dd className="font-semibold">
             <RupiahText value={totals.retentionHeld} millions />
           </dd>

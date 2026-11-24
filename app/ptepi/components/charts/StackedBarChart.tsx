@@ -12,6 +12,7 @@ import {
   YAxis
 } from "recharts";
 import { AXIS_TICK, GRID } from "./chartTheme";
+import { CategoryTick } from "./CategoryTick";
 import { ChartLegend } from "./ChartLegend";
 import { ChartTooltip } from "./ChartTooltip";
 import { useChartAnimation } from "./useChartAnimation";
@@ -97,7 +98,7 @@ export function StackedBarChart<T extends object>({
                   width={labelWidth}
                   tickLine={false}
                   axisLine={false}
-                  tick={AXIS_TICK}
+                  tick={<CategoryTick />}
                   interval={0}
                 />
               </>

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
+import { stripScreenCode } from "./action-helpers";
 import type { ActionAutonomy } from "../types";
 
 export type ActionStatus = "open" | "in-progress" | "done";
@@ -121,6 +122,18 @@ export const useActionsStore = create<ActionsState>()(
     }),
     {
       name: ACTIONS_STORAGE_KEY,
+      // v2: sources name the screen instead of an internal code ("S4 Evidence gate" -> "Evidence gate").
+      version: 2,
+      migrate: (persisted) => {
+        const state = persisted as { actions?: EpiAction[] } | null;
+        return {
+          ...state,
+          actions: (state?.actions ?? []).map((action) => ({
+            ...action,
+            source: stripScreenCode(action.source)
+          }))
+        } as never;
+      },
       storage: createJSONStorage(() => safeStorage),
       // Rehydrated once on the client by PtepiShell, so server and first client render match.
       skipHydration: true,

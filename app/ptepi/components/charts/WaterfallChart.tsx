@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis
 import { formatRupiahMillions } from "../../format";
 import type { WaterfallStep } from "../../types";
 import { AXIS_TICK, CHART_COLORS, GRID } from "./chartTheme";
+import { CategoryTick } from "./CategoryTick";
 import { ChartLegend } from "./ChartLegend";
 import { formatRupiahCompact } from "./formatters";
 import { useChartAnimation } from "./useChartAnimation";
@@ -41,10 +42,10 @@ export function WaterfallChart({ steps, height }: WaterfallChartProps) {
             <YAxis
               type="category"
               dataKey="label"
-              width={170}
+              width={190}
               tickLine={false}
               axisLine={false}
-              tick={AXIS_TICK}
+              tick={<CategoryTick />}
               interval={0}
             />
             <Tooltip

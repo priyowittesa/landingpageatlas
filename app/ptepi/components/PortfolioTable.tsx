@@ -48,7 +48,7 @@ const RAW_COLUMNS: TableColumn<PortfolioRow>[] = [
       <div className="min-w-32">
         <div className="font-semibold">{row.projectId}</div>
         <div
-          className="max-w-28 truncate text-xs text-muted-foreground"
+          className="line-clamp-2 max-w-56 whitespace-normal text-xs text-muted-foreground"
           title={row.description}
         >
           {row.description}

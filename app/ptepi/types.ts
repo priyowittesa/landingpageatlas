@@ -305,7 +305,11 @@ export type RevenueBreakdown = {
   spillNextYear: number;
 };
 
-export type BillingReadiness = "billable" | "blocked" | "invoiced" | "not-due";
+/**
+ * billable = condition met AND required BA signed; awaiting-bast = Retensi 5% that is due
+ * but BAST II is not signed; blocked = held by an unmet condition or an unsigned BA.
+ */
+export type BillingReadiness = "billable" | "awaiting-bast" | "blocked" | "invoiced" | "not-due";
 
 /** signed = BA signed; draft = BA exists but unsigned; missing = not in the register; none = no BA required */
 export type DocStatus = "signed" | "draft" | "missing" | "none";
@@ -353,7 +357,11 @@ export type RevenueChartPoint = {
   estimateRemaining: number;
 };
 
-export type EarningStageStatus = "earned" | "blocked" | "in-progress" | "pending";
+/**
+ * One stage vocabulary for S2 and S4. Earned = signed BA on file; Blocked = progress
+ * claimed without a signed BA; Not started = nothing claimed yet.
+ */
+export type EarningStageStatus = "earned" | "blocked" | "not-started";
 
 /** One earning-rule stage (15/15/30/30/10) rolled up over the components of a project. */
 export type EarningStageRow = {
@@ -453,8 +461,12 @@ export type CostMargin = {
   rapRemaining: number;
   recognisedRevenue: number;
   profit: number;
-  /** (revenue - cost) / revenue, null when nothing is recognised yet */
+  /** (revenue - cost) / revenue, null when nothing is recognised yet. Includes vendor advances. */
   margin: number | null;
+  /** Vendor advances (uang muka) paid without an SES: in cost, not yet delivered */
+  vendorAdvances: number;
+  /** (revenue - (cost - vendor advances)) / revenue */
+  marginExAdvances: number | null;
 };
 
 export type CriticalItem = {
@@ -477,7 +489,7 @@ export type ProjectExceptionItem = {
 /** Autonomy ladder: L0 Inform, L1 Recommend, L2 Act with approval. */
 export type ActionAutonomy = "L0" | "L1" | "L2";
 
-export type EvidenceStatus = "complete" | "missing" | "pending";
+export type EvidenceStatus = EarningStageStatus;
 export type GateResult = "can-earn" | "blocked";
 
 /** One component (or the whole system) at one earning stage. */
@@ -525,6 +537,7 @@ export type EvidenceSummary = {
   /** Units claimed in the report without a signed BA */
   claimedWithoutBa: number;
   blockedValue: number;
+  notStarted: number;
 };
 
 /** What the Evidence agent recommends when a stage is blocked (autonomy L1). */
@@ -915,4 +928,11 @@ export type RegisterSummary = {
   notSigned: number;
   latestDocument: string | null;
   latestDateLabel: string | null;
+};
+
+/** The three revenue figures, with the same labels on S1, S2 and S3. */
+export type RevenueTrio = {
+  recognisedRevenue: number;
+  accrualThisYear: number;
+  earnedWithSignedBa: number;
 };

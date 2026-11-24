@@ -71,6 +71,9 @@ describe("project switching", () => {
 
   it("points sidebar project links at the selected project", () => {
     expect(withProject(`${HERO_PROJECT_PATH}/evidence`, "PNP127")).toBe("/ptepi/project/PNP127/evidence");
-    expect(withProject("/ptepi/cost", "PNP127")).toBe("/ptepi/cost");
+    expect(withProject("/ptepi/cost", "PNP127")).toBe("/ptepi/cost?project=PNP127");
+    expect(withProject("/ptepi/commercial", null)).toBe("/ptepi/commercial");
+    expect(withProject(HERO_PROJECT_PATH, null)).toBe(HERO_PROJECT_PATH);
+    expect(withProject("/ptepi/actions", "PNP126")).toBe("/ptepi/actions");
   });
 });

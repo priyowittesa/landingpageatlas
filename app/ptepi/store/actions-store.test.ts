@@ -6,7 +6,7 @@ const sample: NewEpiAction = {
   projectId: "PNP126",
   ownerRole: "Project Manager",
   dueDate: "2026-11-15",
-  source: "S4 Evidence gate: PNP126 stage 2",
+  source: "Evidence gate: PNP126 stage 2",
   autonomy: "L1"
 };
 
@@ -17,7 +17,7 @@ describe("actions store", () => {
     const first = useActionsStore.getState().addAction(sample);
     const second = useActionsStore
       .getState()
-      .addAction({ ...sample, source: "S4 Evidence gate: PNP126 stage 3" });
+      .addAction({ ...sample, source: "Evidence gate: PNP126 stage 3" });
     expect(first).toMatchObject({ id: "ACT-001", status: "open", autonomy: "L1", projectId: "PNP126" });
     expect(second.id).toBe("ACT-002");
     expect(useActionsStore.getState().actions).toHaveLength(2);

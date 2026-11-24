@@ -1,6 +1,8 @@
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import type { MetricId } from "../metrics";
+import { MetricLabel } from "./MetricLabel";
 
 type KpiTone = "default" | "good" | "watch" | "bad";
 
@@ -15,6 +17,8 @@ type KpiCardProps = {
   /** Small status badge in the footer, for example a StatusBadge */
   footer?: ReactNode;
   className?: string;
+  /** Shows the metric label from metrics.ts with its formula tooltip instead of title */
+  metricId?: MetricId;
 };
 
 const TILE: Record<KpiTone, string> = {
@@ -28,7 +32,16 @@ const TILE: Record<KpiTone, string> = {
  * KPI card in the pattern of the shadcn dashboard blocks: small title, icon tile,
  * a large tabular figure and a one-line explanation, on a faint violet wash.
  */
-export function KpiCard({ title, value, subtitle, icon: Icon, tone = "default", footer, className }: KpiCardProps) {
+export function KpiCard({
+  title,
+  value,
+  subtitle,
+  icon: Icon,
+  tone = "default",
+  footer,
+  className,
+  metricId
+}: KpiCardProps) {
   return (
     <div
       className={cn(
@@ -37,7 +50,9 @@ export function KpiCard({ title, value, subtitle, icon: Icon, tone = "default", 
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <p className="text-sm font-medium text-muted-foreground">{title}</p>
+        <p className="text-sm font-medium text-muted-foreground">
+          {metricId ? <MetricLabel metricId={metricId} /> : title}
+        </p>
         <span
           aria-hidden
           className={cn(

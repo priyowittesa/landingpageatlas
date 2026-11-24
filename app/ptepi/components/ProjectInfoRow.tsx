@@ -1,3 +1,4 @@
+import { formatDate, formatDateRange } from "../format";
 import { HEALTH_LABELS } from "../labels";
 import type { ProjectInfo } from "../types";
 import { RupiahText } from "./RupiahText";
@@ -39,12 +40,12 @@ export function ProjectInfoRow({ info }: ProjectInfoRowProps) {
         <dt className="text-sm text-muted-foreground">Dates</dt>
         <dd className="text-sm font-medium">
           {info.startDate || info.endDate
-            ? `${info.startDate ?? "Not set"} to ${info.endDate ?? "not set"}`
+            ? formatDateRange(info.startDate, info.endDate)
             : "Set when the contract is signed"}
         </dd>
         {info.endDateAddendum && (
           <dd className="text-xs text-muted-foreground">
-            Extended to {info.endDateAddendum}
+            Extended to {formatDate(info.endDateAddendum)}
           </dd>
         )}
       </div>

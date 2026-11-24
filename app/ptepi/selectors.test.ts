@@ -226,7 +226,8 @@ describe("S2 billing", () => {
     expect(total).toBe(open.reduce((a, s) => a + s.amount, 0));
     expect(summary.blocked.count).toBe(4);
     expect(summary.blocked.amount).toBe(752_450_564);
-    expect(summary.billable.amount).toBe(37_854_903);
+    expect(summary.billable.amount).toBe(0);
+    expect(summary["awaiting-bast"]).toEqual({ count: 2, amount: 37_854_903 });
   });
 
   it("blocks PTP1125 on the unsigned BAST I and IKT0126 on the draft monthly BAs", () => {
@@ -238,10 +239,30 @@ describe("S2 billing", () => {
     );
   });
 
-  it("warns on a billable Retensi whose BAST II is not in the register", () => {
-    const retention = rows.find((r) => r.projectId === "PTP1025" && r.readiness === "billable");
+  it("keeps a due Retensi without a signed BAST II out of Billable now", () => {
+    const retention = rows.find((r) => r.projectId === "PTP1025" && r.stageType === "Retensi 5%");
+    expect(retention?.readiness).toBe("awaiting-bast");
     expect(retention?.docStatus).toBe("missing");
     expect(retention?.reason).toBe("BAST II not in the register");
+    expect(rows.filter((r) => r.readiness === "billable")).toEqual([]);
+  });
+
+  it("counts a stage as billable only when the BA is signed and the condition is met", () => {
+    const signedBast2 = {
+      ...epiData,
+      baRegister: [
+        ...epiData.baRegister,
+        { ...epiData.baRegister[0], baId: "BA-TEST", projectId: "PTP1025", documentType: "BAST II", status: "Signed" }
+      ]
+    };
+    const row = getBillingRows(signedBast2).find((r) => r.projectId === "PTP1025" && r.stageType === "Retensi 5%");
+    expect(row?.readiness).toBe("billable");
+  });
+
+  it("uses the same rule for S1 Retensi held", () => {
+    const awaiting = rows.filter((r) => r.readiness === "awaiting-bast").reduce((a, r) => a + r.amount, 0);
+    expect(getPortfolioTotals(epiData).retentionHeld).toBe(awaiting);
+    expect(awaiting).toBe(37_854_903);
   });
 
   it("filters by customer, payment type and readiness", () => {
@@ -273,7 +294,7 @@ describe("S2 earning rule 15/15/30/30/10", () => {
   });
 
   it("leaves MOS, Installation and Testing pending", () => {
-    expect(stages.slice(2).map((s) => s.status)).toEqual(["pending", "pending", "pending"]);
+    expect(stages.slice(2).map((s) => s.status)).toEqual(["not-started", "not-started", "not-started"]);
   });
 
   it("has no component schedule for other projects", () => {
@@ -409,28 +430,30 @@ describe("S4 evidence gate", () => {
 
   it("lets Approval Material earn: every component has a signed BA", () => {
     const stage = stages[0];
-    expect(stage?.status).toBe("complete");
+    expect(stage?.status).toBe("earned");
     expect(stage?.gate.result).toBe("can-earn");
-    expect(stage?.units.every((u) => u.status === "complete")).toBe(true);
+    expect(stage?.units.every((u) => u.status === "earned")).toBe(true);
     expect(stage?.signedDate).toBe("2026-09-17");
   });
 
   it("blocks Confirmation Order on the draft transformer PO", () => {
     const stage = stages[1];
-    expect(stage?.status).toBe("missing");
+    expect(stage?.status).toBe("blocked");
     expect(stage?.gate.result).toBe("blocked");
+    expect(stage?.signedDate).toBeNull();
     expect(stage?.gate.reason).toBe(
       "Power Transformer: PO Vendor (Confirmation Order) still draft, not signed"
     );
     const draft = stage?.units.find((u) => u.unit === "Power Transformer");
     expect(draft?.baId).toBe("BA-PNP126-15");
-    expect(draft?.status).toBe("missing");
+    expect(draft?.status).toBe("blocked");
     expect(stage?.blockedValue).toBe(17_802_002);
   });
 
-  it("blocks the later stages as pending: nothing is claimed and no BA exists", () => {
+  it("leaves the later stages not started: nothing is claimed and no BA exists", () => {
     for (const stage of stages.slice(2)) {
-      expect(stage.status).toBe("pending");
+      expect(stage.status).toBe("not-started");
+      expect(stage.signedDate).toBeNull();
       expect(stage.gate.result).toBe("blocked");
       expect(stage.gate.reason).toContain("Not started");
       expect(stage.blockedValue).toBe(0);
@@ -441,9 +464,10 @@ describe("S4 evidence gate", () => {
   it("summarises the gate", () => {
     expect(getEvidenceSummary(stages)).toEqual({
       canEarn: 1,
-      blocked: 4,
+      blocked: 1,
       claimedWithoutBa: 1,
-      blockedValue: 17_802_002
+      blockedValue: 17_802_002,
+      notStarted: 3
     });
   });
 
@@ -475,7 +499,7 @@ describe("S4 evidence gate", () => {
       projectId: "PNP126",
       ownerRole: "Project Manager",
       dueDate: "2026-11-15",
-      source: "S4 Evidence gate: PNP126 stage 2",
+      source: "Evidence gate: PNP126 stage 2",
       autonomy: "L1"
     });
     const later = getSuggestedAction(epiData, "PNP126", stages[2]!);

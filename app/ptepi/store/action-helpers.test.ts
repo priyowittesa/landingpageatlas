@@ -42,7 +42,7 @@ describe("seeded actions", () => {
       projectId: "PNP126",
       ownerRole: "ASM Teknik",
       dueDate: "2026-11-15",
-      source: "S3 Project cockpit: exception #1",
+      source: "Project cockpit: exception #1",
       autonomy: "L1"
     });
     expect(first?.title).toBe("Resolve: Plan vs actual deviation of more than 10 points");
@@ -57,14 +57,22 @@ describe("seeded actions", () => {
 
   it("covers the exceptions of the projects in the data", () => {
     expect(getProjectOptions(seeds)).toEqual(["IKT0126", "PNP126", "PSL0126", "PSL0326", "PSL0426", "PTP1025", "PTP1125", "TPK125"]);
-    expect(getSourceOptions(seeds)).toEqual(["S1", "S2", "S3", "S4", "S5", "S6"]);
+    expect(getSourceOptions(seeds)).toEqual([
+      "Commercial and billing",
+      "Evidence gate",
+      "Portfolio health",
+      "Procurement and cost",
+      "Project cockpit",
+      "Service contracts"
+    ]);
   });
 });
 
 describe("action list helpers", () => {
   it("reads the screen code from the source", () => {
-    expect(sourceScreen("S4 Evidence gate: PNP126 stage 2")).toBe("S4");
-    expect(sourceScreen("S7 Nexa Intelligence: x")).toBe("S7");
+    expect(sourceScreen("Evidence gate: PNP126 stage 2")).toBe("Evidence gate");
+    expect(sourceScreen("S4 Evidence gate: PNP126 stage 2")).toBe("Evidence gate");
+    expect(sourceScreen("Nexa Intelligence: x")).toBe("Nexa Intelligence");
     expect(sourceScreen("manual")).toBe("Other");
   });
 
@@ -78,7 +86,7 @@ describe("action list helpers", () => {
     expect(filterActions(seeds, { ...none, project: "IKT0126" })).toHaveLength(2);
     expect(filterActions(seeds, { ...none, owner: "Finance" })).toHaveLength(4);
     expect(filterActions(seeds, { ...none, status: "done" })).toHaveLength(0);
-    expect(filterActions(seeds, { ...none, source: "S2" })).toHaveLength(4);
+    expect(filterActions(seeds, { ...none, source: "Commercial and billing" })).toHaveLength(4);
     expect(filterActions(seeds, { ...none, search: "retensi" })).toHaveLength(1);
     expect(filterActions(seeds, { ...none, search: "exc-12" })).toHaveLength(1);
   });
@@ -114,7 +122,7 @@ const sample: NewEpiAction = {
   projectId: "PNP126",
   ownerRole: "Project Manager",
   dueDate: "2026-11-15",
-  source: "S4 Evidence gate: PNP126 stage 2",
+  source: "Evidence gate: PNP126 stage 2",
   autonomy: "L1"
 };
 
@@ -140,7 +148,7 @@ describe("actions store: seed, assign, close", () => {
   it("keeps ids unique when S4 or S7 create actions before and after seeding", () => {
     useActionsStore.getState().addAction(sample);
     useActionsStore.getState().seed(seeds);
-    const later = useActionsStore.getState().addAction({ ...sample, source: "S7 Nexa Intelligence: x" });
+    const later = useActionsStore.getState().addAction({ ...sample, source: "Nexa Intelligence: x" });
     const ids = useActionsStore.getState().actions.map((a) => a.id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(later.id).toBe("ACT-002");

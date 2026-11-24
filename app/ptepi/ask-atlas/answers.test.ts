@@ -45,7 +45,7 @@ describe("scripted answers", () => {
       projectId: "PNP126",
       dueDate: "2026-11-15",
       autonomy: "L1",
-      source: "S7 Nexa Intelligence: PNP126 behind plan"
+      source: "Nexa Intelligence: PNP126 behind plan"
     });
     expect(answer.actions[0]?.title).toContain("Panel SVGm");
   });
@@ -53,11 +53,11 @@ describe("scripted answers", () => {
   it("lists what is blocked from billing", () => {
     const answer = answers.billing;
     expect(answer.conclusion).toBe(
-      "4 payment stages worth Rp 752,5 m are blocked from billing; 2 worth Rp 37,9 m can be billed now."
+      "4 payment stages worth Rp 752,5 m are blocked from billing; 0 worth Rp 0,0 m can be billed now; 2 Retensi worth Rp 37,9 m are due, awaiting BAST II."
     );
     expect(answer.points.some((p) => p.includes("PTP1125") && p.includes("BAST I still draft, not signed"))).toBe(true);
     expect(answer.points.some((p) => p.includes("PNP126") && p.includes("Progress 28,498% below the 50% condition"))).toBe(true);
-    expect(answer.points.some((p) => p.includes("is billable, but BAST II not in the register"))).toBe(true);
+    expect(answer.points.some((p) => p.includes("is due, awaiting BAST II: BAST II not in the register"))).toBe(true);
     expect(answer.actions.map((a) => a.projectId).sort()).toEqual(["IKT0126", "PNP126", "PTP1125"]);
     expect(answer.actions.every((a) => a.ownerRole === "SM Operasi dan Teknik")).toBe(true);
   });
@@ -66,8 +66,8 @@ describe("scripted answers", () => {
     const answer = answers.next;
     expect(answer.conclusion).toBe("ATLAS recommends 2 actions on PNP126, the most urgent first.");
     expect(answer.actions.map((a) => a.source)).toEqual([
-      "S4 Evidence gate: PNP126 stage 2",
-      "S7 Nexa Intelligence: PNP126 behind plan"
+      "Evidence gate: PNP126 stage 2",
+      "Nexa Intelligence: PNP126 behind plan"
     ]);
     expect(answer.points.some((p) => p.includes("Rp 17.802.002"))).toBe(true);
     expect(answer.points.some((p) => p.includes("Billing stays blocked"))).toBe(true);
@@ -115,7 +115,7 @@ describe("scripted answers", () => {
       for (const action of answer.actions) {
         expect(action.dueDate).toMatch(/^2026-11-\d{2}$/);
         expect(action.autonomy).toBe("L1");
-        expect(action.source.startsWith("S4") || action.source.startsWith("S7")).toBe(true);
+        expect(action.source.startsWith("Evidence gate") || action.source.startsWith("Nexa Intelligence")).toBe(true);
       }
     }
   });

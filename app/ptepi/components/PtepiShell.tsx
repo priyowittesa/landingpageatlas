@@ -12,7 +12,7 @@ import {
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
 import { PTEPI_NAV, getActiveNavHref, withProject } from "../navigation";
-import { DEFAULT_PROJECT_ID, useProjectStore } from "../store/project-store";
+import { useProjectStore } from "../store/project-store";
 import { useActionsStore } from "../store/actions-store";
 import { useSyncProjectFromPath } from "./ProjectFilter";
 import { PtepiTopbar } from "./PtepiTopbar";
@@ -72,7 +72,7 @@ function PtepiSidebar() {
   const pathname = usePathname();
   const { collapsed, toggleCollapsed, sidebarOpen, setSidebarOpen } = useSidebar();
   const isMobile = useIsMobile();
-  const projectId = useProjectStore((state) => state.projectId) ?? DEFAULT_PROJECT_ID;
+  const projectId = useProjectStore((state) => state.projectId);
   const rawActive = getActiveNavHref(pathname);
   const activeHref = rawActive ? withProject(rawActive, projectId) : null;
 

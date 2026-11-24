@@ -4,19 +4,19 @@ import type { ActionAutonomy, ChartTable, EpiDemoData, ExceptionSeverity } from 
 import type { ActionStatus, EpiAction } from "./actions-store";
 
 /** Screen where each seeded exception is worked (requirements, tables 3.4.4 and 11). */
-const EXCEPTION_SCREEN: Record<number, { code: string; name: string }> = {
-  1: { code: "S3", name: "Project cockpit" },
-  2: { code: "S3", name: "Project cockpit" },
-  3: { code: "S4", name: "Evidence gate" },
-  4: { code: "S2", name: "Commercial and billing" },
-  5: { code: "S5", name: "Procurement and cost" },
-  6: { code: "S4", name: "Evidence gate" },
-  7: { code: "S2", name: "Commercial and billing" },
-  8: { code: "S2", name: "Commercial and billing" },
-  9: { code: "S6", name: "Service contracts" },
-  10: { code: "S2", name: "Commercial and billing" },
-  11: { code: "S1", name: "Portfolio health" },
-  12: { code: "S4", name: "Evidence gate" }
+const EXCEPTION_SCREEN: Record<number, { name: string }> = {
+  1: { name: "Project cockpit" },
+  2: { name: "Project cockpit" },
+  3: { name: "Evidence gate" },
+  4: { name: "Commercial and billing" },
+  5: { name: "Procurement and cost" },
+  6: { name: "Evidence gate" },
+  7: { name: "Commercial and billing" },
+  8: { name: "Commercial and billing" },
+  9: { name: "Service contracts" },
+  10: { name: "Commercial and billing" },
+  11: { name: "Portfolio health" },
+  12: { name: "Evidence gate" }
 };
 
 const JR_MANAGER = "Jr Manager Pengendalian Investasi dan Pemeliharaan";
@@ -58,7 +58,7 @@ export function buildSeedActions(data: EpiDemoData): EpiAction[] {
   return data.seededExceptions
     .filter((item) => item.status === "TERDETEKSI")
     .map((item) => {
-      const screen = EXCEPTION_SCREEN[item.exceptionNo] ?? { code: "S1", name: "Portfolio health" };
+      const screen = EXCEPTION_SCREEN[item.exceptionNo] ?? { name: "Portfolio health" };
       const owner = EXCEPTION_OWNER[item.exceptionNo] ?? {
         ownerRole: "ASM Teknik",
         autonomy: "L1" as const
@@ -72,15 +72,33 @@ export function buildSeedActions(data: EpiDemoData): EpiAction[] {
         ownerRole: owner.ownerRole,
         dueDate: addDays(data.asAt, DUE_DAYS[severity]),
         status: "open" as const,
-        source: `${screen.code} ${screen.name}: exception #${item.exceptionNo}`,
+        source: `${screen.name}: exception #${item.exceptionNo}`,
         autonomy: owner.autonomy
       };
     });
 }
 
 /** "S4 Evidence gate: ..." gives "S4"; anything else gives "Other". */
+const SOURCE_SCREENS = [
+  "Portfolio health",
+  "Commercial and billing",
+  "Project cockpit",
+  "Evidence gate",
+  "Procurement and cost",
+  "Service contracts",
+  "Nexa Intelligence",
+  "Action tracker"
+];
+
+/** Drops an internal screen code such as "S4 " from the start of a source. */
+export function stripScreenCode(source: string): string {
+  return source.replace(/^S\d\s+/, "");
+}
+
+/** Screen name an action came from, read from its source; older "S4 ..." sources still map. */
 export function sourceScreen(source: string): string {
-  return /^(S\d)\b/.exec(source)?.[1] ?? "Other";
+  const name = stripScreenCode(source).split(":")[0]?.trim() ?? "";
+  return SOURCE_SCREENS.includes(name) ? name : "Other";
 }
 
 export function isOverdue(action: Pick<EpiAction, "dueDate" | "status">, asAt: string): boolean {

@@ -3,6 +3,7 @@ import { DumbbellCard, ValueByStatusCard } from "./components/charts/ScreenChart
 import { NeedsAttentionPanel } from "./components/NeedsAttentionPanel";
 import { PageHero } from "./components/PageHero";
 import { PortfolioTable } from "./components/PortfolioTable";
+import { RevenueStrip } from "./components/RevenueStrip";
 import { SectionCard } from "./components/SectionCard";
 import { SyntheticDataBadge } from "./components/SyntheticDataBadge";
 import { epiData } from "./data";
@@ -13,6 +14,7 @@ import {
   getPortfolioHeadline,
   getPortfolioRows,
   getPortfolioTotals,
+  getRevenueTrio,
   getValueByStatusChart
 } from "./selectors";
 
@@ -40,6 +42,8 @@ export default function PortfolioHealthPage() {
           { label: "With exceptions", value: `${totals.projectsWithExceptions} of ${totals.projectCount}` }
         ]}
       />
+
+      <RevenueStrip revenue={getRevenueTrio(epiData)} scope="All projects" />
 
       <BillingExposure totals={totals} />
 

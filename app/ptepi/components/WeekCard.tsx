@@ -1,5 +1,5 @@
 import { TrendingDown } from "lucide-react";
-import { formatPoints } from "../format";
+import { formatDateRange, formatPoints } from "../format";
 import { DEVIATION_ALERT_PTS } from "../selectors";
 import type { WeekCard as WeekCardData } from "../types";
 import { PercentText } from "./PercentText";
@@ -13,7 +13,7 @@ export function WeekCard({ week }: WeekCardProps) {
   return (
     <div className="space-y-5">
       <p className="text-sm text-muted-foreground">
-        Week {week.weekNo}: {week.weekStart} to {week.weekEnd}
+        Week {week.weekNo}: {formatDateRange(week.weekStart, week.weekEnd)}
       </p>
       <dl className="space-y-4">
         <div className="flex items-baseline justify-between gap-4">

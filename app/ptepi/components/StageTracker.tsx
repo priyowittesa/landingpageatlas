@@ -1,8 +1,9 @@
 "use client";
 
+import { formatDate } from "../format";
 import { useState } from "react";
 import Link from "next/link";
-import { CircleCheck, Clock, FileText, TriangleAlert } from "lucide-react";
+import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,38 +14,25 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { ATTACHMENT_NOTES } from "../labels";
+import { ATTACHMENT_NOTES, STAGE_STATUS_LABELS } from "../labels";
 import { selectHasOpenAction, useActionsStore } from "../store/actions-store";
 import type { EvidenceStage, EvidenceStatus, SuggestedAction } from "../types";
 import { PercentText } from "./PercentText";
 import { RupiahText } from "./RupiahText";
-import { StatusBadge, type StatusTone } from "./StatusBadge";
+import { StatusBadge } from "./StatusBadge";
 import { SyntheticDataBadge } from "./SyntheticDataBadge";
 
-const STATUS: Record<EvidenceStatus, { tone: StatusTone; label: string }> = {
-  complete: { tone: "good", label: "Complete" },
-  missing: { tone: "bad", label: "Missing BA" },
-  pending: { tone: "watch", label: "Pending" }
-};
+const STATUS = STAGE_STATUS_LABELS;
 
 const STEP_STYLE: Record<EvidenceStatus, string> = {
-  complete: "bg-green-700 text-white",
-  missing: "bg-destructive text-white",
-  pending: "bg-primary-50 text-primary-700"
+  earned: "bg-green-700 text-white",
+  blocked: "bg-destructive text-white",
+  "not-started": "bg-primary-50 text-primary-700"
 };
 
-function StepIcon({ status }: { status: EvidenceStatus }) {
-  if (status === "complete") return <CircleCheck size={16} aria-hidden />;
-  if (status === "missing") return <TriangleAlert size={16} aria-hidden />;
-  return <Clock size={16} aria-hidden />;
-}
-
 function GateBadge({ stage }: { stage: EvidenceStage }) {
-  return stage.gate.result === "can-earn" ? (
-    <StatusBadge tone="good" label="Can earn" />
-  ) : (
-    <StatusBadge tone="bad" label="Blocked: missing BA" />
-  );
+  const status = STATUS[stage.status];
+  return <StatusBadge tone={status.tone} label={status.label} />;
 }
 
 type StageTrackerProps = {
@@ -68,7 +56,7 @@ export function StageTracker({ stages, suggestions }: StageTrackerProps) {
               aria-label={`Stage ${stage.stageNo} ${stage.label}, ${STATUS[stage.status].label}. Open details`}
               className={cn(
                 "flex w-full flex-col gap-3 rounded-xl border bg-background p-4 text-left transition-colors hover:bg-primary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500",
-                stage.gate.result === "blocked" && stage.status === "missing"
+                stage.status === "blocked"
                   ? "border-destructive"
                   : "border-border"
               )}
@@ -90,7 +78,6 @@ export function StageTracker({ stages, suggestions }: StageTrackerProps) {
               <div>
                 <p className="font-semibold">{stage.label}</p>
                 <div className="mt-1 flex items-center gap-1.5">
-                  <StepIcon status={stage.status} />
                   <StatusBadge
                     tone={STATUS[stage.status].tone}
                     label={STATUS[stage.status].label}
@@ -109,12 +96,11 @@ export function StageTracker({ stages, suggestions }: StageTrackerProps) {
                 </div>
                 <div>
                   <dt className="text-muted-foreground">Signed date</dt>
-                  <dd className="font-medium">{stage.signedDate ?? "-"}</dd>
+                  <dd className="font-medium">{formatDate(stage.signedDate)}</dd>
                 </div>
               </dl>
 
               <div className="mt-auto space-y-1 border-t border-border pt-3">
-                <GateBadge stage={stage} />
                 <p className="line-clamp-3 text-xs text-muted-foreground">{stage.gate.reason}</p>
               </div>
             </button>
@@ -188,7 +174,7 @@ function StageDialogBody({ stage, suggestion }: StageDialogBodyProps) {
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {unit.baId
-                    ? `${unit.baId}, ${unit.documentNo ?? "no number"}, ${unit.documentDate ?? "no date"}, signer ${unit.signerRole ?? "-"}`
+                    ? `${unit.baId}, ${unit.documentNo ?? "no number"}, signed ${unit.status === "earned" ? formatDate(unit.documentDate) : "-"}, signer ${unit.signerRole ?? "-"}`
                     : "No BA in the register"}
                 </p>
                 {unit.issue && <p className="text-xs text-destructive">{unit.issue}</p>}
@@ -234,7 +220,7 @@ function StageDialogBody({ stage, suggestion }: StageDialogBodyProps) {
             </Link>
           ) : (
             <span className="text-xs text-muted-foreground">
-              Adds the action to the tracker (S8).
+              Adds the action to the Action tracker.
             </span>
           )}
           <Button

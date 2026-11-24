@@ -45,3 +45,35 @@ describe("universal project views", () => {
     expect(summary.latestDateLabel).not.toBeNull();
   });
 });
+
+describe("no-progress wording", () => {
+  it("derives weeks 14 to 18 (5 weeks) for PNP126 from progressWeekly", async () => {
+    const { getNoProgressPeriod, getSCurveChart } = await import("./selectors");
+    const { formatPace } = await import("./format");
+    expect(getNoProgressPeriod(epiData, "PNP126")).toEqual({
+      fromWeek: 14,
+      toWeek: 18,
+      weeks: 5,
+      label: "weeks 14 to 18 (5 weeks)"
+    });
+    expect(formatPace(0)).toBe("0 pts");
+    const takeaway = getSCurveChart(epiData, "PNP126").takeaway ?? "";
+    expect(takeaway).not.toContain("averaged");
+    expect(takeaway).toContain("8,9 points per week");
+  });
+});
+
+describe("S5 margin excluding vendor advances", () => {
+  it("keeps the PNP126 margin at 22,26% and adds the margin without uang muka", async () => {
+    const { getCostMargin, getVendorAdvances } = await import("./selectors");
+    const { getMetric } = await import("./metrics");
+    const money = getCostMargin(epiData, "PNP126");
+    expect(money.cost).toBe(239_270_000);
+    expect(Math.round((money.margin ?? 0) * 10000) / 100).toBe(22.26);
+    expect(getVendorAdvances(epiData, "PNP126")).toBe(204_600_000);
+    const expected = (money.recognisedRevenue - (money.cost - 204_600_000)) / money.recognisedRevenue;
+    expect(money.marginExAdvances).toBeCloseTo(expected, 10);
+    expect(money.marginExAdvances ?? 0).toBeGreaterThan(money.margin ?? 0);
+    expect(getMetric("marginExAdvances").formula).toContain("cost - vendor advances");
+  });
+});

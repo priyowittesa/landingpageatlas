@@ -1,6 +1,5 @@
 import {
   CalendarClock,
-  CircleDollarSign,
   FileCheck2,
   Landmark,
   Receipt
@@ -8,6 +7,7 @@ import {
 import { ScreenHeader } from "../components/ScreenHeader";
 import { KpiCard } from "../components/KpiCard";
 import { ProjectFilter } from "../components/ProjectFilter";
+import { RevenueStrip } from "../components/RevenueStrip";
 import { CommercialProjectPanel, type CommercialProjectView } from "../components/CommercialProjectPanel";
 import { epiData } from "../data";
 import { formatRupiahMillions } from "../format";
@@ -21,6 +21,7 @@ import {
   getProjectInfo,
   getProjectLifecycle,
   getRevenueTotals,
+  getRevenueTrio,
   getRevenueWaterfall
 } from "../selectors";
 
@@ -51,7 +52,9 @@ export default function CommercialBillingPage() {
         actions={<ProjectFilter options={getProjectFilterOptions(epiData)} allowAll />}
       />
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-5">
+      <RevenueStrip revenue={getRevenueTrio(epiData)} scope="All projects" />
+
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           title="Tagihan termin"
           subtitle="Uang Muka and Termin invoiced"
@@ -71,13 +74,8 @@ export default function CommercialBillingPage() {
           icon={Landmark}
         />
         <KpiCard
-          title="Accrual revenue 2026"
-          subtitle="Recognised to the as-at date"
-          value={formatRupiahMillions(revenue.accruedThisYear)}
-          icon={CircleDollarSign}
-        />
-        <KpiCard
           title="Taksasi revenue"
+          metricId="taksasiRevenue"
           subtitle="Estimate not yet accrued"
           value={formatRupiahMillions(revenue.estimateRemaining)}
           icon={CalendarClock}

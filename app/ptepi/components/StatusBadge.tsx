@@ -1,12 +1,13 @@
-import { CircleAlert, CircleCheck, TriangleAlert } from "lucide-react";
+import { CircleAlert, CircleCheck, Clock, TriangleAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-export type StatusTone = "good" | "watch" | "bad";
+export type StatusTone = "good" | "watch" | "bad" | "neutral";
 
 const TONES = {
   good: { variant: "green", Icon: CircleCheck, text: "text-green-800" },
   watch: { variant: "yellow", Icon: TriangleAlert, text: "text-amber-900" },
-  bad: { variant: "red", Icon: CircleAlert, text: "text-red-700" }
+  bad: { variant: "red", Icon: CircleAlert, text: "text-red-700" },
+  neutral: { variant: "secondary", Icon: Clock, text: "text-gray-700" }
 } as const;
 
 type StatusBadgeProps = {
