@@ -1,0 +1,109 @@
+/*
+ * Surface layer of the /ptepi prototype. Everything is scoped to .ptepi-app and
+ * built from the app tokens (primary-50..900, border, background), so the
+ * screens keep the ATLAS style guide and only gain depth and rhythm.
+ */
+
+.ptepi-app {
+  /* A faint violet canvas, so white cards stand out of the page. */
+  --ptepi-canvas: color-mix(in oklab, var(--color-primary-50) 38%, var(--background));
+  --ptepi-shadow-rest: 0 1px 2px color-mix(in oklab, var(--color-primary-900) 7%, transparent),
+    0 6px 16px -6px color-mix(in oklab, var(--color-primary-700) 14%, transparent);
+  --ptepi-shadow-lift: 0 2px 4px color-mix(in oklab, var(--color-primary-900) 8%, transparent),
+    0 14px 28px -10px color-mix(in oklab, var(--color-primary-700) 26%, transparent);
+  background: var(--ptepi-canvas);
+}
+
+/* Cards: layered shadow and a soft border, one radius everywhere. */
+.ptepi-card {
+  background: var(--background);
+  border: 1px solid color-mix(in oklab, var(--color-primary-100) 55%, var(--border));
+  border-radius: 1rem;
+  box-shadow: var(--ptepi-shadow-rest);
+  transition: box-shadow 200ms ease, transform 200ms ease, border-color 200ms ease;
+}
+
+.ptepi-card--lift:hover {
+  border-color: var(--color-primary-100);
+  box-shadow: var(--ptepi-shadow-lift);
+  transform: translateY(-2px);
+}
+
+/* Tables: tinted header, calm rows, a hover that shows which row you are on. */
+.ptepi-app table thead th {
+  background: color-mix(in oklab, var(--color-primary-50) 70%, var(--background));
+  color: var(--color-primary-900);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.ptepi-app table tbody tr {
+  border-color: color-mix(in oklab, var(--color-primary-100) 35%, var(--border));
+  transition: background-color 120ms ease;
+}
+
+.ptepi-app table tbody tr:hover > td {
+  background: color-mix(in oklab, var(--color-primary-50) 55%, transparent);
+}
+
+/* Active sidebar item: an accent edge and a little lift. */
+.ptepi-app aside nav a.bg-primary-700 {
+  box-shadow: inset 3px 0 0 var(--color-primary-300),
+    0 6px 14px -8px color-mix(in oklab, black 55%, transparent);
+}
+
+.ptepi-app aside nav a {
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.ptepi-app aside nav a:hover {
+  transform: translateX(2px);
+}
+
+/* One visible focus ring for every control. */
+.ptepi-app :focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* Cards in a screen rise in one after another. */
+@keyframes ptepi-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ptepi-app main > div > * {
+  animation: ptepi-rise 480ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.ptepi-app main > div > *:nth-child(2) { animation-delay: 60ms; }
+.ptepi-app main > div > *:nth-child(3) { animation-delay: 120ms; }
+.ptepi-app main > div > *:nth-child(4) { animation-delay: 180ms; }
+.ptepi-app main > div > *:nth-child(5) { animation-delay: 240ms; }
+.ptepi-app main > div > *:nth-child(n + 6) { animation-delay: 300ms; }
+
+/* Slim scrollbars for tables that scroll inside their card. */
+.ptepi-app .overflow-x-auto {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary-300) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ptepi-app main > div > * {
+    animation: none;
+  }
+  .ptepi-card,
+  .ptepi-app aside nav a {
+    transition: none;
+  }
+  .ptepi-card--lift:hover,
+  .ptepi-app aside nav a:hover {
+    transform: none;
+  }
+}

@@ -63,3 +63,5 @@ next-env.d.ts
 /.devin/capacity-analytic/*
 !/.devin/capacity-analytic/capacity-analytic-fe-integration.md
 !/.devin/capacity-analytic/API-COVERAGE.md
+# Client source documents (never commit)
+/docs/ptepi/
