@@ -19,7 +19,7 @@ export function LookAheadCard({ rows, real = false }: LookAheadCardProps) {
       flush
     >
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-sm">
+        <table className="ptepi-static w-full min-w-[40rem] text-sm">
           <thead>
             <tr className="border-b border-border text-left text-xs text-muted-foreground">
               <th className="px-4 py-2.5 font-medium"><Tr>Week</Tr></th>

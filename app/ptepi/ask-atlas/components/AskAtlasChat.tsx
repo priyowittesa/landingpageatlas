@@ -31,7 +31,8 @@ const CATEGORIES: { label: string; ids: QuestionId[] }[] = [
   { label: "Evidence and BAST", ids: ["bast", "mos"] },
   { label: "Portfolio health", ids: ["attention"] },
   { label: "Cost and RAP", ids: ["rap"] },
-  { label: "Service contracts", ids: ["inspections"] }
+  { label: "Service contracts", ids: ["inspections"] },
+  { label: "Reports", ids: ["export"] }
 ];
 
 const PROMPTS = [...QUESTIONS.map((question) => question.label), BAHASA_CHIP.label];
@@ -43,6 +44,8 @@ const SOURCE_ICON: Record<AnswerSource["kind"], typeof Table2> = {
   document: FileText,
   rule: Scale
 };
+
+const SOURCE_KIND_LABEL: Record<AnswerSource["kind"], string> = { table: "Table", document: "Document", rule: "Rule" };
 
 type Group = "Today" | "Yesterday" | "This week";
 
@@ -79,6 +82,7 @@ function pastConversation(id: string, group: Group, questionId: QuestionId, save
 
 const INITIAL: Conversation[] = [
   { id: "c-new", title: "New conversation", group: "Today", saved: false, messages: [] },
+  pastConversation("c-report", "Today", "export", false),
   pastConversation("c-attention", "Yesterday", "attention", false),
   pastConversation("c-billing", "Yesterday", "billing", true),
   pastConversation("c-rap", "This week", "rap", false)
@@ -96,7 +100,8 @@ const TONE_TEXT: Record<NexaContextKpi["tone"], string> = {
 export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps) {
   const t = useT();
   const [conversations, setConversations] = useState<Conversation[]>(INITIAL);
-  const [activeId, setActiveId] = useState("c-new");
+  // Opens on the finished report example, so a visitor sees what a generated report looks like at once.
+  const [activeId, setActiveId] = useState("c-report");
   const [tab, setTab] = useState<"history" | "saved">("history");
   const [search, setSearch] = useState("");
   const [draft, setDraft] = useState("");
@@ -199,7 +204,7 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
         ))}
       </div>
 
-      <div className="ptepi-card grid h-[calc(100vh-15rem)] min-h-[600px] grid-cols-1 overflow-hidden lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)_300px]">
+      <div className="ptepi-card grid h-[calc(100vh-15rem)] min-h-[37.5rem] grid-cols-1 overflow-hidden lg:grid-cols-[minmax(15rem,22%)_minmax(0,1fr)] xl:grid-cols-[minmax(16rem,18%)_minmax(0,1fr)_minmax(17rem,21%)]">
         {/* Conversations */}
         <aside aria-label={t("Conversations")} className="hidden min-h-0 flex-col border-r border-primary-100/70 lg:flex">
           <div className="space-y-3 p-3">
@@ -246,7 +251,7 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
               if (items.length === 0) return null;
               return (
                 <div key={group}>
-                  <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-500">{t(group)}</p>
+                  <p className="px-1 pb-1 text-[0.6875rem] font-semibold uppercase tracking-wide text-gray-500">{t(group)}</p>
                   <ul className="space-y-1">
                     {items.map((item) => {
                       const selected = item.id === active?.id;
@@ -265,16 +270,16 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
                           >
                             <MessageSquare size={14} aria-hidden className="mt-0.5 shrink-0 text-primary-600" />
                             <span className="min-w-0">
-                              <span className="block truncate text-xs font-semibold text-gray-900">{item.title === "New conversation" ? t(item.title) : item.title}</span>
-                              <span className="block text-[10px] text-gray-600">
-                                {item.messages.length} {item.messages.length === 1 ? "message" : "messages"}
+                              <span className="block truncate text-xs font-semibold text-gray-900">{t(item.title)}</span>
+                              <span className="block text-[0.6875rem] text-gray-600">
+                                {item.messages.length} {t(item.messages.length === 1 ? "message" : "messages")}
                               </span>
                             </span>
                           </button>
                           <button
                             type="button"
                             onClick={() => toggleSaved(item.id)}
-                            aria-label={item.saved ? `Unsave ${item.title}` : `Save ${item.title}`}
+                            aria-label={`${t(item.saved ? "Unsave" : "Save")} ${t(item.title)}`}
                             aria-pressed={item.saved}
                             className="absolute right-2 top-2 rounded p-0.5 text-gray-400 hover:text-amber-600"
                           >
@@ -290,7 +295,7 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
             {listed.length === 0 && <p className="px-1 text-xs text-gray-500"><Tr>No conversation matches.</Tr></p>}
 
             <div>
-              <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+              <p className="px-1 pb-1 text-[0.6875rem] font-semibold uppercase tracking-wide text-gray-500">
                 {t("Prompt categories")}
               </p>
               <ul>
@@ -302,7 +307,7 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
                       className="flex w-full items-center justify-between rounded-md px-1.5 py-1.5 text-left text-xs text-gray-800 hover:bg-primary-50"
                     >
                       {t(category.label)}
-                      <span className="rounded-full bg-primary-50 px-1.5 text-[10px] font-semibold tabular-nums text-primary-800">
+                      <span className="rounded-full bg-primary-50 px-1.5 text-[0.6875rem] font-semibold tabular-nums text-primary-800">
                         {category.ids.length}
                       </span>
                     </button>
@@ -333,7 +338,7 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
                         onClick={() => ask(prompt)}
                         className="w-full rounded-lg border border-gray-200 bg-white px-3.5 py-2.5 text-left text-sm text-gray-800 transition-colors hover:border-primary-300 hover:bg-primary-50/60"
                       >
-                        {prompt}
+                        {t(prompt)}
                       </button>
                     </li>
                   ))}
@@ -345,7 +350,7 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
                   message.role === "user" ? (
                     <div key={message.id} className="flex justify-end">
                       <p className="max-w-[85%] rounded-lg bg-primary-700 px-3.5 py-2 text-sm font-medium text-white shadow-sm">
-                        {message.text}
+                        {t(message.text)}
                       </p>
                     </div>
                   ) : (
@@ -356,7 +361,7 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
                       <div className="min-w-0 flex-1 space-y-2">
                         <div className="flex flex-wrap items-center gap-2 text-xs">
                           <span className="font-semibold text-gray-900">{NAME}</span>
-                          <span className="text-gray-500">Data as at {asAtLabel}</span>
+                          <span className="text-gray-500">{t("Data as at")} {asAtLabel}</span>
                           <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 font-medium text-amber-900 ring-1 ring-inset ring-amber-700/15">
                             <FlaskConical size={12} aria-hidden />
                             {t("Mock answer")}
@@ -370,7 +375,7 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
                           />
                         ) : (
                           <div className="space-y-2 rounded-lg border border-gray-200 bg-white p-4 text-sm">
-                            <p>{message.text}</p>
+                            <p>{t(message.text)}</p>
                             <ul className="list-disc space-y-1 pl-5">
                               {PROMPTS.map((prompt) => (
                                 <li key={prompt}>
@@ -379,7 +384,7 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
                                     onClick={() => ask(prompt)}
                                     className="text-left text-primary-700 hover:underline"
                                   >
-                                    {prompt}
+                                    {t(prompt)}
                                   </button>
                                 </li>
                               ))}
@@ -415,7 +420,7 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
                 <ArrowUp size={16} aria-hidden />
               </button>
             </div>
-            <p className="mt-1.5 text-[11px] text-gray-500">
+            <p className="mt-1.5 text-[0.75rem] text-gray-500">
               {t("Enter to send, Shift + Enter for a new line. Mock answers scripted by keyword; a person approves every action.")}
             </p>
           </form>
@@ -425,48 +430,45 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
         <aside aria-label={t("Context panel")} className="hidden min-h-0 overflow-y-auto border-l border-primary-100/70 p-4 xl:block">
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-gray-900">{t("Context panel")}</p>
-            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-700">
+            <span className="inline-flex items-center gap-1 text-[0.75rem] font-medium text-green-700">
               <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-green-600" />
               {t("As at")} {asAtLabel}
             </span>
           </div>
-          <p className="text-[11px] text-gray-500">{t("All projects, governed demo data")}</p>
+          <p className="text-[0.75rem] text-gray-500">{t("All projects, governed demo data")}</p>
 
-          <p className="mt-4 text-[10px] font-semibold uppercase tracking-wide text-gray-500">{t("Portfolio KPIs")}</p>
+          <p className="mt-4 text-[0.6875rem] font-semibold uppercase tracking-wide text-gray-500">{t("Portfolio KPIs")}</p>
           <ul className="mt-2 space-y-2">
             {context.map((kpi) => (
               <li key={kpi.label} className="rounded-lg border border-gray-200 bg-white p-3">
                 <div className="flex items-baseline justify-between gap-2">
-                  <p className="text-[11px] text-gray-600">{t(kpi.label)}</p>
-                  <p className={cn("text-[10px] font-semibold", TONE_TEXT[kpi.tone])}>{t(kpi.note)}</p>
+                  <p className="text-[0.75rem] text-gray-600">{t(kpi.label)}</p>
+                  <p className={cn("text-[0.6875rem] font-semibold", TONE_TEXT[kpi.tone])}>{t(kpi.note)}</p>
                 </div>
                 <p className="mt-0.5 text-base font-bold tabular-nums text-gray-950">{kpi.value}</p>
               </li>
             ))}
           </ul>
 
-          <p className="mt-5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">{t("Answer basis")}</p>
+          <p className="mt-5 text-[0.6875rem] font-semibold uppercase tracking-wide text-gray-500">{t("Answer basis")}</p>
           {lastAnswer ? (
             <div className="mt-2 space-y-1 rounded-lg border border-gray-200 bg-white p-3">
               <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-900">
                 <ShieldCheck size={14} aria-hidden className="text-primary-700" />
-                {lastAnswer.sources.length} cited sources
+                {lastAnswer.sources.length} {t("cited sources")}
               </p>
               <p className="text-xs text-gray-700">
                 {(["table", "document", "rule"] as const)
-                  .map((kind) => {
-                    const n = lastAnswer.sources.filter((source) => source.kind === kind).length;
-                    return `${n} ${kind}${n === 1 ? "" : "s"}`;
-                  })
+                  .map((kind) => `${lastAnswer.sources.filter((source) => source.kind === kind).length} ${t(SOURCE_KIND_LABEL[kind])}`)
                   .join(", ")}
               </p>
-              <p className="text-[11px] text-gray-500"><Tr>No AI model is called; numbers come from the governed data.</Tr></p>
+              <p className="text-[0.75rem] text-gray-500"><Tr>No AI model is called; numbers come from the governed data.</Tr></p>
             </div>
           ) : (
             <p className="mt-2 text-xs text-gray-500">{t("Ask a question to see what the answer is based on.")}</p>
           )}
 
-          <p className="mt-5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+          <p className="mt-5 text-[0.6875rem] font-semibold uppercase tracking-wide text-gray-500">
             {t("Source references")} ({lastAnswer?.sources.length ?? 0})
           </p>
           {lastAnswer && (
@@ -478,14 +480,14 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
                     key={`${source.kind}-${source.label}`}
                     className="flex items-start gap-2 rounded-lg border border-gray-200 bg-white p-2.5 text-xs"
                   >
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-primary-50 text-[10px] font-semibold text-primary-800">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-primary-50 text-[0.6875rem] font-semibold text-primary-800">
                       {index + 1}
                     </span>
                     <span className="min-w-0">
                       <span className="block font-medium text-gray-900">{source.label}</span>
-                      <span className="flex items-center gap-1 text-[10px] capitalize text-gray-500">
+                      <span className="flex items-center gap-1 text-[0.6875rem] text-gray-500">
                         <Icon size={11} aria-hidden />
-                        {source.kind}
+                        {t(SOURCE_KIND_LABEL[source.kind])}
                       </span>
                     </span>
                   </li>

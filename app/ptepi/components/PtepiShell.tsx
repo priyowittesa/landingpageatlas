@@ -8,6 +8,8 @@ import { usePathname } from "next/navigation";
 import { ChevronsRight } from "lucide-react";
 import type { NavNode } from "@/components/layout/dasbhoard/navigation";
 import { PtepiNavItem } from "./PtepiNavItem";
+import { ModuleAlertsProvider, type SignalRef } from "./module-alerts";
+import type { EpiAction } from "../store/actions-store";
 import {
   ResponsiveSidebarProvider,
   useSidebar
@@ -19,25 +21,35 @@ import { useProjectStore } from "../store/project-store";
 import { useActionsStore } from "../store/actions-store";
 import { useSyncProjectFromPath } from "./ProjectFilter";
 import { PtepiTopbar } from "./PtepiTopbar";
+import { NexaFab } from "./NexaFab";
+import { NexaChatDrawer } from "./NexaChatDrawer";
+import type { Answer, QuestionId } from "../ask-atlas/types";
 
 /**
  * Public shell of the prototype. It reuses the ATLAS sidebar items and the
  * responsive sidebar state, but not `Sidebar`, `AppLayout` or `UserMenu`,
  * which call the auth API and would redirect a logged-out visitor.
  */
-export function PtepiShell({ children }: { children: ReactNode }) {
+type PtepiShellProps = {
+  children: ReactNode;
+  signalRefs: SignalRef[];
+  seeds: EpiAction[];
+  answers: Record<QuestionId, Answer>;
+};
+
+export function PtepiShell({ children, signalRefs, seeds, answers }: PtepiShellProps) {
   return (
     <ResponsiveSidebarProvider>
-      <ShellFrame>{children}</ShellFrame>
+      <ModuleAlertsProvider refs={signalRefs} seeds={seeds}>
+        <ShellFrame answers={answers}>{children}</ShellFrame>
+      </ModuleAlertsProvider>
     </ResponsiveSidebarProvider>
   );
 }
 
-function ShellFrame({ children }: { children: ReactNode }) {
+function ShellFrame({ children, answers }: { children: ReactNode; answers: Record<QuestionId, Answer> }) {
   useSyncProjectFromPath();
   const { collapsed } = useSidebar();
-  // The Nexa workspace uses the full content width; other screens keep the 7xl reading width.
-  const wide = usePathname().startsWith("/ptepi/ask-atlas");
 
   // Restore saved actions once, before any screen effect (such as seeding) runs.
   useLayoutEffect(() => {
@@ -55,7 +67,9 @@ function ShellFrame({ children }: { children: ReactNode }) {
         )}
       >
         <PtepiTopbar />
-        <main className={cn("mx-auto w-full flex-1 p-6", !wide && "max-w-7xl")}>{children}</main>
+        <main className="w-full flex-1 px-6 py-6 lg:px-15">{children}</main>
+        <NexaFab />
+        <NexaChatDrawer answers={answers} />
       </div>
     </div>
   );
@@ -129,7 +143,7 @@ function PtepiSidebar() {
           </button>
         </div>
 
-        <nav className="sidebar-scroll flex h-full flex-col space-y-4 overflow-y-auto px-2 py-4">
+        <nav className="sidebar-scroll flex min-h-0 flex-1 flex-col space-y-4 overflow-y-auto px-2 py-4">
           {PTEPI_NAV.map((section, sectionIndex) => (
             <div key={section.title} className="space-y-1">
               {collapsed ? (

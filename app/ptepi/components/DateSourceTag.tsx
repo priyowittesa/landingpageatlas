@@ -10,8 +10,8 @@ export function DateSourceTag({ source }: { source: DateSource }) {
     <span
       className={
         vendor
-          ? "inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-800 ring-1 ring-inset ring-blue-200"
-          : "inline-flex items-center gap-1 rounded-full bg-primary-50 px-2 py-0.5 text-[11px] font-semibold text-primary-800 ring-1 ring-inset ring-primary-200"
+          ? "inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[0.75rem] font-semibold text-blue-800 ring-1 ring-inset ring-blue-200"
+          : "inline-flex items-center gap-1 rounded-full bg-primary-50 px-2 py-0.5 text-[0.75rem] font-semibold text-primary-800 ring-1 ring-inset ring-primary-200"
       }
     >
       <Icon size={12} aria-hidden />

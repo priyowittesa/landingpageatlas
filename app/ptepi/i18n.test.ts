@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ID_DICTIONARY, translate } from "./i18n";
-import { PTEPI_NAV } from "./navigation";
+import { PTEPI_NAV, flattenNav } from "./navigation";
 
 describe("interface language", () => {
   it("returns English unchanged", () => {
@@ -9,8 +9,8 @@ describe("interface language", () => {
 
   it("translates every sidebar label and section", () => {
     for (const section of PTEPI_NAV) {
-      if (section.title !== "ATLAS") expect(translate(section.title, "id")).not.toBe(section.title);
-      for (const item of section.items) {
+      expect(translate(section.title, "id")).not.toBe(section.title);
+      for (const item of flattenNav(section.items)) {
         if (item.title !== "Nexa Intelligence") expect(translate(item.title, "id"), item.title).not.toBe(item.title);
       }
     }

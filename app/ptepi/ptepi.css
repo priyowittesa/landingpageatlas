@@ -43,7 +43,8 @@
   transition: background-color 120ms ease;
 }
 
-.ptepi-app table tbody tr:hover > td {
+/* Tables that are only read (class ptepi-static) get no hover: nothing in them is clickable as a row. */
+.ptepi-app table:not(.ptepi-static) tbody tr:hover > td {
   background: color-mix(in oklab, var(--color-primary-50) 55%, transparent);
 }
 
@@ -115,3 +116,22 @@
 .ptepi-app .react-flow__attribution a {
   color: var(--color-gray-700);
 }
+
+/*
+ * Fluid scale: Tailwind sizes (text, spacing, cards, sidebar) are in rem, so growing the
+ * root font size with the screen scales the whole interface. 16px up to a 1707px screen,
+ * then proportional to the width (18px at 1920, 24px at 2560, 36px at 4K), capped at 48px. Icons set by attribute follow it too.
+ */
+html:has(.ptepi-app) {
+  font-size: clamp(16px, 0.9375vw, 48px);
+  /* globals.css fixes body at 16px; point it at the root size so unsized text scales too. */
+  --font-size: 1rem;
+}
+.ptepi-app svg[width="12"] { width: 0.75rem; height: 0.75rem; }
+.ptepi-app svg[width="14"] { width: 0.875rem; height: 0.875rem; }
+.ptepi-app svg[width="16"] { width: 1rem; height: 1rem; }
+.ptepi-app svg[width="18"] { width: 1.125rem; height: 1.125rem; }
+.ptepi-app svg[width="20"] { width: 1.25rem; height: 1.25rem; }
+.ptepi-app label { font-size: 0.875rem; }
+.ptepi-app svg[width="10"] { width: 0.625rem; height: 0.625rem; }
+.ptepi-app svg[width="11"] { width: 0.6875rem; height: 0.6875rem; }

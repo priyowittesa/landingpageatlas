@@ -20,8 +20,8 @@ describe("ptepi sidebar navigation", () => {
   });
 
   it("highlights the portfolio only on the portfolio page", () => {
-    expect(getActiveNavHref("/ptepi")).toBe("/ptepi");
-    expect(getActiveNavHref("/ptepi/")).toBe("/ptepi");
+    expect(getActiveNavHref("/ptepi/portfolio")).toBe("/ptepi/portfolio");
+    expect(getActiveNavHref("/ptepi/portfolio/")).toBe("/ptepi/portfolio");
     expect(getActiveNavHref("/ptepi/commercial")).toBe("/ptepi/commercial");
   });
 
@@ -39,11 +39,11 @@ describe("ptepi sidebar navigation", () => {
   });
 
   it("titles the top bar after the current screen", () => {
-    expect(getScreenTitle("/ptepi")).toBe("Portfolio Health");
+    expect(getScreenTitle("/ptepi/portfolio")).toBe("Portfolio Health");
     expect(getScreenTitle("/ptepi/commercial")).toBe("Commercial and Billing");
     expect(getScreenTitle("/ptepi/project/IKT0126")).toBe("Project Cockpit");
     expect(getScreenTitle("/ptepi/project/IKT0126/evidence")).toBe("Evidence Gate");
-    expect(getScreenTitle("/ptepi/unknown")).toBe("Portfolio Health");
+    expect(getScreenTitle("/ptepi/unknown")).toBe("ATLAS x EPI");
     expect(getScreenTitle("/elsewhere")).toBe("ATLAS x EPI");
   });
 });

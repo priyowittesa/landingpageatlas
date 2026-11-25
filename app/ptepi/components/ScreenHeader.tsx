@@ -28,7 +28,7 @@ export function ScreenHeader({ title, subtitle, actions, icon: Icon, dataTags = 
           </span>
         )}
         <div className="min-w-0">
-        <h1 className="text-[28px] font-bold leading-tight tracking-[-0.02em] text-gray-950"><Tr>{title}</Tr></h1>
+        <h1 className="text-[1.75rem] font-bold leading-tight tracking-[-0.02em] text-gray-950"><Tr>{title}</Tr></h1>
         <p className="mt-1 max-w-3xl text-sm leading-5 text-muted-foreground"><Tr>{subtitle}</Tr></p>
         </div>
       </div>

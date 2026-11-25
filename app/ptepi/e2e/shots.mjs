@@ -12,7 +12,7 @@ import { chromium } from "playwright";
 const BASE = (process.env.PTEPI_BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
 const OUT = path.join("docs", "ptepi", "shots");
 const SCREENS = [
-  ["s1-portfolio", "/ptepi"],
+  ["s1-portfolio", "/ptepi/portfolio"],
   ["s2-commercial", "/ptepi/commercial"],
   ["s3-project", "/ptepi/project/PNP126"],
   ["s3-project-pipeline", "/ptepi/project/NK0126"],

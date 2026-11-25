@@ -8,7 +8,7 @@ import {
   Gauge,
   History,
   LayoutGrid,
-  ListChecks,
+  Sparkles,
   ShieldCheckIcon,
   Workflow,
   Wrench
@@ -26,32 +26,34 @@ export const HERO_PROJECT_PATH = "/ptepi/project/PNP126";
 /** Sidebar of the public prototype. Same NavNode shape as the ATLAS app sidebar. */
 export const PTEPI_NAV: NavSection[] = [
   {
-    title: "Overview",
-    items: [{ title: "Portfolio Health", href: "/ptepi", icon: LayoutGrid }]
-  },
-  {
-    title: "Delivery",
+    title: "Workspace",
     items: [
-      { title: "Project Cockpit", href: HERO_PROJECT_PATH, icon: Gauge },
-      { title: "Evidence Gate", href: `${HERO_PROJECT_PATH}/evidence`, icon: ShieldCheckIcon }
+      { title: "Operations Intelligence", href: "/ptepi/actions", icon: Sparkles },
+      { title: "Portfolio Health", href: "/ptepi/portfolio", icon: LayoutGrid }
     ]
   },
   {
-    title: "Commercial",
+    title: "Modules",
     items: [
-      { title: "Commercial and Billing", href: "/ptepi/commercial", icon: CircleDollarSign },
-      { title: "Procurement and Cost", href: "/ptepi/cost", icon: Wrench }
-    ]
-  },
-  {
-    title: "Operations",
-    items: [
-      { title: "Service Contracts", href: "/ptepi/service-contracts", icon: ClipboardCheckIcon }
-    ]
-  },
-  {
-    title: "ATLAS",
-    items: [
+      {
+        title: "Delivery",
+        icon: Gauge,
+        defaultOpen: true,
+        children: [
+          { title: "Project Cockpit", href: HERO_PROJECT_PATH, icon: Gauge },
+          { title: "Evidence Gate", href: `${HERO_PROJECT_PATH}/evidence`, icon: ShieldCheckIcon }
+        ]
+      },
+      {
+        title: "Commercial",
+        icon: CircleDollarSign,
+        defaultOpen: true,
+        children: [
+          { title: "Commercial and Billing", href: "/ptepi/commercial", icon: CircleDollarSign },
+          { title: "Procurement and Cost", href: "/ptepi/cost", icon: Wrench }
+        ]
+      },
+      { title: "Service Contracts", href: "/ptepi/service-contracts", icon: ClipboardCheckIcon },
       { title: "Nexa Intelligence", href: "/ptepi/ask-atlas", icon: BrainCircuit },
       {
         title: "Workflow & Connections",
@@ -64,23 +66,13 @@ export const PTEPI_NAV: NavSection[] = [
           { title: "Workflow Studio", href: "/ptepi/workflows", icon: Workflow }
         ]
       },
-      { title: "Action Tracker", href: "/ptepi/actions", icon: ListChecks },
       { title: "Audit Log", href: "/ptepi/audit-log", icon: History }
     ]
   }
 ];
 
-export type ModuleTier = "Base" | "Add-on";
-
-/**
- * Module split for the sidebar badges (review section 4): procurement (S5) and service
- * contract inspection (S6) are add-ons; every other module is in the base subscription.
- */
-const ADD_ON_HREFS = ["/ptepi/cost", "/ptepi/service-contracts"];
-
-export function moduleTierOf(href: string): ModuleTier {
-  return ADD_ON_HREFS.includes(href.split("?")[0] ?? href) ? "Add-on" : "Base";
-}
+/** Screens the sidebar keeps in the spotlight, with an AI badge, even when they are not open. */
+export const HIGHLIGHTED_HREFS = ["/ptepi/actions"];
 
 /**
  * The project screens exist for every project, but the sidebar links point at

@@ -1,30 +1,21 @@
-import { CalendarClock } from "lucide-react";
-import { ScreenHeader } from "../components/ScreenHeader";
-import { Tr } from "../components/Tr";
-import { getAsAtLabel } from "../selectors";
-import { ActionsBoard } from "../components/ActionsBoard";
+import { Suspense } from "react";
 import { epiData } from "../data";
+import { OperationsBoard } from "../operations/components/OperationsBoard";
+import { getSignals } from "../operations/signals";
+import { getAsAtLabel } from "../selectors";
 import { buildSeedActions } from "../store/action-helpers";
 
-export default function ActionTrackerPage() {
+/** Operations Intelligence: the signals ATLAS found and the actions to take. The action tracker is its third tab. */
+export default function OperationsIntelligencePage() {
   return (
-    <div className="space-y-8">
-      <ScreenHeader
-        title="Action tracker"
-        subtitle={`Alerts and tasks with an owner, a due date and a closing step.`}
-      />
-      <p className="flex items-center gap-2 text-sm text-gray-700">
-        <CalendarClock size={16} aria-hidden className="shrink-0 text-primary-700" />
-        <span>
-          <Tr>Overdue is counted against the demo snapshot date, not today:</Tr> {getAsAtLabel(epiData)}.{" "}
-          <Tr>An action due after that date is not overdue yet.</Tr>
-        </span>
-      </p>
-      <ActionsBoard
+    <Suspense>
+      <OperationsBoard
+        signals={getSignals(epiData)}
         seeds={buildSeedActions(epiData)}
         asAt={epiData.asAt}
+        asAtLabel={getAsAtLabel(epiData)}
         projectOptions={epiData.projects.map((project) => project.projectId)}
       />
-    </div>
+    </Suspense>
   );
 }

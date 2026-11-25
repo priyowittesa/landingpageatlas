@@ -18,7 +18,7 @@ type SectionCardProps = {
 /** A section of a screen: raised card, accent bar on the title, tinted header. */
 export function SectionCard({ title, subtitle, badge, children, className, id, flush = false }: SectionCardProps) {
   return (
-    <section id={id} className={cn("ptepi-card scroll-mt-24 overflow-hidden", className)}>
+    <section id={id} className={cn("ptepi-card flex scroll-mt-24 flex-col overflow-hidden", className)}>
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-primary-100/60 bg-gradient-to-r from-primary-50/70 to-transparent px-6 py-5">
         <div className="flex min-w-0 items-start gap-3">
           <span aria-hidden className="mt-1 h-5 w-1 shrink-0 rounded-full bg-primary-600" />
@@ -29,7 +29,7 @@ export function SectionCard({ title, subtitle, badge, children, className, id, f
         </div>
         {badge}
       </div>
-      <div className={flush ? "p-2" : "p-6"}>{children}</div>
+      <div className={cn("flex-1", flush ? "p-2" : "p-6")}>{children}</div>
     </section>
   );
 }

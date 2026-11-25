@@ -1,3 +1,6 @@
+import { AiInsightCard } from "../components/AiInsightCard";
+import { getInsights } from "../operations/insights";
+import { getAsAtLabel } from "../selectors";
 import { CircleDollarSign, FileWarning, Landmark, Percent } from "lucide-react";
 import { ProjectFilter } from "../components/ProjectFilter";
 import { ScreenHeader } from "../components/ScreenHeader";
@@ -23,6 +26,8 @@ export default function ProcurementCostPage() {
         subtitle={`RAP budget against realised cost and margin.`}
         actions={<ProjectFilter options={getProjectFilterOptions(epiData)} allowAll />}
       />
+
+      <AiInsightCard insights={getInsights(epiData, { modules: ["cost"] })} asAtLabel={getAsAtLabel(epiData)} />
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard

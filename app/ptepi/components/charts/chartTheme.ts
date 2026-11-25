@@ -13,7 +13,7 @@ export const CHART_COLORS = {
   bad: "var(--color-destructive)"
 } as const;
 
-export const AXIS_TICK = { fill: "var(--color-muted-foreground)", fontSize: 12 } as const;
+export const AXIS_TICK = { fill: "var(--color-muted-foreground)", fontSize: "0.8125rem" } as const;
 
 export const GRID = { strokeDasharray: "3 3", stroke: "var(--color-border)" } as const;
 

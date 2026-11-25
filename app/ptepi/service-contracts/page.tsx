@@ -1,3 +1,6 @@
+import { AiInsightCard } from "../components/AiInsightCard";
+import { getInsights } from "../operations/insights";
+import { getAsAtLabel } from "../selectors";
 import { CalendarClock, ClipboardCheck, FileSignature, TriangleAlert } from "lucide-react";
 import { ScreenHeader } from "../components/ScreenHeader";
 import { KpiCard } from "../components/KpiCard";
@@ -28,6 +31,8 @@ export default function ServiceContractsPage() {
         title="Service contracts"
         subtitle={`Inspections delivered against the contracted scope.`}
       />
+
+      <AiInsightCard insights={getInsights(epiData, { modules: ["service"] })} asAtLabel={getAsAtLabel(epiData)} />
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard

@@ -136,7 +136,7 @@ export function KnowledgeSourceBoard({ folders, sources, notes }: KnowledgeSourc
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(15rem,18%)_minmax(0,1fr)]">
       <aside className="ptepi-card h-fit overflow-hidden" aria-label={t("Folders")}>
         <h2 className="border-b border-primary-100/60 bg-gradient-to-r from-primary-50/70 to-transparent px-4 py-4 text-base font-semibold">
           {t("Folders")}
@@ -158,7 +158,7 @@ export function KnowledgeSourceBoard({ folders, sources, notes }: KnowledgeSourc
                 >
                   <Icon size={16} aria-hidden className="shrink-0 text-primary-600" />
                   <span className="min-w-0 flex-1 truncate">{t(folder.title)}</span>
-                  <span className="rounded-full bg-gray-100 px-1.5 text-[11px] tabular-nums text-gray-700">{folder.count}</span>
+                  <span className="rounded-full bg-gray-100 px-1.5 text-[0.75rem] tabular-nums text-gray-700">{folder.count}</span>
                 </button>
               </li>
             );

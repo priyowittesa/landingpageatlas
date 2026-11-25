@@ -21,7 +21,7 @@ export function WeeklyReportDraftView({ report }: { report: WeeklyReportDraft })
           <FilePenLine size={14} aria-hidden />
           <Tr>{report.status}</Tr>
         </span>
-        <span className="text-[11px] text-amber-900">
+        <span className="text-[0.75rem] text-amber-900">
           <Tr>Template T1</Tr> · <Tr>Weekly cut-off</Tr> {formatDate(report.cutOff)}
         </span>
       </div>
@@ -32,7 +32,7 @@ export function WeeklyReportDraftView({ report }: { report: WeeklyReportDraft })
         <p className="mt-1 text-xs text-gray-700">
           Minggu ke-{report.weekNo} ({report.weekWords}) · {formatDate(report.periodStart)} – {formatDate(report.periodEnd)}
         </p>
-        <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-gray-600">
+        <p className="mt-1 text-[0.75rem] font-semibold uppercase tracking-wide text-gray-600">
           Kontraktor Pelaksana {report.contractor}
         </p>
       </header>
@@ -47,7 +47,7 @@ export function WeeklyReportDraftView({ report }: { report: WeeklyReportDraft })
       </dl>
 
       <div className="overflow-x-auto px-4 py-3">
-        <table className="w-full min-w-[620px] text-xs">
+        <table className="w-full min-w-[38.75rem] text-xs">
           <thead>
             <tr className="border-b border-gray-200 text-left text-gray-600">
               <th className="py-1.5 pr-2 font-medium"><Tr>Section</Tr></th>
@@ -66,7 +66,7 @@ export function WeeklyReportDraftView({ report }: { report: WeeklyReportDraft })
             <ReportRow row={report.total} total />
           </tbody>
         </table>
-        <p className="mt-2 text-[11px] text-gray-600">
+        <p className="mt-2 text-[0.75rem] text-gray-600">
           <Tr>This week stays empty until the weekly cut-off is entered; ATLAS does not estimate it.</Tr>
         </p>
       </div>

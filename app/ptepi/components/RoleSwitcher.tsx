@@ -21,7 +21,7 @@ export function RoleSwitcher() {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="hidden items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-900 lg:inline-flex">
+      <span className="hidden items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[0.75rem] font-semibold text-amber-900 lg:inline-flex">
         <FlaskConical size={12} aria-hidden />
         {label}
       </span>

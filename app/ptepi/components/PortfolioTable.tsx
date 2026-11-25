@@ -2,7 +2,6 @@
 
 import { Tr, useT } from "./Tr";
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { TrendingDown } from "lucide-react";
 import Table from "@/components/Table";
 import { cn } from "@/lib/utils";
@@ -17,6 +16,7 @@ import {
 } from "../selectors";
 import type { PortfolioRow } from "../types";
 import { PercentText } from "./PercentText";
+import { useProjectPreview } from "./ProjectPreview";
 import { RupiahText } from "./RupiahText";
 import { StatusBadge } from "./StatusBadge";
 import { HEALTH_TONE } from "./status";
@@ -160,7 +160,7 @@ type PortfolioTableProps = {
 
 export function PortfolioTable({ rows }: PortfolioTableProps) {
   const t = useT();
-  const router = useRouter();
+  const preview = useProjectPreview();
   const [search, setSearch] = useState("");
   const [customer, setCustomer] = useState(ALL);
   const [statusGroup, setStatusGroup] = useState(ALL);
@@ -245,7 +245,7 @@ export function PortfolioTable({ rows }: PortfolioTableProps) {
         setSortKey(key);
         setSortDir(dir);
       }}
-      onRowClick={(row) => router.push(`/ptepi/project/${row.projectId}`)}
+      onRowClick={(row) => preview.open(row.projectId)}
       emptyState={{ description: "No project matches the current filters." }}
       pagination={{
         page,

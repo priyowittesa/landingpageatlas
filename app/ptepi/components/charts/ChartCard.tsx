@@ -3,7 +3,7 @@
 import { Tr } from "../Tr";
 import { useId, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { BarChart3, Info, Lightbulb, Table2 } from "lucide-react";
+import { BarChart3, Info, Sparkles, Table2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -64,7 +64,8 @@ export function ChartCard({
 
   return (
     <section className={cn("ptepi-card overflow-hidden", className)}>
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-primary-100/60 bg-gradient-to-r from-primary-50/70 to-transparent px-6 py-5">
+      <div className="space-y-3 border-b border-primary-100/60 bg-gradient-to-r from-primary-50/70 to-transparent px-6 py-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 space-y-2">
           <div className="flex items-center gap-2">
             <span aria-hidden className="h-5 w-1 shrink-0 rounded-full bg-primary-600" />
@@ -89,12 +90,6 @@ export function ChartCard({
               </TooltipProvider>
             )}
           </div>
-          {takeaway && (
-            <p className="flex items-start gap-2 rounded-lg bg-primary-50 px-3 py-2 text-sm text-primary-900">
-              <Lightbulb size={16} className="mt-0.5 shrink-0 text-primary-700" aria-hidden />
-              <Tr>{takeaway}</Tr>
-            </p>
-          )}
         </div>
         <div className="flex items-center gap-2">
           {badge}
@@ -112,6 +107,16 @@ export function ChartCard({
             </Button>
           )}
         </div>
+      </div>
+        {takeaway && (
+          <p className="flex w-full items-start gap-2.5 rounded-lg border border-primary-200 bg-primary-50 px-3 py-2.5 text-sm text-primary-950">
+            <span className="mt-0.5 flex shrink-0 items-center gap-1 rounded-md bg-primary-700 px-1.5 py-0.5 text-[0.6875rem] font-semibold text-white">
+              <Sparkles size={12} aria-hidden />
+              <Tr>AI insight</Tr>
+            </span>
+            <Tr>{takeaway}</Tr>
+          </p>
+        )}
       </div>
 
       <div id={panelId} className="p-6">

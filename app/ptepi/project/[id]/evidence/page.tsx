@@ -1,3 +1,6 @@
+import { AiInsightCard } from "../../../components/AiInsightCard";
+import { getInsights } from "../../../operations/insights";
+import { getAsAtLabel } from "../../../selectors";
 import { notFound } from "next/navigation";
 import { Tr } from "../../../components/Tr";
 import {
@@ -72,6 +75,8 @@ export default async function EvidenceGatePage({ params }: EvidencePageProps) {
         actions={<ProjectFilter options={getProjectFilterOptions(epiData)} />}
         dataTags={register.some((row) => row.dataOrigin === "real") ? ["synthetic", "real"] : ["synthetic"]}
       />
+
+      <AiInsightCard insights={getInsights(epiData, { modules: ["evidence"], projectId: id })} asAtLabel={getAsAtLabel(epiData)} />
 
       <div className="flex items-start gap-3 ptepi-card p-6">
         <ShieldCheck size={16} className="mt-1 shrink-0 text-primary-700" aria-hidden />

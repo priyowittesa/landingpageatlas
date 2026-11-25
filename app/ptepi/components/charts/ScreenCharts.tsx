@@ -81,7 +81,7 @@ export function DumbbellCard({ chart, badge, className }: CardProps<DumbbellChar
       badge={badge}
       className={className}
       empty={chart.points.length === 0 ? { title: "No project is in progress" } : null}
-      ariaLabel="Dumbbell chart of planned against actual progress for each in-progress project, worst deviation first. Project names link to the project."
+      ariaLabel="Bar chart of planned and actual progress side by side for each in-progress project, worst deviation first. Project names open the project."
     >
       <DumbbellChart points={chart.points} />
     </ChartCard>

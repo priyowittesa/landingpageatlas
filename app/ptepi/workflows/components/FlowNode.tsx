@@ -30,7 +30,7 @@ function FlowNodeComponent({ data, selected }: NodeProps<FlowNodeType>) {
   return (
     <div
       className={cn(
-        "w-[240px] rounded-xl border bg-white shadow-sm transition-shadow",
+        "w-[15rem] rounded-xl border bg-white shadow-sm transition-shadow",
         selected ? "border-primary-500 ring-2 ring-primary-200" : "border-gray-200 hover:shadow-md",
         state === "running" && "ring-2 ring-primary-300",
         state === "skipped" && "opacity-70"
@@ -38,11 +38,11 @@ function FlowNodeComponent({ data, selected }: NodeProps<FlowNodeType>) {
     >
       <Handle type="target" position={Position.Left} className={HANDLE} />
       <div className="flex items-center justify-between gap-2 border-b border-gray-100 px-3 py-2">
-        <span className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-gray-600">
+        <span className="flex items-center gap-1.5 text-[0.75rem] font-medium uppercase tracking-wide text-gray-600">
           <span aria-hidden className={cn("h-2 w-2 rounded-full", role.bar)} />
           {t(role.label)}
         </span>
-        <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold", status.pill)}>
+        <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.75rem] font-semibold", status.pill)}>
           <status.Icon size={12} aria-hidden className={state === "running" ? "animate-spin" : undefined} />
           {t(status.label)}
         </span>
@@ -58,7 +58,7 @@ function FlowNodeComponent({ data, selected }: NodeProps<FlowNodeType>) {
           <span className="line-clamp-2 text-xs leading-snug text-muted-foreground">{step.detail}</span>
         </span>
       </div>
-      <div className="flex items-center justify-between gap-2 rounded-b-xl border-t border-primary-100/70 bg-primary-50/60 px-3 py-1.5 text-[11px]">
+      <div className="flex items-center justify-between gap-2 rounded-b-xl border-t border-primary-100/70 bg-primary-50/60 px-3 py-1.5 text-[0.75rem]">
         <span className="inline-flex items-center gap-1 font-medium text-primary-800">
           <Clock size={12} aria-hidden />
           {step.runtime}

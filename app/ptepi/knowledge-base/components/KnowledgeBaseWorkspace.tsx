@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { SyntheticDataBadge } from "../../components/SyntheticDataBadge";
 import { useT } from "../../components/Tr";
+import { useRootScale } from "../../use-root-scale";
 import type { KnowledgeNote, KnowledgeSource, NoteFolder } from "../../knowledge/data";
 import { getBacklinks, getKnowledgeGraph } from "../../knowledge/logic";
 
@@ -92,7 +93,7 @@ export function KnowledgeBaseWorkspace({ folders, notes, sources }: KnowledgeBas
   };
 
   return (
-    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[280px_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(16rem,20%)_minmax(0,1fr)]">
       <aside className="ptepi-card h-fit overflow-hidden" aria-label={t("Notes")}>
         <div className="border-b border-primary-100/60 bg-gradient-to-r from-primary-50/70 to-transparent px-4 py-4">
           <h2 className="text-base font-semibold">{t("Notes")}</h2>
@@ -223,7 +224,8 @@ function TabButton({ selected, onClick, children }: { selected: boolean; onClick
 
 function GraphView({ folders, notes, onOpen }: { folders: NoteFolder[]; notes: KnowledgeNote[]; onOpen: (id: string) => void }) {
   const t = useT();
-  const graph = useMemo(() => getKnowledgeGraph(notes), [notes]);
+  const scale = useRootScale();
+  const graph = useMemo(() => getKnowledgeGraph(notes, 260 * scale), [notes, scale]);
   const nodes: GraphNodeType[] = useMemo(
     () =>
       graph.points.map((point) => {
@@ -251,8 +253,9 @@ function GraphView({ folders, notes, onOpen }: { folders: NoteFolder[]; notes: K
 
   return (
     <div>
-      <div className="h-[520px] bg-primary-50/30">
+      <div className="h-[32.5rem] bg-primary-50/30">
         <ReactFlow
+          key={scale}
           nodes={nodes}
           edges={edges}
           nodeTypes={NODE_TYPES}
@@ -305,7 +308,7 @@ function NoteView({
   const fromSources = note.sources.map((id) => sources.find((source) => source.id === id)).filter((item): item is KnowledgeSource => Boolean(item));
 
   return (
-    <article className="grid grid-cols-1 gap-6 p-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+    <article className="grid grid-cols-1 gap-6 p-6 xl:grid-cols-[minmax(0,1fr)_minmax(17rem,24%)]">
       <div className="min-w-0">
         <p className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold", tone.chip)}>{t(folderTitle)}</p>
         <h2 className="mt-2 text-2xl font-bold tracking-tight text-gray-950">{note.title}</h2>

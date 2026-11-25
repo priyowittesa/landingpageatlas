@@ -81,6 +81,14 @@ export const QUESTIONS: Question[] = [
     ]
   },
   {
+    id: "export",
+    label: "Generate the weekly portfolio report",
+    groups: [
+      { words: ["generate", "export", "download", "unduh", "hasilkan"], weight: 5 },
+      { words: ["report", "laporan", "portfolio", "portofolio", "status"], weight: 1 }
+    ]
+  },
+  {
     id: "mos",
     label: "When is the MOS BA for PNP126 signed?",
     groups: [
@@ -101,7 +109,7 @@ export const QUESTIONS: Question[] = [
 /** Extra suggested question in Bahasa Indonesia (requirement AS-01). It maps to an existing answer. */
 export const BAHASA_CHIP = {
   id: "behind" as QuestionId,
-  label: "Kenapa progres Kapasitor Bank tidak naik sejak minggu 14?"
+  label: "Why has Kapasitor Bank progress not moved since week 14?"
 };
 
 function normalise(text: string): string {

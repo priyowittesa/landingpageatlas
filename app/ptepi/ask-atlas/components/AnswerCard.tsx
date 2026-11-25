@@ -2,6 +2,7 @@
 
 import { Tr } from "../../components/Tr";
 import { Check, FileText, Plus, RefreshCw, Scale, ShieldAlert, Table2 } from "lucide-react";
+import { ReportCard } from "./ReportCard";
 import { WeeklyReportDraftView } from "./WeeklyReportDraftView";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,7 +49,7 @@ export function AnswerCard({ answer, followUps = [], onFollowUp }: AnswerCardPro
         <dl className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           {answer.figures.map((figure) => (
             <div key={figure.label} className="rounded-lg border border-gray-200 bg-white p-3">
-              <dt className="text-[10px] font-semibold uppercase tracking-wide text-gray-600"><Tr>{figure.label}</Tr></dt>
+              <dt className="text-[0.6875rem] font-semibold uppercase tracking-wide text-gray-600"><Tr>{figure.label}</Tr></dt>
               <dd className="mt-1 text-lg font-bold tabular-nums text-gray-950">{figure.value}</dd>
             </div>
           ))}
@@ -74,12 +75,13 @@ export function AnswerCard({ answer, followUps = [], onFollowUp }: AnswerCardPro
       )}
 
       {answer.report && <WeeklyReportDraftView report={answer.report} />}
+      {answer.exportReport && <ReportCard report={answer.exportReport} />}
 
       {answer.actions.length > 0 && (
         <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
           <div className="flex items-center justify-between border-b border-gray-100 px-3 py-2">
             <p className="text-xs font-semibold text-gray-900"><Tr>Recommendations</Tr></p>
-            <span className="rounded border border-primary-200 bg-primary-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-800">
+            <span className="rounded border border-primary-200 bg-primary-50 px-1.5 py-0.5 text-[0.6875rem] font-semibold uppercase tracking-wide text-primary-800">
               <Tr>AI recommends, people decide</Tr>
             </span>
           </div>
@@ -136,7 +138,7 @@ function ActionRow({ action, index }: { action: NewEpiAction; index: number }) {
 
   return (
     <li className="flex flex-wrap items-center gap-3 p-3">
-      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-primary-50 text-[11px] font-semibold text-primary-800">
+      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-primary-50 text-[0.75rem] font-semibold text-primary-800">
         {index}
       </span>
       <div className="min-w-0 flex-1">

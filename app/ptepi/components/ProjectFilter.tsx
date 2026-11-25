@@ -131,7 +131,7 @@ export function ProjectFilter({ options, allowAll = false }: ProjectFilterProps)
             {selectedGroup ? <selectedGroup.Icon size={16} aria-hidden /> : <Layers size={16} aria-hidden />}
           </span>
           <span className="min-w-0 flex-1 leading-tight">
-            <span className="block text-[10px] font-medium uppercase tracking-wide text-primary-800">
+            <span className="block text-[0.6875rem] font-medium uppercase tracking-wide text-primary-800">
               {selectedGroup ? `${t("Project")} · ${t(selectedGroup.label)}` : t("Project")}
             </span>
             <span className="block truncate text-sm font-semibold text-gray-900">
@@ -167,7 +167,7 @@ export function ProjectFilter({ options, allowAll = false }: ProjectFilterProps)
                     <span className="flex items-center gap-1.5">
                       <group.Icon size={12} aria-hidden className={group.headingClassName} />
                       {t(group.label)}
-                      <span className="ml-auto rounded-full bg-gray-100 px-1.5 text-[10px] font-semibold tabular-nums text-gray-700">
+                      <span className="ml-auto rounded-full bg-gray-100 px-1.5 text-[0.6875rem] font-semibold tabular-nums text-gray-700">
                         {items.length}
                       </span>
                     </span>
@@ -196,7 +196,7 @@ export function ProjectFilter({ options, allowAll = false }: ProjectFilterProps)
                             {option.tone !== "good" && (
                               <span
                                 className={cn(
-                                  "inline-flex items-center gap-1 rounded-full px-1.5 py-px text-[10px] font-semibold",
+                                  "inline-flex items-center gap-1 rounded-full px-1.5 py-px text-[0.6875rem] font-semibold",
                                   health.pillClassName
                                 )}
                               >

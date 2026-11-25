@@ -1,3 +1,6 @@
+import { AiInsightCard } from "../components/AiInsightCard";
+import { getInsights } from "../operations/insights";
+import { getAsAtLabel } from "../selectors";
 import {
   CalendarClock,
   FileCheck2,
@@ -57,6 +60,8 @@ export default function CommercialBillingPage() {
         subtitle={`What can be billed now, what is blocked, and the revenue still expected.`}
         actions={<ProjectFilter options={getProjectFilterOptions(epiData)} allowAll />}
       />
+
+      <AiInsightCard insights={getInsights(epiData, { modules: ["commercial"] })} asAtLabel={getAsAtLabel(epiData)} />
 
       <RevenueStrip revenue={getRevenueTrio(epiData)} scope="All projects" />
 

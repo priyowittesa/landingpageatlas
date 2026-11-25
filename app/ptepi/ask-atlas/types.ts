@@ -1,5 +1,6 @@
 import type { NewEpiAction } from "../store/actions-store";
 import type { WeeklyReportDraft } from "../types";
+import type { PortfolioReport } from "./report";
 
 export type QuestionId =
   | "behind"
@@ -10,7 +11,8 @@ export type QuestionId =
   | "inspections"
   | "rap"
   | "report"
-  | "mos";
+  | "mos"
+  | "export";
 
 /** Where a figure or statement comes from. */
 export type AnswerSource = {
@@ -37,6 +39,8 @@ export type Answer = {
   refused?: boolean;
   /** Template T1 weekly report draft, for the report question */
   report?: WeeklyReportDraft;
+  /** A finished report file the reader can download */
+  exportReport?: PortfolioReport;
   /** Actions the user can add to the action tracker */
   actions: NewEpiAction[];
   /** Data refresh time: the as-at date of the demo data */

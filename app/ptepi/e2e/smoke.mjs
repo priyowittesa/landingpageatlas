@@ -14,7 +14,7 @@ const PROJECT_IDS = [
   "PSL0126", "PSL0226", "PSL0426", "TPK0226", "IKT0126", "JICT0326", "GS0326", "NK0126"
 ];
 const MAIN_ROUTES = [
-  "/ptepi",
+  "/ptepi/portfolio",
   "/ptepi/project/PNP126",
   "/ptepi/project/PNP126/evidence",
   "/ptepi/commercial",
@@ -64,6 +64,8 @@ const context = await browser.newContext({ viewport: { width: 1440, height: 900 
 {
   const fresh = await browser.newPage();
   await fresh.goto(BASE + "/ptepi", { waitUntil: "networkidle" });
+  if (!fresh.url().endsWith("/ptepi/actions")) fail("/ptepi", "the first visit should land on Operations Intelligence");
+  await fresh.goto(BASE + "/ptepi/portfolio", { waitUntil: "networkidle" });
   if ((await fresh.getByText("Kesehatan portofolio").count()) === 0) fail("/ptepi", "default language should be Bahasa Indonesia");
   await fresh.close();
 }
@@ -187,7 +189,7 @@ async function focusAudit(route) {
   }
   if (seen.size < 10) fail(`${route} focus`, `only ${seen.size} focusable elements reached`);
 }
-for (const route of ["/ptepi", "/ptepi/actions", "/ptepi/ask-atlas"]) await focusAudit(route);
+for (const route of ["/ptepi/portfolio", "/ptepi/actions", "/ptepi/ask-atlas"]) await focusAudit(route);
 
 // 6. Text contrast (WCAG AA 4.5:1, 3:1 for large text) on the main routes.
 const contrastScript = () => {
@@ -264,8 +266,9 @@ for (const route of MAIN_ROUTES) {
 // 7. Click paths of the demo: no dead buttons.
 async function flows() {
   // S1: row click opens the project cockpit.
-  await page.goto(`${BASE}/ptepi`, { waitUntil: "networkidle" });
-  await page.getByRole("row", { name: /PNP126/ }).first().click();
+  await page.goto(`${BASE}/ptepi/portfolio`, { waitUntil: "networkidle" });
+  await page.getByRole("row", { name: /PNP126/ }).last().click();
+  await page.getByRole("dialog").getByRole("link", { name: /Project cockpit/ }).click();
   await page.waitForURL("**/ptepi/project/PNP126");
   for (const text of ["73,5%", "28,5%", "-45 pts"]) {
     if ((await page.getByText(text).count()) === 0) fail("S3 PNP126", `missing ${text}`);
@@ -285,6 +288,7 @@ async function flows() {
 
   // S2: blocked rows link to the evidence gate.
   await page.goto(`${BASE}/ptepi/commercial`, { waitUntil: "networkidle" });
+  await page.getByRole("link", { name: "View evidence" }).first().waitFor({ timeout: 10000 }).catch(() => undefined);
   const evidenceLinks = await page.getByRole("link", { name: "View evidence" }).count();
   if (evidenceLinks < 1) fail("S2", "no View evidence link on blocked rows");
 
@@ -309,8 +313,9 @@ async function flows() {
     fail("S7", "billing actions should dedupe to the seeded exceptions");
   }
   await page.getByText(/Already tracked as EXC-/).first().waitFor();
-  await page.getByRole("link", { name: "Action Tracker", exact: true }).first().click();
+  await page.getByRole("link", { name: "Operations Intelligence" }).first().click();
   await page.waitForURL("**/ptepi/actions");
+  await page.getByRole("tab", { name: /Action tracker/ }).click();
   if ((await page.getByText("EXC-01").count()) === 0) fail("S8", "seeded EXC-01 missing");
 
   // S8: role switcher disables Close for a Project Manager on a Finance action, Director can close.
@@ -321,6 +326,60 @@ async function flows() {
   await page.getByRole("combobox", { name: "Demo role" }).click();
   await page.getByRole("option", { name: /Director/ }).click();
   if ((await closeButtons.first().isEnabled()) !== true) fail("S8", "Director should be able to close");
+
+  // Operations Intelligence: the KPI cards filter, a signal opens a drawer, Create action tracks it.
+  await page.goto(`${BASE}/ptepi/actions`, { waitUntil: "networkidle" });
+  const openCount = async () => await page.getByRole("list", { name: "Open signals" }).locator(":scope > li").count();
+  await page.getByRole("list", { name: "Open signals" }).waitFor();
+  await page.waitForTimeout(400);
+  const all = await openCount();
+  await page.getByRole("button", { name: /^Predictions/ }).click();
+  const predictions = await openCount();
+  if (!(predictions > 0 && predictions < all)) fail("OI", `Predictions card should filter (${predictions} of ${all})`);
+  await page.getByRole("button", { name: /^All AI signals/ }).click();
+  await page.getByRole("button", { name: "PNP126 shows no progress in weeks 14 to 18 (5 weeks)" }).click();
+  const drawer = page.getByRole("dialog");
+  await drawer.getByText("Why ATLAS flagged this").waitFor();
+  await drawer.getByRole("button", { name: "Create action" }).click();
+  await drawer.getByText(/Tracked as ACT-/).waitFor();
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(500);
+  const afterCreate = await openCount();
+  if (afterCreate !== all - 1) fail("OI", `a created action should leave Open (${all} then ${afterCreate})`);
+
+  // Every dashboard shows its AI insight; its Take action opens the matching drawer in Operations Intelligence.
+  await page.goto(`${BASE}/ptepi/project/PNP126`, { waitUntil: "networkidle" });
+  const insight = page.getByRole("region", { name: "AI insight" });
+  await insight.getByText("AI insight", { exact: true }).waitFor();
+  await insight.getByRole("link", { name: /Take action/ }).click();
+  await page.waitForURL("**/ptepi/actions?signal=*");
+  await page.getByRole("dialog").getByText("Why ATLAS flagged this").waitFor();
+  await page.keyboard.press("Escape");
+
+  // S1: an item opens the project drawer before the page; the floating Nexa button is there.
+  await page.goto(`${BASE}/ptepi/portfolio`, { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: /Plan vs actual deviation of more than 10 points/ }).first().click();
+  const preview = page.getByRole("dialog");
+  await preview.getByRole("link", { name: /Project cockpit/ }).waitFor();
+  await page.keyboard.press("Escape");
+  // The floating Nexa button opens the chat drawer on this screen; a report can be generated and downloaded.
+  await page.getByRole("button", { name: "Ask Nexa", exact: true }).click();
+  const chat = page.getByRole("dialog", { name: "Nexa" });
+  await chat.getByText("What would you like to know about this screen?").waitFor();
+  await chat.getByRole("button", { name: "Generate the weekly portfolio report" }).click();
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    chat.getByRole("button", { name: "Download report" }).click()
+  ]);
+  if (!/^ATLAS-EPI-portfolio-status-.*\.html$/.test(download.suggestedFilename())) {
+    fail("report", `unexpected file ${download.suggestedFilename()}`);
+  }
+  await page.keyboard.press("Escape");
+
+  // Nexa page: the history holds a report conversation with its download.
+  await page.goto(`${BASE}/ptepi/ask-atlas`, { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: /Generate the weekly portfolio report/ }).first().click();
+  await page.getByRole("button", { name: "Download report" }).waitFor();
 }
 try {
   await flows();

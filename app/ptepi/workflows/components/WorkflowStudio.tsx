@@ -29,6 +29,7 @@ import { formatDate } from "../../format";
 import { StatusBadge, type StatusTone } from "../../components/StatusBadge";
 import { useT } from "../../components/Tr";
 import { useConnectionsStore } from "../../store/connections-store";
+import { useRootScale } from "../../use-root-scale";
 import type { MasterConnection, Workflow, WorkflowFolder } from "../data";
 import { getRunOutcome, getWorkflowsAtRisk, simulateRun, type RunOutcome, type StepResult } from "../logic";
 import { FLOW_ICONS, ROLE_STYLE, STEP_STATE, type StepState } from "./flow-style";
@@ -117,7 +118,7 @@ export function WorkflowStudio({ folders, workflows, connections }: WorkflowStud
   const riskStep = workflow.steps.find((item) => item.connectionId && active[item.connectionId] === false);
 
   return (
-    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[300px_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(17rem,20%)_minmax(0,1fr)]">
       <aside className="ptepi-card flex flex-col overflow-hidden" aria-label={t("Workflows")}>
         <div className="border-b border-primary-100/60 bg-gradient-to-r from-primary-50/70 to-transparent px-4 py-4">
           <h2 className="text-base font-semibold">{t("Workflows")}</h2>
@@ -141,7 +142,7 @@ export function WorkflowStudio({ folders, workflows, connections }: WorkflowStud
                 <p className="flex items-center gap-1.5 px-2 pb-1.5 text-xs font-semibold uppercase tracking-wide text-gray-600">
                   <Folder size={14} aria-hidden className="text-primary-600" />
                   {t(folder.name)}
-                  <span className="ml-auto rounded-full bg-gray-100 px-1.5 text-[10px] tabular-nums text-gray-700">{items.length}</span>
+                  <span className="ml-auto rounded-full bg-gray-100 px-1.5 text-[0.6875rem] tabular-nums text-gray-700">{items.length}</span>
                 </p>
                 <ul className="space-y-1">
                   {items.map((item) => {
@@ -165,7 +166,7 @@ export function WorkflowStudio({ folders, workflows, connections }: WorkflowStud
                             {item.schedule}
                           </span>
                           {atRisk.has(item.id) && (
-                            <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700">
+                            <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[0.75rem] font-semibold text-red-700">
                               <PlugZap size={12} aria-hidden />
                               {t("Inactive connection")}
                             </span>
@@ -262,7 +263,7 @@ export function WorkflowStudio({ folders, workflows, connections }: WorkflowStud
                   const label = workflow.steps.find((item) => item.id === line.stepId)?.label;
                   return (
                     <li key={line.stepId} className="flex items-start gap-2 text-sm">
-                      <span className={cn("mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold", state.pill)}>
+                      <span className={cn("mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[0.75rem] font-semibold", state.pill)}>
                         <state.Icon size={12} aria-hidden />
                         {t(state.label)}
                       </span>
@@ -291,13 +292,16 @@ type FlowCanvasProps = {
   active: Record<string, boolean>;
 };
 
-function toNodes({ workflow, states, selectedStepId, connections, active }: Omit<FlowCanvasProps, "onSelect">): FlowNodeType[] {
+function toNodes(
+  { workflow, states, selectedStepId, connections, active }: Omit<FlowCanvasProps, "onSelect">,
+  scale = 1
+): FlowNodeType[] {
   return workflow.steps.map((step) => {
     const connection = connections.find((item) => item.id === step.connectionId);
     return {
       id: step.id,
       type: "flowStep",
-      position: { x: step.x, y: step.y },
+      position: { x: step.x * scale, y: step.y * scale },
       selected: step.id === selectedStepId,
       data: {
         step,
@@ -311,17 +315,23 @@ function toNodes({ workflow, states, selectedStepId, connections, active }: Omit
 
 /** The canvas: steps can be dragged to rearrange the view; the flow itself is read-only in the demo. */
 function FlowCanvas(props: FlowCanvasProps) {
-  const { workflow, states, selectedStepId, onSelect, connections, active } = props;
-  const [nodes, setNodes, onNodesChange] = useNodesState<FlowNodeType>(toNodes(props));
+  const scale = useRootScale();
+  // Nodes are sized in rem, so their positions follow the root size; a new scale redraws the canvas.
+  return <FlowCanvasView key={scale} scale={scale} {...props} />;
+}
+
+function FlowCanvasView(props: FlowCanvasProps & { scale: number }) {
+  const { workflow, states, selectedStepId, onSelect, connections, active, scale } = props;
+  const [nodes, setNodes, onNodesChange] = useNodesState<FlowNodeType>(toNodes(props, scale));
 
   useEffect(() => {
     setNodes((current) =>
       current.map((node) => {
-        const fresh = toNodes({ workflow, states, selectedStepId, connections, active }).find((item) => item.id === node.id);
+        const fresh = toNodes({ workflow, states, selectedStepId, connections, active }, scale).find((item) => item.id === node.id);
         return fresh ? { ...node, selected: fresh.selected, data: fresh.data } : node;
       })
     );
-  }, [workflow, states, selectedStepId, connections, active, setNodes]);
+  }, [workflow, states, selectedStepId, connections, active, scale, setNodes]);
 
   const edges: Edge[] = useMemo(
     () =>
@@ -343,7 +353,7 @@ function FlowCanvas(props: FlowCanvasProps) {
   );
 
   return (
-    <div className="h-[480px] bg-primary-50/30">
+    <div className="h-[30rem] bg-primary-50/30">
       <ReactFlow
         nodes={nodes}
         edges={edges}

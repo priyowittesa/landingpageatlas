@@ -32,6 +32,7 @@ import {
 import type { EpiDemoData } from "../types";
 import type { NewEpiAction } from "../store/actions-store";
 import { QUESTIONS } from "./questions";
+import { buildPortfolioReport } from "./report";
 import type { Answer, QuestionId } from "./types";
 
 /** Project the scripted answers are written around: Kapasitor Bank. */
@@ -503,7 +504,29 @@ function mos(data: EpiDemoData): Answer {
   };
 }
 
+/** The portfolio status report as a file: the answer carries the figures and the download. */
+function exportReportAnswer(data: EpiDemoData): Answer {
+  const portfolioReport = buildPortfolioReport(data);
+  return {
+    questionId: "export",
+    question: questionLabel("export"),
+    conclusion: `The weekly portfolio status report is ready: ${portfolioReport.kpis.length} key figures and ${portfolioReport.exceptions.length} exceptions, data as at ${formatDate(data.asAt)}.`,
+    figures: [],
+    points: portfolioReport.highlights,
+    sources: [
+      { kind: "table", label: "PROGRESS_WEEKLY" },
+      { kind: "table", label: "PAYMENT_STAGES" },
+      { kind: "table", label: "DATA_QUALITY, seeded exceptions" },
+      { kind: "rule", label: "OR-09 portfolio health from named signals" }
+    ],
+    actions: [],
+    exportReport: portfolioReport,
+    refreshedAt: data.asAt
+  };
+}
+
 const BUILDERS: Record<QuestionId, (data: EpiDemoData) => Answer> = {
+  export: exportReportAnswer,
   report,
   mos,
   behind,
@@ -529,6 +552,7 @@ export function buildAllAnswers(data: EpiDemoData): Record<QuestionId, Answer> {
     inspections: inspections(data),
     rap: rap(data),
     report: report(data),
-    mos: mos(data)
+    mos: mos(data),
+    export: exportReportAnswer(data)
   };
 }

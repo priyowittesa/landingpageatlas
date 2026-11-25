@@ -17,6 +17,7 @@ import { CategoryTick } from "./CategoryTick";
 import { ChartLegend } from "./ChartLegend";
 import { ChartTooltip } from "./ChartTooltip";
 import { useChartAnimation } from "./useChartAnimation";
+import { chartMargin, useRootScale } from "../../use-root-scale";
 
 export type BarSeries<T> = {
   key: keyof T & string;
@@ -83,8 +84,9 @@ export function StackedBarChart<T extends object>({
     ? [0, valueTicks[valueTicks.length - 1] ?? 0]
     : [0, "dataMax"];
   const animation = useChartAnimation();
+  const s = useRootScale();
   const bars = orientation === "bars";
-  const chartHeight = height ?? (bars ? data.length * rowHeight + 40 : 280);
+  const chartHeight = (height ?? (bars ? data.length * rowHeight + 40 : 280)) * s;
   const visibleSeries = series.filter((item) => !hiddenKeys.includes(item.key));
 
   return (
@@ -94,7 +96,7 @@ export function StackedBarChart<T extends object>({
           <BarChart
             data={data}
             layout={bars ? "vertical" : "horizontal"}
-            margin={{ top: 4, right: 24, bottom: 0, left: 8 }}
+            margin={chartMargin(s)}
           >
             <CartesianGrid vertical={!bars} horizontal={bars ? false : true} {...GRID} />
             {bars ? (
@@ -113,7 +115,7 @@ export function StackedBarChart<T extends object>({
                 <YAxis
                   type="category"
                   dataKey={categoryKey as never}
-                  width={labelWidth}
+                  width={labelWidth * s}
                   tickLine={false}
                   axisLine={false}
                   tick={<CategoryTick />}
@@ -135,7 +137,7 @@ export function StackedBarChart<T extends object>({
                   domain={valueDomain}
                   ticks={valueTicks}
                   allowDecimals={allowDecimals}
-                  width={88}
+                  width={88 * s}
                   tickLine={false}
                   axisLine={false}
                   tick={AXIS_TICK}

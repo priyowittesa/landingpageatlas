@@ -1,3 +1,6 @@
+import { AiInsightCard } from "../../components/AiInsightCard";
+import { getInsights } from "../../operations/insights";
+import { getAsAtLabel } from "../../selectors";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
@@ -15,7 +18,7 @@ import { RevenueStrip } from "../../components/RevenueStrip";
 import { DeficitCard, SCurveCard, WeeklyIncrementsCard } from "../../components/charts/ScreenCharts";
 import { SectionCard } from "../../components/SectionCard";
 import { SyntheticDataBadge } from "../../components/SyntheticDataBadge";
-import { WeekCard } from "../../components/WeekCard";
+import { SCurveInsightCard } from "../../components/SCurveInsightCard";
 import { LookAheadCard } from "../../components/LookAheadCard";
 import { Tr } from "../../components/Tr";
 import { WeightBreakdown } from "../../components/WeightBreakdown";
@@ -66,6 +69,8 @@ export default async function ProjectCockpitPage({ params }: ProjectPageProps) {
   const lifecycle = getProjectLifecycle(epiData, id);
   const schedule = getPaymentSchedule(epiData, id);
   const lookAhead = getLookAhead(epiData, id);
+  const scheduleInsights = getInsights(epiData, { modules: ["cockpit"], projectId: id });
+  const insightId = (scheduleInsights.find((insight) => insight.id.startsWith("P-LATE")) ?? scheduleInsights[0])?.id;
   const progressBadge = <SyntheticDataBadge real={info.progressOrigin === "real"} />;
 
   return (
@@ -76,6 +81,8 @@ export default async function ProjectCockpitPage({ params }: ProjectPageProps) {
         actions={<ProjectFilter options={getProjectFilterOptions(epiData)} />}
         dataTags={info.progressOrigin === "real" ? ["synthetic", "real"] : ["synthetic"]}
       />
+
+      <AiInsightCard insights={getInsights(epiData, { modules: ["cockpit", "evidence"], projectId: id })} asAtLabel={getAsAtLabel(epiData)} />
 
       <ProjectInfoRow info={info} />
 
@@ -100,9 +107,12 @@ export default async function ProjectCockpitPage({ params }: ProjectPageProps) {
         <div className={week ? "grid grid-cols-1 gap-5 xl:grid-cols-3" : undefined}>
           <SCurveCard chart={sCurve} badge={progressBadge} className={week ? "xl:col-span-2" : undefined} />
           {week && (
-            <SectionCard title="Current week" subtitle="Plan, actual and deviation to date" badge={progressBadge}>
-              <WeekCard week={week} />
-            </SectionCard>
+            <SCurveInsightCard
+              week={week}
+              recovery={recovery}
+              badge={progressBadge}
+              actionHref={insightId ? `/ptepi/actions?signal=${insightId}` : "/ptepi/actions"}
+            />
           )}
         </div>
       )}

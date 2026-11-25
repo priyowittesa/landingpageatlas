@@ -9,6 +9,7 @@ import { CategoryTick } from "./CategoryTick";
 import { ChartLegend } from "./ChartLegend";
 import { rupiahAxisFormatter } from "./formatters";
 import { useChartAnimation } from "./useChartAnimation";
+import { chartMargin, useRootScale } from "../../use-root-scale";
 
 type WaterfallChartProps = {
   steps: WaterfallStep[];
@@ -26,11 +27,12 @@ function signed(step: WaterfallStep): string {
 /** Floating-bar waterfall, drawn sideways so long step names stay readable. Axis starts at zero. */
 export function WaterfallChart({ steps, height }: WaterfallChartProps) {
   const animation = useChartAnimation();
+  const s = useRootScale();
   return (
     <div>
-      <div style={{ height: height ?? steps.length * ROW_HEIGHT + 40 }} className="w-full">
+      <div style={{ height: (height ?? steps.length * ROW_HEIGHT + 40) * s }} className="w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={steps} layout="vertical" margin={{ top: 4, right: 24, bottom: 0, left: 8 }}>
+          <BarChart data={steps} layout="vertical" margin={chartMargin(s)}>
             <CartesianGrid horizontal={false} {...GRID} />
             <XAxis
               type="number"
@@ -43,7 +45,7 @@ export function WaterfallChart({ steps, height }: WaterfallChartProps) {
             <YAxis
               type="category"
               dataKey="label"
-              width={190}
+              width={190 * s}
               tickLine={false}
               axisLine={false}
               tick={<CategoryTick />}
@@ -68,7 +70,7 @@ export function WaterfallChart({ steps, height }: WaterfallChartProps) {
               }}
             />
             <Bar dataKey="base" stackId="wf" fill="transparent" stroke="none" {...animation} />
-            <Bar dataKey="size" stackId="wf" maxBarSize={22} radius={4} {...animation}>
+            <Bar dataKey="size" stackId="wf" maxBarSize={22 * s} radius={4} {...animation}>
               {steps.map((step) => (
                 <Cell
                   key={step.label}

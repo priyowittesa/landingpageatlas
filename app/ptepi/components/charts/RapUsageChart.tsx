@@ -18,6 +18,7 @@ import { CategoryTick } from "./CategoryTick";
 import { ChartLegend } from "./ChartLegend";
 import { formatPercentAxis, niceTicks } from "./formatters";
 import { useChartAnimation } from "./useChartAnimation";
+import { chartMargin, useRootScale } from "../../use-root-scale";
 
 const ROW_HEIGHT = 40;
 const LABEL_WIDTH = 190;
@@ -28,12 +29,13 @@ const LABEL_WIDTH = 190;
  */
 export function RapUsageChart({ points }: { points: CostUsagePoint[] }) {
   const animation = useChartAnimation();
+  const s = useRootScale();
   const ticks = niceTicks(Math.max(100, ...points.map((point) => point.usedPct)));
   return (
     <div>
-      <div style={{ height: points.length * ROW_HEIGHT + 40 }} className="w-full">
+      <div style={{ height: (points.length * ROW_HEIGHT + 40) * s }} className="w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={points} layout="vertical" margin={{ top: 4, right: 24, bottom: 0, left: 8 }}>
+          <BarChart data={points} layout="vertical" margin={chartMargin(s)}>
             <CartesianGrid horizontal={false} {...GRID} />
             <XAxis
               type="number"
@@ -47,7 +49,7 @@ export function RapUsageChart({ points }: { points: CostUsagePoint[] }) {
             <YAxis
               type="category"
               dataKey="category"
-              width={LABEL_WIDTH}
+              width={LABEL_WIDTH * s}
               tickLine={false}
               axisLine={false}
               interval={0}
@@ -72,7 +74,7 @@ export function RapUsageChart({ points }: { points: CostUsagePoint[] }) {
                 );
               }}
             />
-            <Bar dataKey="usedPct" maxBarSize={20} radius={4} {...animation}>
+            <Bar dataKey="usedPct" maxBarSize={20 * s} radius={4} {...animation}>
               {points.map((point) => (
                 <Cell key={point.category} fill={point.over ? CHART_COLORS.bad : CHART_COLORS.actual} />
               ))}

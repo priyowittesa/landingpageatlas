@@ -41,7 +41,7 @@ export function ProcurementFlowCard({ projectId, flow }: { projectId: string; fl
       </ol>
 
       <div className="mt-5 overflow-x-auto">
-        <table className="w-full min-w-[860px] text-sm">
+        <table className="ptepi-static w-full min-w-[53.75rem] text-sm">
           <thead>
             <tr className="border-b border-border text-left text-xs text-muted-foreground">
               <th className="px-3 py-2 font-medium"><Tr>Cost line</Tr></th>
@@ -63,7 +63,7 @@ export function ProcurementFlowCard({ projectId, flow }: { projectId: string; fl
                   const state = STATE[step.state];
                   return (
                     <td key={step.key} className="px-3 py-3">
-                      <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset", state.className)}>
+                      <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.75rem] font-semibold ring-1 ring-inset", state.className)}>
                         <state.Icon size={12} aria-hidden />
                         <Tr>{state.label}</Tr>
                       </span>
