@@ -944,3 +944,11 @@ export type RevenueTrio = {
   accrualThisYear: number;
   earnedWithSignedBa: number;
 };
+
+/** One KPI of the Nexa Intelligence context panel. */
+export type NexaContextKpi = {
+  label: string;
+  value: string;
+  note: string;
+  tone: "good" | "watch" | "bad" | "neutral";
+};

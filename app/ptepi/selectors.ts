@@ -23,6 +23,7 @@ import {
   STATUS_GROUP_LABELS
 } from "./labels";
 import type {
+  NexaContextKpi,
   RevenueTrio,
   LifecycleStage,
   PaymentSchedule,
@@ -2258,4 +2259,45 @@ export function getRevenueTrio(data: EpiDemoData, projectId?: string): RevenueTr
       ids.flatMap((id) => getEarningStages(data, id).map((stage) => stage.earnedValue))
     )
   };
+}
+
+/** Live portfolio figures beside the Nexa Intelligence chat; the same numbers as S1 to S4. */
+export function getNexaContext(data: EpiDemoData): NexaContextKpi[] {
+  const totals = getPortfolioTotals(data);
+  const billing = getBillingSummary(getBillingRows(data));
+  const atRisk = getPortfolioRows(data).filter((row) => row.health.rating === "at-risk").length;
+  const hero = getProjectProgress(data, "PNP126");
+  const evidence = getEvidenceSummary(getEvidenceStages(data, "PNP126"));
+  return [
+    {
+      label: "Portfolio value",
+      value: formatRupiahMillions(totals.contractValue),
+      note: `${totals.projectCount} projects`,
+      tone: "neutral"
+    },
+    {
+      label: "Projects at risk",
+      value: String(atRisk),
+      note: `${totals.projectsWithExceptions} with exceptions`,
+      tone: atRisk > 0 ? "bad" : "good"
+    },
+    {
+      label: "Blocked from billing",
+      value: formatRupiahMillions(billing.blocked.amount),
+      note: `${billing.blocked.count} payment stages`,
+      tone: billing.blocked.count > 0 ? "bad" : "good"
+    },
+    {
+      label: "Retensi held",
+      value: formatRupiahMillions(totals.retentionHeld),
+      note: "Due, awaiting BAST II",
+      tone: totals.retentionHeld > 0 ? "watch" : "good"
+    },
+    {
+      label: "PNP126 deviation",
+      value: hero.deviationPts === null ? "-" : formatPoints(hero.deviationPts),
+      note: `${evidence.blocked} stage blocked by a missing BA`,
+      tone: hero.deviationPts !== null && hero.deviationPts <= -DEVIATION_ALERT_PTS ? "bad" : "neutral"
+    }
+  ];
 }

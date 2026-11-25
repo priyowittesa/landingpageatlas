@@ -22,9 +22,6 @@ import { PtepiTopbar } from "./PtepiTopbar";
  * responsive sidebar state, but not `Sidebar`, `AppLayout` or `UserMenu`,
  * which call the auth API and would redirect a logged-out visitor.
  */
-/** Full-bleed chat workspace, like Synergy Intelligence: no page padding, no page scroll. */
-const WORKSPACE_PATH = "/ptepi/ask-atlas";
-
 export function PtepiShell({ children }: { children: ReactNode }) {
   return (
     <ResponsiveSidebarProvider>
@@ -36,7 +33,8 @@ export function PtepiShell({ children }: { children: ReactNode }) {
 function ShellFrame({ children }: { children: ReactNode }) {
   useSyncProjectFromPath();
   const { collapsed } = useSidebar();
-  const workspace = usePathname() === WORKSPACE_PATH;
+  // The Nexa workspace uses the full content width; other screens keep the 7xl reading width.
+  const wide = usePathname().startsWith("/ptepi/ask-atlas");
 
   // Restore saved actions once, before any screen effect (such as seeding) runs.
   useLayoutEffect(() => {
@@ -44,25 +42,16 @@ function ShellFrame({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div className={cn("ptepi-app text-gray-900", workspace ? "h-screen overflow-hidden" : "min-h-screen")}>
+    <div className="ptepi-app min-h-screen text-gray-900">
       <PtepiSidebar />
       <div
         className={cn(
-          workspace ? "h-screen" : "min-h-screen",
-          "flex flex-col transition-all duration-300 ease-in-out",
+          "flex min-h-screen flex-col transition-all duration-300 ease-in-out",
           collapsed ? "lg:ml-16" : "lg:ml-64"
         )}
       >
         <PtepiTopbar />
-        <main
-          className={
-            workspace
-              ? "flex min-h-0 flex-1 flex-col overflow-hidden"
-              : "mx-auto w-full max-w-7xl flex-1 p-6"
-          }
-        >
-          {children}
-        </main>
+        <main className={cn("mx-auto w-full flex-1 p-6", !wide && "max-w-7xl")}>{children}</main>
       </div>
     </div>
   );

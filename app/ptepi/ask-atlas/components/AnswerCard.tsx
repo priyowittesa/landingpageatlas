@@ -22,76 +22,99 @@ const SOURCE_KIND_LABEL: Record<AnswerSource["kind"], string> = {
 
 type AnswerCardProps = {
   answer: Answer;
+  /** Suggested next questions, shown as chips under the answer */
+  followUps?: string[];
+  onFollowUp?: (question: string) => void;
 };
 
-export function AnswerCard({ answer }: AnswerCardProps) {
+export function AnswerCard({ answer, followUps = [], onFollowUp }: AnswerCardProps) {
   return (
-    <div className="space-y-4">
-      <p className="text-sm font-semibold">{answer.conclusion}</p>
+    <div className="space-y-3">
+      <p className="text-sm leading-6 text-gray-800">{answer.conclusion}</p>
 
       {answer.figures.length > 0 && (
-        <dl className="flex flex-wrap gap-3">
+        <dl className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           {answer.figures.map((figure) => (
-            <div
-              key={figure.label}
-              className="rounded-lg border border-border bg-primary-50 px-3 py-2"
-            >
-              <dt className="text-xs text-muted-foreground">{figure.label}</dt>
-              <dd className="text-sm font-bold text-primary-700">{figure.value}</dd>
+            <div key={figure.label} className="rounded-lg border border-gray-200 bg-white p-3">
+              <dt className="text-[10px] font-semibold uppercase tracking-wide text-gray-500">{figure.label}</dt>
+              <dd className="mt-1 text-lg font-bold tabular-nums text-gray-950">{figure.value}</dd>
             </div>
           ))}
         </dl>
       )}
 
-      <ul className="list-disc space-y-1.5 pl-5 text-sm">
-        {answer.points.map((point) => (
-          <li key={point}>{point}</li>
-        ))}
-      </ul>
-
-      <div className="space-y-2">
-        <p className="text-xs font-medium text-muted-foreground">
-          Sources, data as at {formatDate(answer.refreshedAt)}
-        </p>
-        <ul className="flex flex-wrap gap-2">
-          {answer.sources.map((source) => {
-            const Icon = SOURCE_ICON[source.kind];
-            return (
-              <li key={`${source.kind}-${source.label}`}>
-                <Badge variant="outline" className="gap-1.5 font-medium">
-                  <Icon size={16} aria-hidden />
-                  <span className="sr-only">{SOURCE_KIND_LABEL[source.kind]}: </span>
-                  {source.label}
-                </Badge>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-
-      {answer.actions.length > 0 && (
-        <div className="space-y-2 border-t border-border pt-3">
-          <p className="text-xs font-medium text-muted-foreground">
-            Recommended actions: AI recommends, people decide
-          </p>
-          <ul className="space-y-2">
-            {answer.actions.map((action) => (
-              <ActionRow key={action.source} action={action} />
+      {answer.points.length > 0 && (
+        <div className="rounded-lg border border-gray-200 bg-white p-3">
+          <p className="mb-2 text-xs font-semibold text-gray-900">Why</p>
+          <ul className="list-disc space-y-1.5 pl-5 text-sm text-gray-800">
+            {answer.points.map((point) => (
+              <li key={point}>{point}</li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {answer.actions.length > 0 && (
+        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <div className="flex items-center justify-between border-b border-gray-100 px-3 py-2">
+            <p className="text-xs font-semibold text-gray-900">Recommendations</p>
+            <span className="rounded border border-primary-200 bg-primary-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-800">
+              AI recommends, people decide
+            </span>
+          </div>
+          <ol className="divide-y divide-gray-100">
+            {answer.actions.map((action, index) => (
+              <ActionRow key={action.source} action={action} index={index + 1} />
+            ))}
+          </ol>
+        </div>
+      )}
+
+      <ul className="flex flex-wrap gap-1.5" aria-label={`Sources, data as at ${formatDate(answer.refreshedAt)}`}>
+        {answer.sources.map((source, index) => {
+          const Icon = SOURCE_ICON[source.kind];
+          return (
+            <li key={`${source.kind}-${source.label}`}>
+              <Badge variant="outline" className="gap-1 bg-white font-medium">
+                <span className="text-primary-700">[{index + 1}]</span>
+                <Icon size={12} aria-hidden />
+                <span className="sr-only">{SOURCE_KIND_LABEL[source.kind]}: </span>
+                {source.label}
+              </Badge>
+            </li>
+          );
+        })}
+      </ul>
+      <p className="text-[11px] text-gray-500">Sources, data as at {formatDate(answer.refreshedAt)}</p>
+
+      {followUps.length > 0 && onFollowUp && (
+        <div className="flex flex-wrap gap-2">
+          {followUps.map((question) => (
+            <button
+              key={question}
+              type="button"
+              onClick={() => onFollowUp(question)}
+              className="rounded-full border border-primary-300 bg-white px-3 py-1 text-xs font-medium text-primary-800 transition-colors hover:bg-primary-50"
+            >
+              {question}
+            </button>
+          ))}
         </div>
       )}
     </div>
   );
 }
 
-function ActionRow({ action }: { action: NewEpiAction }) {
+function ActionRow({ action, index }: { action: NewEpiAction; index: number }) {
   const addAction = useActionsStore((state) => state.addAction);
   const match = useActionsStore(selectOpenMatch(action));
   const created = match !== undefined;
 
   return (
-    <li className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3">
+    <li className="flex flex-wrap items-center gap-3 p-3">
+      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-primary-50 text-[11px] font-semibold text-primary-800">
+        {index}
+      </span>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium">{action.title}</p>
         <p className="text-xs text-muted-foreground">

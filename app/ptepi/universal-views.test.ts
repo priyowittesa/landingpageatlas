@@ -77,3 +77,21 @@ describe("S5 vendor advances", () => {
     expect(getMetric("advancesNoSes").formula).toContain("Not a margin");
   });
 });
+
+describe("Nexa Intelligence context panel", () => {
+  it("shows the governed portfolio figures", async () => {
+    const { getNexaContext } = await import("./selectors");
+    const context = getNexaContext(epiData);
+    expect(context.map((kpi) => kpi.label)).toEqual([
+      "Portfolio value",
+      "Projects at risk",
+      "Blocked from billing",
+      "Retensi held",
+      "PNP126 deviation"
+    ]);
+    expect(context[0]?.value).toBe("Rp 6.683,1 m");
+    expect(context[2]?.value).toBe("Rp 752,5 m");
+    expect(context[3]?.value).toBe("Rp 37,9 m");
+    expect(context[4]?.value).toBe("-44,989 pts");
+  });
+});
