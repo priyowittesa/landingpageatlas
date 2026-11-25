@@ -1,5 +1,6 @@
 "use client";
 
+import { Tr } from "./Tr";
 import { formatDate } from "../format";
 import { useState } from "react";
 import Link from "next/link";
@@ -76,7 +77,7 @@ export function StageTracker({ stages, suggestions }: StageTrackerProps) {
               </div>
 
               <div>
-                <p className="font-semibold">{stage.label}</p>
+                <p className="font-semibold"><Tr>{stage.label}</Tr></p>
                 <div className="mt-1 flex items-center gap-1.5">
                   <StatusBadge
                     tone={STATUS[stage.status].tone}
@@ -87,21 +88,21 @@ export function StageTracker({ stages, suggestions }: StageTrackerProps) {
 
               <dl className="space-y-2 text-xs">
                 <div>
-                  <dt className="text-muted-foreground">Required document</dt>
-                  <dd className="font-medium">{stage.requiredDocument}</dd>
+                  <dt className="text-muted-foreground"><Tr>Required document</Tr></dt>
+                  <dd className="font-medium"><Tr>{stage.requiredDocument}</Tr></dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground">Signer</dt>
+                  <dt className="text-muted-foreground"><Tr>Signer</Tr></dt>
                   <dd className="font-medium">{stage.expectedSigner}</dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground">Signed date</dt>
+                  <dt className="text-muted-foreground"><Tr>Signed date</Tr></dt>
                   <dd className="font-medium">{formatDate(stage.signedDate)}</dd>
                 </div>
               </dl>
 
               <div className="mt-auto space-y-1 border-t border-border pt-3">
-                <p className="line-clamp-3 text-xs text-muted-foreground">{stage.gate.reason}</p>
+                <p className="line-clamp-3 text-xs text-muted-foreground"><Tr>{stage.gate.reason}</Tr></p>
               </div>
             </button>
           </li>
@@ -142,9 +143,9 @@ function StageDialogBody({ stage, suggestion }: StageDialogBodyProps) {
     <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
       <DialogHeader>
         <DialogTitle>
-          Stage {stage.stageNo}: {stage.label}
+          <Tr>Stage</Tr> {stage.stageNo}: <Tr>{stage.label}</Tr>
         </DialogTitle>
-        <DialogDescription>{stage.requiredDocument}</DialogDescription>
+        <DialogDescription><Tr>{stage.requiredDocument}</Tr></DialogDescription>
       </DialogHeader>
 
       <div className="space-y-5">
@@ -153,7 +154,7 @@ function StageDialogBody({ stage, suggestion }: StageDialogBodyProps) {
             <GateBadge stage={stage} />
             <SyntheticDataBadge real={stage.dataOrigin === "real"} />
           </div>
-          <p className="text-sm">{stage.gate.reason}</p>
+          <p className="text-sm"><Tr>{stage.gate.reason}</Tr></p>
           {stage.blockedValue > 0 && (
             <p className="text-sm text-muted-foreground">
               Claimed in the report without a signed BA:{" "}
@@ -184,8 +185,8 @@ function StageDialogBody({ stage, suggestion }: StageDialogBodyProps) {
                     ? `${unit.baId}, ${unit.documentNo ?? "no number"}, ${unit.status === "earned" ? `signed ${formatDate(unit.documentDate)}` : "not signed"}, signer ${unit.signerRole ?? "-"}`
                     : "No BA in the register"}
                 </p>
-                {unit.issue && <p className="text-xs text-destructive">{unit.issue}</p>}
-                {unit.note && <p className="text-xs text-muted-foreground">Register note: {unit.note}</p>}
+                {unit.issue && <p className="text-xs text-destructive"><Tr>{unit.issue}</Tr></p>}
+                {unit.note && <p className="text-xs text-muted-foreground"><Tr>Register note</Tr>: {unit.note}</p>}
                 {unit.baId && ATTACHMENT_NOTES[unit.baId] && (
                   <div className="mt-2 rounded-md bg-primary-50 p-3">
                     <p className="flex items-center gap-1.5 text-xs font-semibold">
@@ -206,7 +207,7 @@ function StageDialogBody({ stage, suggestion }: StageDialogBodyProps) {
 
         {blocked && suggestion && (
           <div className="space-y-1 rounded-lg border border-border p-4 text-sm">
-            <p className="font-semibold">Recommended action</p>
+            <p className="font-semibold"><Tr>Recommended action</Tr></p>
             <p>{suggestion.title}</p>
             <p className="text-xs text-muted-foreground">
               Owner: {suggestion.ownerRole}. Due {formatDate(suggestion.dueDate)}. Autonomy {suggestion.autonomy},
@@ -220,14 +221,14 @@ function StageDialogBody({ stage, suggestion }: StageDialogBodyProps) {
         <DialogFooter className="items-center gap-3 sm:justify-between">
           {created ? (
             <p className="text-sm">
-              {createdId === match?.id ? `Added as ${createdId}` : `Already tracked as ${match?.id}`}.{" "}
+              <Tr>{createdId === match?.id ? "Added as" : "Already tracked as"}</Tr> {createdId === match?.id ? createdId : match?.id}.{" "}
               <Link href="/ptepi/actions" className="font-medium text-primary-700 hover:underline">
-                View in the action tracker
+                <Tr>View in the action tracker</Tr>
               </Link>
             </p>
           ) : (
             <span className="text-xs text-muted-foreground">
-              Adds the action to the Action tracker.
+              <Tr>Adds the action to the Action tracker.</Tr>
             </span>
           )}
           <Button

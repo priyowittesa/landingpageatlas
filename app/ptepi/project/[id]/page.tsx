@@ -16,11 +16,14 @@ import { DeficitCard, SCurveCard, WeeklyIncrementsCard } from "../../components/
 import { SectionCard } from "../../components/SectionCard";
 import { SyntheticDataBadge } from "../../components/SyntheticDataBadge";
 import { WeekCard } from "../../components/WeekCard";
+import { LookAheadCard } from "../../components/LookAheadCard";
+import { Tr } from "../../components/Tr";
 import { WeightBreakdown } from "../../components/WeightBreakdown";
 import { epiData } from "../../data";
 import {
   getCostMargin,
   getCriticalItem,
+  getLookAhead,
   getDeficitByComponent,
   getProjectExceptionItems,
   getProjectFilterOptions,
@@ -62,6 +65,7 @@ export default async function ProjectCockpitPage({ params }: ProjectPageProps) {
   const exceptions = getProjectExceptionItems(epiData, id);
   const lifecycle = getProjectLifecycle(epiData, id);
   const schedule = getPaymentSchedule(epiData, id);
+  const lookAhead = getLookAhead(epiData, id);
   const progressBadge = <SyntheticDataBadge real={info.progressOrigin === "real"} />;
 
   return (
@@ -70,6 +74,7 @@ export default async function ProjectCockpitPage({ params }: ProjectPageProps) {
         title={`${info.projectId}: ${info.customer}`}
         subtitle={info.description}
         actions={<ProjectFilter options={getProjectFilterOptions(epiData)} />}
+        dataTags={info.progressOrigin === "real" ? ["synthetic", "real"] : ["synthetic"]}
       />
 
       <ProjectInfoRow info={info} />
@@ -85,7 +90,7 @@ export default async function ProjectCockpitPage({ params }: ProjectPageProps) {
             href={`/ptepi/commercial?project=${id}`}
             className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-700 hover:underline"
           >
-            Open billing
+            <Tr>Open billing</Tr>
             <ArrowRight size={16} aria-hidden />
           </Link>
         }
@@ -107,6 +112,8 @@ export default async function ProjectCockpitPage({ params }: ProjectPageProps) {
         {deficit.points.length > 0 && <DeficitCard chart={deficit} badge={progressBadge} />}
       </AdaptiveRow>
 
+      {lookAhead.length > 0 && <LookAheadCard rows={lookAhead} real={info.progressOrigin === "real"} />}
+
       <AdaptiveRow>
         {weights.length > 0 && (
           <SectionCard title="Weight breakdown" subtitle="Share of each component in the project" badge={progressBadge}>
@@ -114,7 +121,7 @@ export default async function ProjectCockpitPage({ params }: ProjectPageProps) {
           </SectionCard>
         )}
         {recovery && (
-          <SectionCard title="Recovery" subtitle="Run-rate needed to finish on the planned date" badge={progressBadge}>
+          <SectionCard title="Recovery" subtitle="Required pace against the best 4-week rolling average" badge={progressBadge}>
             <RecoveryCard recovery={recovery} actual={week?.actual ?? null} />
           </SectionCard>
         )}
@@ -131,7 +138,7 @@ export default async function ProjectCockpitPage({ params }: ProjectPageProps) {
             href={`/ptepi/cost?project=${id}`}
             className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-700 hover:underline"
           >
-            Open cost detail
+            <Tr>Open cost detail</Tr>
             <ArrowRight size={16} aria-hidden />
           </Link>
         </SectionCard>

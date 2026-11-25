@@ -8,6 +8,10 @@ import { ScreenHeader } from "../components/ScreenHeader";
 import { KpiCard } from "../components/KpiCard";
 import { ProjectFilter } from "../components/ProjectFilter";
 import { RevenueStrip } from "../components/RevenueStrip";
+import { AdaptiveRow } from "../components/AdaptiveRow";
+import { CarryOverCard } from "../components/CarryOverCard";
+import { SyntheticDataBadge } from "../components/SyntheticDataBadge";
+import { RetentionAgeingCard } from "../components/charts/ScreenCharts";
 import { CommercialProjectPanel, type CommercialProjectView } from "../components/CommercialProjectPanel";
 import { epiData } from "../data";
 import { formatRupiahMillions } from "../format";
@@ -20,6 +24,8 @@ import {
   getPaymentSchedule,
   getProjectInfo,
   getProjectLifecycle,
+  getRevenueCarryOver,
+  getRetentionAgeing,
   getRevenueTotals,
   getRevenueTrio,
   getRevenueWaterfall
@@ -81,6 +87,11 @@ export default function CommercialBillingPage() {
           icon={CalendarClock}
         />
       </div>
+
+      <AdaptiveRow>
+        <CarryOverCard carryOver={getRevenueCarryOver(epiData)} />
+        <RetentionAgeingCard chart={getRetentionAgeing(epiData)} badge={<SyntheticDataBadge />} />
+      </AdaptiveRow>
 
       <CommercialProjectPanel views={projectViews} rows={billingRows} />
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { Tr, useT } from "./Tr";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -32,7 +33,7 @@ function Field({ label, htmlFor, children }: { label: string; htmlFor?: string; 
   return (
     <div className="space-y-1.5">
       <label htmlFor={htmlFor} className="text-sm font-medium">
-        {label}
+        <Tr>{label}</Tr>
       </label>
       {children}
     </div>
@@ -48,10 +49,11 @@ function OwnerSelect({
   value: string;
   onChange: (value: string) => void;
 }) {
+  const t = useT();
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger id={id} className="w-full">
-        <SelectValue placeholder="Select an owner role" />
+        <SelectValue placeholder={t("Select an owner role")} />
       </SelectTrigger>
       <SelectContent>
         {ROLE_OPTIONS.map((role) => (
@@ -86,6 +88,7 @@ function CreateActionForm({
   defaultOwnerRole,
   defaultDueDate
 }: CreateActionDialogProps) {
+  const t = useT();
   const addAction = useActionsStore((state) => state.addAction);
   const [title, setTitle] = useState("");
   const [projectId, setProjectId] = useState(projectOptions[0] ?? "");
@@ -118,9 +121,9 @@ function CreateActionForm({
   return (
     <DialogContent className="sm:max-w-lg">
       <DialogHeader>
-        <DialogTitle>New action</DialogTitle>
+        <DialogTitle><Tr>New action</Tr></DialogTitle>
         <DialogDescription>
-          A person raises it, a named owner works it and closes it.
+          <Tr>A person raises it, a named owner works it and closes it.</Tr>
         </DialogDescription>
       </DialogHeader>
       <div className="space-y-4">
@@ -129,14 +132,14 @@ function CreateActionForm({
             id="action-title"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            placeholder="What has to happen"
+            placeholder={t("What has to happen")}
           />
         </Field>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Project" htmlFor="action-project">
             <Select value={projectId} onValueChange={setProjectId}>
               <SelectTrigger id="action-project" className="w-full">
-                <SelectValue placeholder="Project" />
+                <SelectValue placeholder={t("Project")} />
               </SelectTrigger>
               <SelectContent>
                 {projectOptions.map((id) => (
@@ -181,10 +184,10 @@ function CreateActionForm({
       </div>
       <DialogFooter>
         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-          Cancel
+          <Tr>Cancel</Tr>
         </Button>
         <Button type="button" className="bg-primary-700 text-white hover:bg-primary-800" onClick={submit}>
-          Create action
+          <Tr>Create action</Tr>
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -220,7 +223,7 @@ function AssignForm({ action, onClose }: { action: EpiAction; onClose: () => voi
       </Field>
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
+          <Tr>Cancel</Tr>
         </Button>
         <Button
           type="button"
@@ -232,7 +235,7 @@ function AssignForm({ action, onClose }: { action: EpiAction; onClose: () => voi
             onClose();
           }}
         >
-          Assign
+          <Tr>Assign</Tr>
         </Button>
       </DialogFooter>
     </DialogContent>

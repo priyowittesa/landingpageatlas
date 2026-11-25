@@ -1,4 +1,5 @@
 "use client";
+import { Tr } from "../Tr";
 
 import type { ReactNode } from "react";
 import {
@@ -18,6 +19,7 @@ import type {
   DeficitPoint,
   SCurveChartData,
   ValueByStatusChartData,
+  RetentionAgeingChartData,
   WaterfallChartData,
   WeeklyIncrementChartData
 } from "../../types";
@@ -30,7 +32,7 @@ import { RapUsageChart } from "./RapUsageChart";
 import { CHART_COLORS } from "./chartTheme";
 import { ChartCard } from "./ChartCard";
 import { DumbbellChart } from "./DumbbellChart";
-import { formatRupiahCompact, niceTicks } from "./formatters";
+import { niceTicks } from "./formatters";
 import { SCurveChart } from "./SCurveChart";
 import { StackedBarChart } from "./StackedBarChart";
 import { WaterfallChart } from "./WaterfallChart";
@@ -63,7 +65,7 @@ export function ValueByStatusCard({ chart, badge, className }: CardProps<ValueBy
           { key: "atRisk", name: "At risk", color: CHART_COLORS.bad }
         ]}
         formatValue={formatRupiahMillions}
-        formatTick={formatRupiahCompact}
+        moneyAxis
       />
     </ChartCard>
   );
@@ -131,7 +133,7 @@ export function EarningStagesCard({ chart, badge, className }: CardProps<Earning
           { key: "open", name: "Not started", color: CHART_COLORS.neutral }
         ]}
         formatValue={formatRupiahMillions}
-        formatTick={formatRupiahCompact}
+        moneyAxis
       />
     </ChartCard>
   );
@@ -149,7 +151,12 @@ export function SCurveCard({ chart, badge, className }: CardProps<SCurveChartDat
       empty={chart.points.length === 0 ? { title: "No weekly schedule yet", description: "This project has not started, so there is no plan or actual curve." } : null}
       ariaLabel="Line chart of cumulative planned and actual progress by week, with the gap to plan shaded and the pace needed to finish on time"
     >
-      <SCurveChart points={chart.points} todayLabel={chart.todayLabel} requiredPace={chart.requiredPace} />
+      <SCurveChart
+        points={chart.points}
+        todayLabel={chart.todayLabel}
+        requiredPace={chart.requiredPace}
+        forecastPace={chart.forecastPace}
+      />
     </ChartCard>
   );
 }
@@ -212,7 +219,7 @@ export function DeficitCard({ chart, badge, className }: CardProps<DeficitChartD
         formatTick={(value) => formatDecimal(value, 0)}
         renderTooltip={(point: DeficitPoint) => (
           <>
-            <p className="mb-1 font-semibold">{point.label}</p>
+            <p className="mb-1 font-semibold"><Tr>{point.label}</Tr></p>
             <p className="tabular-nums">Weight {formatPercent(point.weight)}</p>
             <p className="tabular-nums">Deficit {formatPointsUnsigned(point.deficitPts)}</p>
             <p className="tabular-nums font-semibold">{formatPercent(point.share, 2)} of the deviation</p>
@@ -344,6 +351,34 @@ export function AgingCard({ chart, badge, className }: CardProps<ActionChartData
         series={[{ key: "count", name: "Actions", color: CHART_COLORS.primaryLight }]}
         colorOf={(bucket) => AGING_COLOR[bucket.id]}
         formatValue={(value) => String(value)}
+      />
+    </ChartCard>
+  );
+}
+
+/** S2: Retensi held by age; buckets past the alert threshold are red, the rest amber. */
+export function RetentionAgeingCard({ chart, badge, className }: CardProps<RetentionAgeingChartData>) {
+  return (
+    <ChartCard
+      title="Retensi ageing"
+      formula="Retensi held per payment stage, grouped by days since it fell due; over 180 days is aged"
+      takeaway={chart.takeaway}
+      table={chart.table}
+      badge={badge}
+      className={className}
+      empty={chart.total === 0 ? { title: "No Retensi held" } : null}
+      ariaLabel="Bar chart of Retensi held by age bucket, aged buckets in red"
+    >
+      <StackedBarChart
+        data={chart.points}
+        categoryKey="label"
+        orientation="bars"
+        labelWidth={130}
+        showLegend={false}
+        series={[{ key: "amount", name: "Retensi held", color: CHART_COLORS.watch }]}
+        colorOf={(point) => (point.aged ? CHART_COLORS.bad : CHART_COLORS.watch)}
+        formatValue={formatRupiahMillions}
+        moneyAxis
       />
     </ChartCard>
   );

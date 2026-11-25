@@ -33,11 +33,11 @@ describe("scripted answers", () => {
 
   it("explains why PNP126 is behind with live numbers", () => {
     const answer = answers.behind;
-    expect(answer.conclusion).toContain("44,989 pts behind plan in week 18");
-    expect(answer.conclusion).toContain("actual 28,498% against a plan of 73,487%");
-    expect(answer.figures.map((f) => f.value)).toEqual(["73,487%", "28,498%", "-44,989 pts"]);
+    expect(answer.conclusion).toContain("45 pts behind plan in week 18");
+    expect(answer.conclusion).toContain("actual 28,5% against a plan of 73,5%");
+    expect(answer.figures.map((f) => f.value)).toEqual(["73,5%", "28,5%", "-45 pts"]);
     expect(answer.points.some((p) => p.includes("weeks 14 to 18"))).toBe(true);
-    expect(answer.points.some((p) => p.includes("Panel SVGm") && p.includes("64,115%") && p.includes("32,058 pts"))).toBe(true);
+    expect(answer.points.some((p) => p.includes("Panel SVGm") && p.includes("64,1%") && p.includes("32,1 pts"))).toBe(true);
     expect(answer.points.some((p) => p.includes("8,9 points per week for 8 weeks"))).toBe(true);
     expect(answer.points.some((p) => p.includes("Power Transformer: PO Vendor (Confirmation Order) still draft"))).toBe(true);
     expect(answer.actions).toHaveLength(1);
@@ -56,7 +56,7 @@ describe("scripted answers", () => {
       "4 payment stages worth Rp 752,5 m are blocked from billing; nothing can be billed now; 2 Retensi worth Rp 37,9 m are due, awaiting BAST II."
     );
     expect(answer.points.some((p) => p.includes("PTP1125") && p.includes("BAST I still draft, not signed"))).toBe(true);
-    expect(answer.points.some((p) => p.includes("PNP126") && p.includes("Progress 28,498% below the 50% condition"))).toBe(true);
+    expect(answer.points.some((p) => p.includes("PNP126") && p.includes("Progress 28,5% below the 50% condition"))).toBe(true);
     expect(answer.points.some((p) => p.includes("is due, awaiting BAST II: BAST II not in the register"))).toBe(true);
     expect(answer.actions.map((a) => a.projectId).sort()).toEqual(["IKT0126", "PNP126", "PTP1125"]);
     expect(answer.actions.every((a) => a.ownerRole === "SM Operasi dan Teknik")).toBe(true);
@@ -85,7 +85,7 @@ describe("scripted answers", () => {
     expect(answer.conclusion).toBe("The BAST for PNP126 cannot be drafted yet: 4 of 4 checks fail.");
     expect(answer.points).toContain("BA Pemeriksaan Fisik signed: missing.");
     expect(answer.sources.some((s) => s.kind === "rule" && s.label.startsWith("KR-06"))).toBe(true);
-    expect(answer.points).toContain("Progress is 28,498%, 100% needed: missing.");
+    expect(answer.points).toContain("Progress is 28,5%, 100% needed: missing.");
     expect(answer.points.join(" ")).not.toMatch(/C3-D1|KR-0\d/);
     expect(answer.actions[0]?.dueDate).toBe("2026-11-22");
   });
@@ -93,7 +93,7 @@ describe("scripted answers", () => {
   it("reports overdue service inspections", () => {
     const answer = answers.inspections;
     expect(answer.conclusion).toBe(
-      "22 required inspections in 10 scope items are overdue; overall coverage is 88,17%."
+      "22 required inspections in 10 scope items are overdue; overall coverage is 88,2%."
     );
     expect(answer.points.some((p) => p.includes("IKT0126") && p.includes("(KHA)") && p.includes("carried out 0 times"))).toBe(true);
     expect(answer.actions).toHaveLength(1);
@@ -103,13 +103,44 @@ describe("scripted answers", () => {
   it("reports projects over RAP", () => {
     const answer = answers.rap;
     expect(answer.conclusion).toBe("3 projects are over their RAP budget; the largest overrun is PSL0126 at Rp 47,0 m.");
-    expect(answer.points.some((p) => p.includes("PSL0126") && p.includes("Rp 47.000.000") && p.includes("margin -12,53%"))).toBe(true);
-    expect(answer.points.some((p) => p.includes("Portfolio margin is 24,89%"))).toBe(true);
+    expect(answer.points.some((p) => p.includes("PSL0126") && p.includes("Rp 47.000.000") && p.includes("margin -12,5%"))).toBe(true);
+    expect(answer.points.some((p) => p.includes("Portfolio margin is 24,9%"))).toBe(true);
     expect(answer.actions.map((a) => a.projectId)).toEqual(["PSL0126"]);
   });
 
+  it("refuses the MOS date: no BA Material On Site is in the register (NF-04)", () => {
+    const answer = answers.mos;
+    expect(answer.refused).toBe(true);
+    expect(answer.conclusion).toBe(
+      "ATLAS cannot answer this: no BA Material On Site for PNP126 is in the BA register, so there is no signing date to report."
+    );
+    expect(answer.figures).toEqual([]);
+    expect(answer.refreshedAt).toBe("2026-11-08");
+  });
+
+  it("numbers the sources each point of the PNP126 answer cites", () => {
+    const answer = answers.behind;
+    expect(answer.citations).toHaveLength(answer.points.length);
+    for (const cited of answer.citations ?? []) {
+      expect(cited.length).toBeGreaterThan(0);
+      expect(cited.every((n) => n >= 1 && n <= answer.sources.length)).toBe(true);
+    }
+    expect(answer.points.some((p) => p.includes("best 4-week rolling average is 2,8 points per week"))).toBe(true);
+  });
+
+  it("drafts the week 19 report in template T1 for PM approval", () => {
+    const answer = answers.report;
+    const report = answer.report!;
+    expect(report.status).toBe("Draft, needs PM approval");
+    expect(report).toMatchObject({ weekNo: 19, weekWords: "Sembilan Belas", periodStart: "2026-11-09", periodEnd: "2026-11-15" });
+    expect(report.total).toMatchObject({ weight: 100, lastWeek: 28.498, thisWeek: null, toDate: 28.498, plan: 82.102 });
+    expect(report.rows.map((row) => row.component)).toContain("III Panel SVGm");
+    expect(report.checks.find((check) => check.label.startsWith("Every non-zero"))).toMatchObject({ passed: false });
+    expect(report.signatures.map((s) => s.block)).toEqual(["Menyetujui", "Diajukan oleh"]);
+  });
+
   it("cites its sources and the data refresh time in every answer", () => {
-    for (const answer of Object.values(answers)) {
+    for (const answer of Object.values(answers).filter((item) => !item.refused)) {
       expect(answer.refreshedAt).toBe("2026-11-08");
       expect(answer.sources.length).toBeGreaterThanOrEqual(3);
       expect(answer.sources.some((s) => s.kind === "table")).toBe(true);
@@ -133,8 +164,8 @@ describe("answers read live from the data", () => {
     const week = changed.progressWeekly.find((r) => r.projectId === "PNP126" && r.component === "TOTAL" && r.weekNo === 18);
     if (week) week.actualCumulative = 0.3;
     const answer = buildAnswer("behind", changed);
-    expect(answer.figures.map((f) => f.value)).toEqual(["73,487%", "30%", "-43,487 pts"]);
-    expect(answer.conclusion).not.toContain("44,989");
+    expect(answer.figures.map((f) => f.value)).toEqual(["73,5%", "30%", "-43,5 pts"]);
+    expect(answer.conclusion).not.toContain("45 pts");
   });
 
   it("unblocks a payment stage in the billing answer when its BA is signed", () => {

@@ -1,10 +1,13 @@
 "use client";
 
+import { useT } from "./Tr";
+import { useLanguageStore } from "../store/language-store";
 import { useLayoutEffect, type ReactNode } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ChevronsRight } from "lucide-react";
-import NavItem from "@/components/layout/dasbhoard/NavItem";
+import type { NavNode } from "@/components/layout/dasbhoard/navigation";
+import { PtepiNavItem } from "./PtepiNavItem";
 import {
   ResponsiveSidebarProvider,
   useSidebar
@@ -39,6 +42,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
   // Restore saved actions once, before any screen effect (such as seeding) runs.
   useLayoutEffect(() => {
     void useActionsStore.persist.rehydrate();
+    void useLanguageStore.persist.rehydrate();
   }, []);
 
   return (
@@ -57,10 +61,26 @@ function ShellFrame({ children }: { children: ReactNode }) {
   );
 }
 
+/** Sidebar node in the interface language, with project-aware links, children included. */
+function localizeNode(
+  node: NavNode,
+  t: (text: string) => string,
+  projectId: string | null
+): NavNode & { tierHref?: string } {
+  return {
+    ...node,
+    tierHref: node.href,
+    title: t(node.title),
+    href: node.href ? withProject(node.href, projectId) : node.href,
+    children: node.children?.map((child) => localizeNode(child, t, projectId))
+  };
+}
+
 function PtepiSidebar() {
   const pathname = usePathname();
   const { collapsed, toggleCollapsed, sidebarOpen, setSidebarOpen } = useSidebar();
   const isMobile = useIsMobile();
+  const t = useT();
   const projectId = useProjectStore((state) => state.projectId);
   const rawActive = getActiveNavHref(pathname);
   const activeHref = rawActive ? withProject(rawActive, projectId) : null;
@@ -116,15 +136,11 @@ function PtepiSidebar() {
                 sectionIndex > 0 && <div className="border-t border-primary-800 py-2" />
               ) : (
                 <h3 className="px-3 pb-1 text-xs font-medium tracking-wider text-gray-400">
-                  {section.title}
+                  {t(section.title)}
                 </h3>
               )}
               {section.items.map((item) => (
-                <NavItem
-                  key={item.title}
-                  node={{ ...item, href: item.href ? withProject(item.href, projectId) : item.href }}
-                  activeHref={activeHref}
-                />
+                <PtepiNavItem key={item.title} node={localizeNode(item, t, projectId)} activeHref={activeHref} />
               ))}
             </div>
           ))}
@@ -135,7 +151,7 @@ function PtepiSidebar() {
             <div className="space-y-1 rounded-xl border border-primary-700 bg-white/5 p-3 backdrop-blur-sm text-center text-white">
               <span className="text-sm font-semibold">ATLAS x EPI</span>
               <p className="text-xs">
-                Contractor PMO prototype for PT Energi Pelabuhan Indonesia. Synthetic data.
+                {t("Contractor PMO prototype for PT Energi Pelabuhan Indonesia. Synthetic data.")}
               </p>
             </div>
           </div>

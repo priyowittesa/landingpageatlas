@@ -1,5 +1,6 @@
 "use client";
 
+import { Tr, useT } from "./Tr";
 import { useMemo, useState } from "react";
 import Table from "@/components/Table";
 import type { TableColumn, TableFilter } from "@/types/type";
@@ -17,7 +18,7 @@ const dash = (value: string | null) => value ?? "-";
 const COLUMNS: TableColumn<CostLineRow>[] = [
   {
     key: "item",
-    header: "Item",
+    header: <Tr>Item</Tr>,
     render: (row) => (
       <div className="min-w-56">
         <div className="font-medium">{row.item}</div>
@@ -26,32 +27,51 @@ const COLUMNS: TableColumn<CostLineRow>[] = [
       </div>
     )
   },
-  { key: "executor", header: "Executor", render: (row) => <span className="whitespace-nowrap">{row.executor}</span> },
-  { key: "method", header: "Method", render: (row) => row.method },
-  { key: "prNo", header: "PR", className: "whitespace-nowrap", render: (row) => dash(row.prNo) },
-  { key: "poNo", header: "PO", className: "whitespace-nowrap", render: (row) => dash(row.poNo) },
-  { key: "sesNo", header: "SES", className: "whitespace-nowrap", render: (row) => dash(row.sesNo) },
-  {
-    key: "advanceNo",
-    header: "Advance (kas uang muka)",
-    className: "whitespace-nowrap",
-    render: (row) => dash(row.advanceNo)
-  },
-  {
-    key: "transactionDate",
-    header: "Transaction date",
-    className: "whitespace-nowrap",
-    render: (row) => formatDate(row.transactionDate)
-  },
+  { key: "executor", header: <Tr>Vendor</Tr>, render: (row) => <span className="whitespace-nowrap">{row.executor}</span> },
   {
     key: "amount",
-    header: "Amount",
+    header: <Tr>Amount</Tr>,
     className: "text-right whitespace-nowrap",
     render: (row) => <RupiahText value={row.amount} />
   },
   {
+    key: "sapDocNo",
+    header: <Tr>SAP document</Tr>,
+    className: "whitespace-nowrap",
+    render: (row) => (
+      <div className="leading-tight">
+        <div className="font-mono text-xs">{dash(row.sapDocNo)}</div>
+        <div className="text-xs text-muted-foreground">
+          {row.postingDate ? (
+            <>
+              <Tr>Posted</Tr> {formatDate(row.postingDate)}
+            </>
+          ) : (
+            <Tr>Not posted</Tr>
+          )}
+        </div>
+      </div>
+    )
+  },
+  {
+    key: "transactionDate",
+    header: <Tr>Transaction date</Tr>,
+    className: "whitespace-nowrap",
+    render: (row) => formatDate(row.transactionDate)
+  },
+  { key: "method", header: <Tr>Method</Tr>, render: (row) => <Tr>{row.method}</Tr> },
+  { key: "prNo", header: <Tr>PR</Tr>, className: "whitespace-nowrap", render: (row) => dash(row.prNo) },
+  { key: "poNo", header: <Tr>PO</Tr>, className: "whitespace-nowrap", render: (row) => dash(row.poNo) },
+  { key: "sesNo", header: <Tr>SES</Tr>, className: "whitespace-nowrap", render: (row) => dash(row.sesNo) },
+  {
+    key: "advanceNo",
+    header: <Tr>Advance (kas uang muka)</Tr>,
+    className: "whitespace-nowrap",
+    render: (row) => dash(row.advanceNo)
+  },
+  {
     key: "paymentStatus",
-    header: "Payment status",
+    header: <Tr>Payment status</Tr>,
     render: (row) => (
       <StatusBadge
         tone={row.paymentStatus === "Posted" ? "good" : "watch"}
@@ -59,10 +79,9 @@ const COLUMNS: TableColumn<CostLineRow>[] = [
       />
     )
   },
-  { key: "sapDocNo", header: "SAP doc no.", className: "whitespace-nowrap", render: (row) => dash(row.sapDocNo) },
   {
     key: "flags",
-    header: "Flags",
+    header: <Tr>Flags</Tr>,
     render: (row) =>
       row.flags.length === 0 ? (
         <span className="text-muted-foreground">-</span>
@@ -84,6 +103,7 @@ type CostLinesTableProps = {
 
 /** Re-mount with a new key when the project changes, so the filter and page reset. */
 export function CostLinesTable({ lines }: CostLinesTableProps) {
+  const t = useT();
   const [category, setCategory] = useState(ALL);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -103,7 +123,7 @@ export function CostLinesTable({ lines }: CostLinesTableProps) {
         setPage(1);
       },
       options: [
-        { label: "All categories", value: ALL },
+        { label: t("All categories"), value: ALL },
         ...getCostCategoryOptions(lines).map((name) => ({ label: name, value: name }))
       ]
     }

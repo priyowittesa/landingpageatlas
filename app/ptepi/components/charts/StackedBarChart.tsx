@@ -12,6 +12,7 @@ import {
   YAxis
 } from "recharts";
 import { AXIS_TICK, GRID } from "./chartTheme";
+import { rupiahAxisFormatter } from "./formatters";
 import { CategoryTick } from "./CategoryTick";
 import { ChartLegend } from "./ChartLegend";
 import { ChartTooltip } from "./ChartTooltip";
@@ -47,6 +48,8 @@ type StackedBarChartProps<T extends object> = {
   showLegend?: boolean;
   /** Fixed value-axis ticks, e.g. from niceTicks(); the axis ends at the last one */
   valueTicks?: number[];
+  /** Money axis: one Rupiah unit (m or bn) for every tick, chosen from the largest stack */
+  moneyAxis?: boolean;
 };
 
 /** One stacked bar chart for every screen. The value axis always starts at zero. */
@@ -66,8 +69,16 @@ export function StackedBarChart<T extends object>({
   allowDecimals = true,
   showLegend = true,
   tickInterval = 0,
-  valueTicks
+  valueTicks,
+  moneyAxis = false
 }: StackedBarChartProps<T>) {
+  const stackMax = Math.max(
+    0,
+    ...data.map((datum) =>
+      series.reduce((total, item) => total + (Number((datum as Record<string, unknown>)[item.key]) || 0), 0)
+    )
+  );
+  const tickFormat = moneyAxis ? rupiahAxisFormatter(stackMax) : formatTick;
   const valueDomain: [number, number | "dataMax"] = valueTicks
     ? [0, valueTicks[valueTicks.length - 1] ?? 0]
     : [0, "dataMax"];
@@ -97,7 +108,7 @@ export function StackedBarChart<T extends object>({
                   tickLine={false}
                   axisLine={false}
                   tick={AXIS_TICK}
-                  tickFormatter={formatTick}
+                  tickFormatter={tickFormat}
                 />
                 <YAxis
                   type="category"
@@ -128,7 +139,7 @@ export function StackedBarChart<T extends object>({
                   tickLine={false}
                   axisLine={false}
                   tick={AXIS_TICK}
-                  tickFormatter={formatTick}
+                  tickFormatter={tickFormat}
                 />
               </>
             )}

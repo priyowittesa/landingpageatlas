@@ -241,7 +241,12 @@ export type PortfolioRow = {
   projectId: string;
   description: string;
   customer: string;
+  /** Final contract value: original plus addendum */
   contractValue: number;
+  originalValue: number;
+  addendumValue: number;
+  /** New end date from a time addendum, null without one */
+  timeAddendumTo: string | null;
   plan: number | null;
   actual: number | null;
   deviationPts: number | null;
@@ -252,6 +257,32 @@ export type PortfolioRow = {
   exceptionCount: number;
   health: ProjectHealth;
   dataOrigin: DataOrigin;
+};
+
+/** S1 lifecycle stepper: how many projects, and how much value, sit at each stage. */
+export type PortfolioLifecycleStep = {
+  label: string;
+  count: number;
+  value: number;
+  projectIds: string[];
+};
+
+/** S1 pipeline: offers and procurement not yet contracted, per customer. */
+export type PipelineCustomer = {
+  customer: string;
+  customerName: string;
+  value: number;
+  projects: { projectId: string; stageLabel: string; value: number }[];
+};
+
+/** S1 data-quality flag: a record that needs fixing before it can be trusted. */
+export type DataQualityFlag = {
+  projectId: string;
+  reference: string;
+  /** Where the flag comes from, e.g. "BA register" */
+  source: string;
+  label: string;
+  detail: string | null;
 };
 
 export type PortfolioTotals = {
@@ -330,7 +361,30 @@ export type BillingRow = {
   docStatus: DocStatus;
   /** Why a stage is blocked, or the warning on a billable stage whose BA is not signed */
   reason: string | null;
+  invoiceNo: string | null;
+  invoiceDate: string | null;
+  dueDate: string | null;
+  paidDate: string | null;
+  /** Days from invoice to the as-at date while unpaid; 0 when paid or not invoiced */
+  daysOutstanding: number;
+  daysOverdue: number;
   dataOrigin: DataOrigin;
+};
+
+/** S2 retention ageing: Retensi held, by how long it has been held. */
+export type RetentionAgeingPoint = {
+  label: string;
+  amount: number;
+  count: number;
+  /** Bucket past the alert threshold */
+  aged: boolean;
+};
+
+export type RetentionAgeingChartData = {
+  points: RetentionAgeingPoint[];
+  total: number;
+  takeaway: string | null;
+  table: ChartTable;
 };
 
 export type BillingSummary = Record<
@@ -445,6 +499,10 @@ export type RecoveryRate = {
   ratioToBest: number | null;
   /** Average weekly gain over the last 4 measured weeks */
   recentPerWeek: number;
+  /** Best average weekly gain over any 4 consecutive measured weeks (the DP-04 benchmark) */
+  bestFourWeekAvg: number;
+  /** requiredPerWeek / bestFourWeekAvg, null when no 4-week window progressed */
+  ratioToBestFour: number | null;
   /** Consecutive latest weeks at the same cumulative actual */
   flatWeeks: number;
   flatFromWeek: number | null;
@@ -469,6 +527,12 @@ export type CostMargin = {
   advancesShareOfCost: number | null;
 };
 
+/** Who a date comes from: the vendor or contractor report, or an ATLAS estimate from the run-rate. */
+export type DateSource = "vendor-reported" | "ATLAS-estimated";
+
+/** A date with its source; date null shows "No date", it is never invented. */
+export type SourcedDate = { date: string | null; source: DateSource | null };
+
 export type CriticalItem = {
   component: string;
   label: string;
@@ -476,6 +540,38 @@ export type CriticalItem = {
   /** How far the component is behind plan, percentage points of the project */
   behindPts: number;
   claimedStage: string | null;
+  /** The next earning stage of the component, after the claimed one; null when all are claimed */
+  nextMilestone: { label: string; document: string } & SourcedDate | null;
+  /** Planned end minus forecast finish, days; negative is late. Null when no forecast is possible */
+  floatDays: number | null;
+  floatSource: DateSource | null;
+};
+
+/** S3: where the project lands at its best demonstrated 4-week pace (ATLAS-estimated). */
+export type ProjectForecast = {
+  /** Points per week used: the best 4-week rolling average */
+  pacePerWeek: number;
+  /** Week number and date the forecast reaches 100%; null when the pace is zero */
+  finishWeek: number | null;
+  finishDate: string | null;
+  plannedEndDate: string;
+  /** Planned end minus forecast finish, days; negative is late */
+  floatDays: number | null;
+  source: "ATLAS-estimated";
+};
+
+export type LookAheadRow = {
+  weekNo: number;
+  weekStart: string;
+  weekEnd: string;
+  /** Cumulative plan at the end of the week, percentage points; null after the last planned week */
+  plan: number | null;
+  /** Planned gain in the week, points */
+  planGain: number | null;
+  /** ATLAS-estimated cumulative at the best 4-week pace, points */
+  forecast: number | null;
+  /** Payment or earning milestones that fall in the week */
+  milestones: string[];
 };
 
 export type ProjectExceptionItem = {
@@ -496,6 +592,8 @@ export type GateResult = "can-earn" | "blocked";
 export type StageUnit = {
   unit: string;
   claimed: boolean;
+  /** The BA is needed now: the stage is claimed, or it is the next stage and the plan has reached it */
+  required: boolean;
   status: EvidenceStatus;
   /** Why the unit is not complete, null when it is */
   issue: string | null;
@@ -600,6 +698,8 @@ export type CostLineRow = {
   /** Posted = SAP document number and posting date exist */
   paymentStatus: "Posted" | "Not posted";
   sapDocNo: string | null;
+  /** SAP posting date of the payment, null when not posted */
+  postingDate: string | null;
   amount: number;
   category: string;
   note: string | null;
@@ -622,6 +722,77 @@ export type ProjectCostView = {
   /** Bullet-bar chart and margin bridge with their computed takeaways */
   chart: CostChartData;
   bridge: WaterfallChartData;
+  flow: ProcurementFlow;
+};
+
+/** One row of the T1 recap table: per section, in percentage points of the project. */
+export type WeeklyReportRow = {
+  component: string;
+  weight: number;
+  /** Cumulative actual up to last week */
+  lastWeek: number | null;
+  /** Progress of the report week; null until the weekly cut-off is entered */
+  thisWeek: number | null;
+  /** lastWeek + thisWeek (column 6 = 4 + 5) */
+  toDate: number | null;
+  /** Cumulative plan of the report week */
+  plan: number | null;
+  /** toDate - plan (column 8 = 6 - 7) */
+  deviation: number | null;
+};
+
+/** S7 template T1: weekly work report (Laporan Pekerjaan Mingguan) drafted from governed numbers. */
+export type WeeklyReportDraft = {
+  projectId: string;
+  weekNo: number;
+  /** Week number in Indonesian words, as on the cover: "Sembilan Belas" */
+  weekWords: string;
+  periodStart: string;
+  periodEnd: string;
+  /** Cut-off date the week's progress is entered on */
+  cutOff: string;
+  contractTitle: string;
+  owner: string;
+  contractor: string;
+  contractNumbers: string;
+  startDate: string | null;
+  finishDate: string | null;
+  durationDays: number | null;
+  rows: WeeklyReportRow[];
+  total: WeeklyReportRow;
+  narrative: string[];
+  checks: { label: string; passed: boolean; detail: string }[];
+  signatures: { block: string; role: string; name: string | null }[];
+  status: "Draft, needs PM approval";
+};
+
+export type ProcurementStepKey = "pr" | "po" | "ses" | "payment";
+
+/** done: SAP number on file; advance: paid as an advance before SES; missing; n/a for petty cash */
+export type ProcurementStepState = "done" | "advance" | "missing" | "not-applicable";
+
+export type ProcurementFlowStep = {
+  key: ProcurementStepKey;
+  label: string;
+  /** SAP number of the document (PR, PO, SES, payment document or advance number) */
+  number: string | null;
+  date: string | null;
+  state: ProcurementStepState;
+};
+
+export type ProcurementFlowLine = {
+  lineNo: number;
+  item: string;
+  vendor: string;
+  amount: number;
+  pettyCash: boolean;
+  steps: ProcurementFlowStep[];
+};
+
+/** S5 procurement flow PR -> PO -> service entry sheet -> payment, from the cost lines only. */
+export type ProcurementFlow = {
+  stages: { key: ProcurementStepKey; label: string; reached: number; applicable: number; amount: number }[];
+  lines: ProcurementFlowLine[];
 };
 
 export type CostPortfolio = {
@@ -806,6 +977,8 @@ export type SCurveChartPoint = {
   gapBase: number | null;
   gap: number | null;
   pace: number | null;
+  /** ATLAS-estimated cumulative at the best 4-week pace, from today on */
+  forecast: number | null;
 };
 
 export type SCurveChartData = {
@@ -814,6 +987,8 @@ export type SCurveChartData = {
   todayLabel: string | null;
   /** Points per week needed to finish on the planned date */
   requiredPace: number | null;
+  /** Points per week behind the forecast line */
+  forecastPace: number | null;
   takeaway: string | null;
   table: ChartTable;
 };

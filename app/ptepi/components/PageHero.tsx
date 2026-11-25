@@ -1,8 +1,9 @@
+import { Tr } from "./Tr";
 import Link from "next/link";
-import { ArrowDown, CalendarClock } from "lucide-react";
-import { epiData } from "../data";
-import { getAsAtLabel } from "../selectors";
+import { ArrowDown } from "lucide-react";
 import type { ReactNode } from "react";
+import { DemoSnapshotPill } from "./DemoSnapshotPill";
+import { SyntheticDataBadge } from "./SyntheticDataBadge";
 
 type HeroStat = {
   label: string;
@@ -33,21 +34,21 @@ export function PageHero({ title, headline, detail, stats, actionHref, actionLab
 
       <div className="relative flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-base font-medium text-primary-100">{title}</h1>
-          <p className="mt-2 text-3xl font-bold leading-tight tracking-tight sm:text-4xl">{headline}</p>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-primary-100">{detail}</p>
+          <h1 className="text-base font-medium text-primary-100"><Tr>{title}</Tr></h1>
+          <p className="mt-2 text-3xl font-bold leading-tight tracking-tight sm:text-4xl"><Tr>{headline}</Tr></p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-primary-100"><Tr>{detail}</Tr></p>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium">
-          <CalendarClock size={16} aria-hidden />
-          As at {getAsAtLabel(epiData)}
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <SyntheticDataBadge />
+          <DemoSnapshotPill onDark />
+        </div>
       </div>
 
       <dl className="relative mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {stats.map((stat) => (
           <div key={stat.label} className="rounded-xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
-            <dt className="text-xs text-primary-100">{stat.label}</dt>
-            <dd className="mt-1 text-xl font-bold tabular-nums sm:text-2xl">{stat.value}</dd>
+            <dt className="text-xs text-primary-100"><Tr>{stat.label}</Tr></dt>
+            <dd className="mt-1 text-xl font-bold tabular-nums sm:text-2xl">{typeof stat.value === "string" ? <Tr>{stat.value}</Tr> : stat.value}</dd>
           </div>
         ))}
       </dl>
@@ -56,7 +57,7 @@ export function PageHero({ title, headline, detail, stats, actionHref, actionLab
         href={actionHref}
         className="relative mt-5 inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-primary-900 shadow-sm transition-colors hover:bg-primary-50"
       >
-        {actionLabel}
+        <Tr>{actionLabel}</Tr>
         <ArrowDown size={16} aria-hidden />
       </Link>
     </section>

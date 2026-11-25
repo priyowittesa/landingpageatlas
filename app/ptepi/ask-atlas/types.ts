@@ -1,4 +1,5 @@
 import type { NewEpiAction } from "../store/actions-store";
+import type { WeeklyReportDraft } from "../types";
 
 export type QuestionId =
   | "behind"
@@ -7,7 +8,9 @@ export type QuestionId =
   | "attention"
   | "bast"
   | "inspections"
-  | "rap";
+  | "rap"
+  | "report"
+  | "mos";
 
 /** Where a figure or statement comes from. */
 export type AnswerSource = {
@@ -27,7 +30,13 @@ export type Answer = {
   conclusion: string;
   figures: AnswerFigure[];
   points: string[];
+  /** Per point, the 1-based numbers of the sources it cites */
+  citations?: number[][];
   sources: AnswerSource[];
+  /** True when ATLAS declines because the evidence is missing (NF-04) */
+  refused?: boolean;
+  /** Template T1 weekly report draft, for the report question */
+  report?: WeeklyReportDraft;
   /** Actions the user can add to the action tracker */
   actions: NewEpiAction[];
   /** Data refresh time: the as-at date of the demo data */

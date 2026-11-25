@@ -1,4 +1,5 @@
 "use client";
+import { Tr } from "../Tr";
 
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { formatRupiahMillions } from "../../format";
@@ -6,7 +7,7 @@ import type { WaterfallStep } from "../../types";
 import { AXIS_TICK, CHART_COLORS, GRID } from "./chartTheme";
 import { CategoryTick } from "./CategoryTick";
 import { ChartLegend } from "./ChartLegend";
-import { formatRupiahCompact } from "./formatters";
+import { rupiahAxisFormatter } from "./formatters";
 import { useChartAnimation } from "./useChartAnimation";
 
 type WaterfallChartProps = {
@@ -37,7 +38,7 @@ export function WaterfallChart({ steps, height }: WaterfallChartProps) {
               tickLine={false}
               axisLine={false}
               tick={AXIS_TICK}
-              tickFormatter={formatRupiahCompact}
+              tickFormatter={rupiahAxisFormatter(Math.max(0, ...steps.map((step) => step.base + step.size)))}
             />
             <YAxis
               type="category"
@@ -55,7 +56,7 @@ export function WaterfallChart({ steps, height }: WaterfallChartProps) {
                 if (!active || !step) return null;
                 return (
                   <div className="rounded-lg border border-border bg-background p-3 text-xs shadow-md">
-                    <p className="mb-1 font-semibold">{step.label}</p>
+                    <p className="mb-1 font-semibold"><Tr>{step.label}</Tr></p>
                     <p className="tabular-nums">{signed(step)}</p>
                     {step.kind === "delta" && (
                       <p className="tabular-nums text-muted-foreground">

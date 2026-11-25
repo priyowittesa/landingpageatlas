@@ -1,16 +1,22 @@
 import {
+  Boxes,
   BrainCircuit,
+  Cable,
   CircleDollarSign,
+  Folder,
   ClipboardCheckIcon,
   Gauge,
+  History,
   LayoutGrid,
   ListChecks,
   ShieldCheckIcon,
+  Workflow,
   Wrench
 } from "lucide-react";
 import {
   extractNavHrefs,
   findActiveNavHref,
+  type NavNode,
   type NavSection
 } from "@/components/layout/dasbhoard/navigation";
 
@@ -47,10 +53,34 @@ export const PTEPI_NAV: NavSection[] = [
     title: "ATLAS",
     items: [
       { title: "Nexa Intelligence", href: "/ptepi/ask-atlas", icon: BrainCircuit },
-      { title: "Action Tracker", href: "/ptepi/actions", icon: ListChecks }
+      {
+        title: "Workflow & Connections",
+        icon: Cable,
+        defaultOpen: true,
+        children: [
+          { title: "Knowledge Base", href: "/ptepi/knowledge-base", icon: Folder },
+          { title: "Knowledge Source", href: "/ptepi/knowledge-source", icon: Folder },
+          { title: "Master Connection", href: "/ptepi/connections", icon: Boxes },
+          { title: "Workflow Studio", href: "/ptepi/workflows", icon: Workflow }
+        ]
+      },
+      { title: "Action Tracker", href: "/ptepi/actions", icon: ListChecks },
+      { title: "Audit Log", href: "/ptepi/audit-log", icon: History }
     ]
   }
 ];
+
+export type ModuleTier = "Base" | "Add-on";
+
+/**
+ * Module split for the sidebar badges (review section 4): procurement (S5) and service
+ * contract inspection (S6) are add-ons; every other module is in the base subscription.
+ */
+const ADD_ON_HREFS = ["/ptepi/cost", "/ptepi/service-contracts"];
+
+export function moduleTierOf(href: string): ModuleTier {
+  return ADD_ON_HREFS.includes(href.split("?")[0] ?? href) ? "Add-on" : "Base";
+}
 
 /**
  * The project screens exist for every project, but the sidebar links point at
@@ -63,10 +93,15 @@ export function getActiveNavHref(pathname: string): string | null {
   return findActiveNavHref(extractNavHrefs(PTEPI_NAV), path);
 }
 
+/** Every nav node, groups and their children, in sidebar order. */
+export function flattenNav(nodes: NavNode[]): NavNode[] {
+  return nodes.flatMap((node) => [node, ...flattenNav(node.children ?? [])]);
+}
+
 /** Title of the current screen, shown in the top bar. */
 export function getScreenTitle(pathname: string): string {
   const active = getActiveNavHref(pathname);
-  const item = PTEPI_NAV.flatMap((section) => section.items).find((node) => node.href === active);
+  const item = flattenNav(PTEPI_NAV.flatMap((section) => section.items)).find((node) => node.href === active);
   return item?.title ?? "ATLAS x EPI";
 }
 

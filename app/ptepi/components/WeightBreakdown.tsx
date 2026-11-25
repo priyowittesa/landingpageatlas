@@ -1,3 +1,4 @@
+import { Tr } from "./Tr";
 import { Progress } from "@/components/ui/progress";
 import type { WeightRow } from "../types";
 import { PercentText } from "./PercentText";
@@ -19,7 +20,7 @@ export function WeightBreakdown({ rows }: WeightBreakdownProps) {
           </div>
           <Progress value={row.weightPts} className="mt-1.5 h-2" />
           <p className="mt-1 text-xs text-muted-foreground">
-            Actual <PercentText fraction={row.actual} /> of the project, plan{" "}
+            <Tr>Actual</Tr> <PercentText fraction={row.actual} /> <Tr>of the project, plan</Tr>{" "}
             <PercentText fraction={row.plan} />
           </p>
         </li>

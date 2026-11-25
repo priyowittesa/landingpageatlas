@@ -13,6 +13,18 @@ export function formatRupiahCompact(value: number): string {
   return `${sign}Rp ${compactDecimals.format(abs)}`;
 }
 
+/**
+ * One unit for a whole money axis, chosen from its largest value: every tick in bn
+ * when the axis passes Rp 1 bn, otherwise every tick in m. Never "Rp 950 m" next to "Rp 1,9 bn".
+ */
+export function rupiahAxisFormatter(max: number): (value: number) => string {
+  const inBillions = Math.abs(max) >= 1_000_000_000;
+  const divisor = inBillions ? 1_000_000_000 : 1_000_000;
+  const unit = inBillions ? "bn" : "m";
+  const format = new Intl.NumberFormat("id-ID", { maximumFractionDigits: inBillions ? 2 : 0 });
+  return (value) => (value === 0 ? "0" : `${value < 0 ? "-" : ""}Rp ${format.format(Math.abs(value) / divisor)} ${unit}`);
+}
+
 /** A fraction as a percent: (0.28498, 1) -> "28,5%". */
 export function formatPercentFromFraction(fraction: number, maxDigits = 1): string {
   const format = new Intl.NumberFormat("id-ID", { maximumFractionDigits: maxDigits });

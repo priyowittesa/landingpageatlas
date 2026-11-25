@@ -1,3 +1,4 @@
+import { Tr } from "./Tr";
 import { CircleAlert, CircleCheck, Clock, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatPercent, formatRupiahMillions } from "../format";
@@ -50,7 +51,7 @@ export function PaymentScheduleCard({
           return (
             <li key={row.paymentId} className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3">
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-gray-900">{row.label}</p>
+                <p className="text-sm font-semibold text-gray-900"><Tr>{row.label}</Tr></p>
                 {row.condition && <p className="text-xs text-muted-foreground">{row.condition}</p>}
               </div>
               <div className="text-right">

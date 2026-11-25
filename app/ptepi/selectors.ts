@@ -80,6 +80,18 @@ import type {
   ProjectHealth,
   ProjectInfo,
   ProjectProgress,
+  ProjectForecast,
+  LookAheadRow,
+  PortfolioLifecycleStep,
+  PipelineCustomer,
+  DataQualityFlag,
+  RetentionAgeingChartData,
+  ProcurementFlow,
+  WeeklyReportDraft,
+  WeeklyReportRow,
+  ProcurementFlowStep,
+  ProcurementStepKey,
+  ProgressWeekly,
   RecoveryRate,
   RegisterRow,
   RevenueBreakdown,
@@ -348,6 +360,9 @@ export function getPortfolioRows(data: EpiDemoData): PortfolioRow[] {
       description: project.description,
       customer: project.customerShort,
       contractValue: project.finalContractValue,
+      originalValue: project.contractValue,
+      addendumValue: project.addendumValue,
+      timeAddendumTo: project.endDateAddendum,
       plan: progress.plan,
       actual: progress.actual,
       deviationPts: progress.deviationPts,
@@ -362,6 +377,70 @@ export function getPortfolioRows(data: EpiDemoData): PortfolioRow[] {
       dataOrigin: project.dataOrigin
     };
   });
+}
+
+/** S1 lifecycle stepper: the projects at each of the eight lifecycle steps, with their value. */
+export function getPortfolioLifecycle(data: EpiDemoData): PortfolioLifecycleStep[] {
+  return LIFECYCLE_STEPS.map((label, index) => {
+    const projects = data.projects.filter((project) => LIFECYCLE_INDEX[project.stage] === index);
+    return {
+      label,
+      count: projects.length,
+      value: sum(projects.map((project) => project.finalContractValue)),
+      projectIds: projects.map((project) => project.projectId)
+    };
+  });
+}
+
+/** S1 pipeline by customer: offers and procurement not yet contracted, largest customer first. */
+export function getPipelineByCustomer(data: EpiDemoData): PipelineCustomer[] {
+  const pipeline = data.projects.filter((project) => project.statusGroup === "pipeline");
+  const customers = [...new Set(pipeline.map((project) => project.customerShort))];
+  return customers
+    .map((customer) => {
+      const projects = pipeline.filter((project) => project.customerShort === customer);
+      return {
+        customer,
+        customerName: projects[0]?.customerName ?? customer,
+        value: sum(projects.map((project) => project.finalContractValue)),
+        projects: projects.map((project) => ({
+          projectId: project.projectId,
+          stageLabel: STAGE_LABELS[project.stage],
+          value: project.finalContractValue
+        }))
+      };
+    })
+    .sort((a, b) => b.value - a.value);
+}
+
+/** BA register notes that question the record itself, not the work: these are data-quality flags. */
+const DATA_QUALITY_NOTES: { pattern: RegExp; label: string }[] = [
+  { pattern: /looks copied/i, label: "Document number looks copied" },
+  { pattern: /incomplete number/i, label: "Incomplete document number" },
+  { pattern: /personal onedrive/i, label: "File on a personal OneDrive" },
+  { pattern: /not in the original/i, label: "Not in the original evidence folder" },
+  { pattern: /already counted in the report/i, label: "Progress counted on an unsigned document" }
+];
+
+/** S1: every data-quality flag of the portfolio in one list, by project. */
+export function getDataQualityFlags(data: EpiDemoData): DataQualityFlag[] {
+  const flags: DataQualityFlag[] = [];
+  for (const ba of data.baRegister) {
+    const match = ba.note ? DATA_QUALITY_NOTES.find((item) => item.pattern.test(ba.note ?? "")) : undefined;
+    if (match) {
+      flags.push({ projectId: ba.projectId, reference: ba.baId, source: "BA register", label: match.label, detail: ba.note });
+    }
+    if (!ba.documentNo) {
+      flags.push({
+        projectId: ba.projectId,
+        reference: ba.baId,
+        source: "BA register",
+        label: "No document number",
+        detail: ba.documentType
+      });
+    }
+  }
+  return flags.sort((a, b) => a.projectId.localeCompare(b.projectId) || a.reference.localeCompare(b.reference));
 }
 
 export function getCustomerOptions(rows: { customer: string }[]): string[] {
@@ -737,6 +816,12 @@ export function getBillingRows(data: EpiDemoData): BillingRow[] {
         readiness === "blocked" || readiness === "awaiting-bast"
           ? reasonFor(required, docStatus, actual)
           : null,
+      invoiceNo: stage.invoiceNo,
+      invoiceDate: stage.invoiceDate,
+      dueDate: stage.dueDate,
+      paidDate: stage.paidDate,
+      daysOutstanding: stage.daysOutstanding,
+      daysOverdue: stage.daysOverdue,
       dataOrigin: "synthetic"
     });
   }
@@ -1006,6 +1091,7 @@ export function getRecoveryRate(data: EpiDemoData, projectId: string): RecoveryR
 
   const flat = getNoProgressPeriod(data, projectId);
   const recent = gains.slice(-4);
+  const bestFour = bestRollingAverage(gains, ROLLING_WINDOW_WEEKS);
 
   return {
     remainingPts: round(remainingPts, 3),
@@ -1014,10 +1100,118 @@ export function getRecoveryRate(data: EpiDemoData, projectId: string): RecoveryR
     bestPerWeek: round(bestPerWeek, 3),
     ratioToBest: bestPerWeek > 0 ? round(requiredPerWeek / bestPerWeek, 3) : null,
     recentPerWeek: round(sum(recent) / Math.max(1, recent.length), 3),
+    bestFourWeekAvg: round(bestFour, 3),
+    ratioToBestFour: bestFour > 0 ? round(requiredPerWeek / bestFour, 3) : null,
     flatWeeks: flat?.weeks ?? 0,
     flatFromWeek: flat?.fromWeek ?? null,
     flatToWeek: flat?.toWeek ?? null
   };
+}
+
+/** Weeks in the rolling window of the recovery benchmark (DP-04). */
+export const ROLLING_WINDOW_WEEKS = 4;
+const DAY_MS = 86_400_000;
+/** Longest forecast drawn past the planned schedule, weeks */
+const FORECAST_MAX_EXTRA_WEEKS = 30;
+
+/** Best average over any run of consecutive weeks; the plain average when there are fewer weeks. */
+export function bestRollingAverage(gains: number[], window: number): number {
+  if (gains.length === 0) return 0;
+  if (gains.length < window) return sum(gains) / gains.length;
+  let best = 0;
+  for (let end = window; end <= gains.length; end += 1) {
+    best = Math.max(best, sum(gains.slice(end - window, end)) / window);
+  }
+  return best;
+}
+
+function daysBetween(from: string, to: string): number {
+  return Math.round((Date.parse(to) - Date.parse(from)) / DAY_MS);
+}
+
+/** End date of a week, extending the schedule by 7 days a week after its last planned week. */
+function weekEndOf(rows: ProgressWeekly[], weekNo: number): string {
+  const row = rows.find((item) => item.weekNo === weekNo);
+  if (row) return row.weekEnd;
+  const last = rows[rows.length - 1];
+  return last ? addDays(last.weekEnd, 7 * (weekNo - last.weekNo)) : "";
+}
+
+function measuredGains(data: EpiDemoData, projectId: string) {
+  const measured = totalRowsOf(data, projectId).filter(
+    (row) => row.weekEnd <= data.asAt && row.actualCumulative !== null
+  );
+  const gains = measured.map(
+    (row, index) => ((row.actualCumulative ?? 0) - (measured[index - 1]?.actualCumulative ?? 0)) * 100
+  );
+  return { gains, last: measured[measured.length - 1] };
+}
+
+/**
+ * S3 forecast (ATLAS-estimated): from the last measured week at the best 4-week rolling
+ * average, to 100%. Float = planned end minus forecast finish; negative is late.
+ * Null for a project without measured progress or already complete.
+ */
+export function getProjectForecast(data: EpiDemoData, projectId: string): ProjectForecast | null {
+  const rows = totalRowsOf(data, projectId);
+  const { gains, last } = measuredGains(data, projectId);
+  if (!last) return null;
+  const actualPts = (last.actualCumulative ?? 0) * 100;
+  if (actualPts >= 100) return null;
+  const project = getProject(data, projectId);
+  const plannedEndDate = project.endDateAddendum ?? project.endDate ?? weekEndOf(rows, rows[rows.length - 1]?.weekNo ?? 0);
+  const pace = round(bestRollingAverage(gains, ROLLING_WINDOW_WEEKS), 3);
+  if (pace <= 0) {
+    return { pacePerWeek: 0, finishWeek: null, finishDate: null, plannedEndDate, floatDays: null, source: "ATLAS-estimated" };
+  }
+  const finishWeek = last.weekNo + Math.ceil((100 - actualPts) / pace);
+  const finishDate = weekEndOf(rows, finishWeek);
+  return {
+    pacePerWeek: pace,
+    finishWeek,
+    finishDate,
+    plannedEndDate,
+    floatDays: daysBetween(finishDate, plannedEndDate),
+    source: "ATLAS-estimated"
+  };
+}
+
+/** S3: the weeks after the as-at week, plan against the ATLAS forecast, with what falls due. */
+export function getLookAhead(data: EpiDemoData, projectId: string, weeks = ROLLING_WINDOW_WEEKS): LookAheadRow[] {
+  const rows = totalRowsOf(data, projectId);
+  const { last } = measuredGains(data, projectId);
+  if (!last || rows.length === 0) return [];
+  const forecast = getProjectForecast(data, projectId);
+  const actualPts = (last.actualCumulative ?? 0) * 100;
+  const critical = getCriticalItem(data, projectId);
+  const stages = data.paymentStages.filter((stage) => stage.projectId === projectId);
+  const planned = data.baRegister.filter((ba) => ba.projectId === projectId && (ba.documentDate ?? "") > data.asAt);
+
+  return Array.from({ length: weeks }, (_, index) => {
+    const weekNo = last.weekNo + index + 1;
+    const row = rows.find((item) => item.weekNo === weekNo);
+    const previous = rows.find((item) => item.weekNo === weekNo - 1);
+    const weekEnd = weekEndOf(rows, weekNo);
+    const weekStart = row?.weekStart ?? addDays(weekEnd, -6);
+    const inWeek = (date: string | null) => date !== null && date >= weekStart && date <= weekEnd;
+    const milestones = [
+      ...stages.filter((stage) => inWeek(stage.dueDate)).map((stage) => `Termin ${stage.terminNo} due`),
+      ...planned.filter((ba) => inWeek(ba.documentDate)).map((ba) => `${toEnglish(ba.documentType)} planned`),
+      ...(critical?.nextMilestone && inWeek(critical.nextMilestone.date)
+        ? [`${critical.label}: ${critical.nextMilestone.label}`]
+        : [])
+    ];
+    const plan = row?.planCumulative ?? null;
+    return {
+      weekNo,
+      weekStart,
+      weekEnd,
+      plan: plan === null ? null : round(plan * 100, 3),
+      planGain: plan === null ? null : round((plan - (previous?.planCumulative ?? 0)) * 100, 3),
+      forecast: forecast ? round(Math.min(100, actualPts + forecast.pacePerWeek * (index + 1)), 3) : null,
+      milestones
+    };
+  });
 }
 
 export function getCostMargin(data: EpiDemoData, projectId: string): CostMargin {
@@ -1070,12 +1264,56 @@ export function getCriticalItem(data: EpiDemoData, projectId: string): CriticalI
   }
   const behindPts = round((heaviest.planCumulative - heaviest.actualCumulative) * 100, 3);
   if (behindPts <= CRITICAL_ITEM_LAG_PTS) return null;
+  const forecast = getProjectForecast(data, projectId);
+  const floatDays = forecast?.floatDays ?? null;
   return {
     component: heaviest.component,
     label: heaviest.component.replace(/^[IVX]+\s+/, ""),
     weight: heaviest.weight ?? 0,
     behindPts,
-    claimedStage: heaviest.earningStage
+    claimedStage: heaviest.earningStage,
+    nextMilestone: nextMilestoneOf(data, projectId, heaviest, forecast),
+    floatDays,
+    floatSource: floatDays === null ? null : "ATLAS-estimated"
+  };
+}
+
+/**
+ * The next earning stage of a component and when it lands. A planned date in the BA
+ * register is vendor-reported; otherwise ATLAS estimates the week the component reaches
+ * the stage at the forecast pace. Without either, the date stays empty (never invented).
+ */
+function nextMilestoneOf(
+  data: EpiDemoData,
+  projectId: string,
+  component: ProgressWeekly,
+  forecast: ProjectForecast | null
+): CriticalItem["nextMilestone"] {
+  const claimedNo =
+    component.earningStage === null ? 0 : (CLAIMED_STAGE_NUMBER[component.earningStage] ?? 0);
+  const next = EARNING_RULE.find((rule) => rule.stageNo === claimedNo + 1);
+  if (!next) return null;
+  const base = { label: next.label, document: next.document };
+  const planned = data.baRegister.find(
+    (ba) =>
+      ba.projectId === projectId &&
+      ba.documentType === next.document &&
+      romanToken(ba.component ?? "") === romanToken(component.component) &&
+      (ba.documentDate ?? "") > data.asAt
+  );
+  if (planned?.documentDate) return { ...base, date: planned.documentDate, source: "vendor-reported" };
+
+  const weight = component.weight ?? 0;
+  if (!forecast || forecast.pacePerWeek <= 0 || weight <= 0 || component.actualCumulative === null) {
+    return { ...base, date: null, source: null };
+  }
+  const share = component.actualCumulative / weight;
+  const threshold = sum(EARNING_RULE.filter((rule) => rule.stageNo <= next.stageNo).map((rule) => rule.weight));
+  const weeks = Math.max(1, Math.ceil((threshold - share) / (forecast.pacePerWeek / 100)));
+  return {
+    ...base,
+    date: weekEndOf(totalRowsOf(data, projectId), component.weekNo + weeks),
+    source: "ATLAS-estimated"
   };
 }
 
@@ -1175,17 +1413,26 @@ export function getEvidenceStages(data: EpiDemoData, projectId: string): Evidenc
             unit: "Whole system",
             token: null,
             weight: 1,
-            claimed: current.some((c) => claimedOf(c.earningStage) >= 5)
+            claimed: current.some((c) => claimedOf(c.earningStage) >= 5),
+            dueByPlan: false
           }
         ]
-      : current.map((c) => ({
-          unit: c.component.replace(/^[IVX]+\s+/, ""),
-          token: romanToken(c.component),
-          weight: (c.weight ?? 0) / totalWeight,
-          claimed: claimedOf(c.earningStage) >= rule.stageNo
-        }));
+      : current.map((c) => {
+          const claimedNo = claimedOf(c.earningStage);
+          const plannedShare = c.weight && c.planCumulative !== null ? c.planCumulative / c.weight : 0;
+          return {
+            unit: c.component.replace(/^[IVX]+\s+/, ""),
+            token: romanToken(c.component),
+            weight: (c.weight ?? 0) / totalWeight,
+            claimed: claimedNo >= rule.stageNo,
+            // The next stage is due once the plan has moved past the stages already claimed.
+            dueByPlan:
+              rule.stageNo === claimedNo + 1 && plannedShare > cumulativeWeightBefore(rule.stageNo)
+          };
+        });
 
     const units: StageUnit[] = targets.map((target) => {
+      const required = target.claimed || target.dueByPlan;
       const entries = data.baRegister.filter(
         (ba) =>
           ba.projectId === projectId &&
@@ -1199,7 +1446,8 @@ export function getEvidenceStages(data: EpiDemoData, projectId: string): Evidenc
       return {
         unit: target.unit,
         claimed: target.claimed,
-        status: complete ? "earned" : target.claimed ? "blocked" : "not-started",
+        required,
+        status: complete ? "earned" : required ? "blocked" : "not-started",
         issue: complete ? null : unitIssue(ba, rule.document, signerOk),
         baId: ba?.baId ?? null,
         documentNo: ba?.documentNo ?? null,
@@ -1212,6 +1460,8 @@ export function getEvidenceStages(data: EpiDemoData, projectId: string): Evidenc
     });
 
     const missing = units.filter((u) => u.status === "blocked");
+    // Only a claim without a signed BA holds value back; a BA due by plan blocks the stage, not money.
+    const claimedMissing = missing.filter((u) => u.claimed);
     const complete = units.filter((u) => u.status === "earned");
     const status: EvidenceStatus =
       missing.length > 0 ? "blocked" : complete.length === units.length ? "earned" : "not-started";
@@ -1221,7 +1471,7 @@ export function getEvidenceStages(data: EpiDemoData, projectId: string): Evidenc
       status === "earned"
         ? `${complete.length} of ${units.length} required BA signed by the ${PROGRESS_SIGNER}`
         : status === "blocked"
-          ? missing.map((u) => `${u.unit}: ${u.issue}`).join("; ")
+          ? missing.map((u) => `${u.unit}: ${u.issue}${u.claimed ? "" : " (due by plan)"}`).join("; ")
           : `Not started: ${rule.document} is required before progress can be claimed`;
 
     return {
@@ -1241,7 +1491,7 @@ export function getEvidenceStages(data: EpiDemoData, projectId: string): Evidenc
       },
       units,
       stageValue: Math.round(project.finalContractValue * rule.weight),
-      blockedValue: sum(missing.map((u) => u.value)),
+      blockedValue: sum(claimedMissing.map((u) => u.value)),
       dataOrigin: units.some((u) => {
         const ba = data.baRegister.find((b) => b.baId === u.baId);
         return ba?.asalData?.startsWith("Real");
@@ -1252,12 +1502,17 @@ export function getEvidenceStages(data: EpiDemoData, projectId: string): Evidenc
   });
 }
 
+/** Sum of the earning-rule weights of the stages before this one: 0,30 before MOS. */
+function cumulativeWeightBefore(stageNo: number): number {
+  return sum(EARNING_RULE.filter((rule) => rule.stageNo < stageNo).map((rule) => rule.weight));
+}
+
 export function getEvidenceSummary(stages: EvidenceStage[]): EvidenceSummary {
   return {
     canEarn: stages.filter((s) => s.status === "earned").length,
     blocked: stages.filter((s) => s.status === "blocked").length,
     claimedWithoutBa: sum(
-      stages.map((s) => s.units.filter((u) => u.status === "blocked").length)
+      stages.map((s) => s.units.filter((u) => u.status === "blocked" && u.claimed).length)
     ),
     blockedValue: sum(stages.map((s) => s.blockedValue)),
     notStarted: stages.filter((s) => s.status === "not-started").length
@@ -1270,7 +1525,8 @@ export function getSuggestedAction(
   projectId: string,
   stage: EvidenceStage
 ): SuggestedAction {
-  const missing = stage.units.filter((u) => u.status === "blocked");
+  // Urgent only when progress is already claimed without the BA; a BA due by plan is prepared.
+  const missing = stage.units.filter((u) => u.status === "blocked" && u.claimed);
   const urgent = missing.length > 0;
   const title = urgent
     ? `Get ${stage.documentType} signed: ${missing.map((u) => u.unit).join(", ")} (${projectId})`
@@ -1372,6 +1628,7 @@ export function getCostLineRows(data: EpiDemoData, projectId: string): CostLineR
       transactionDate: line.transactionDate,
       paymentStatus: line.sapDocNo && line.postingDate ? "Posted" : "Not posted",
       sapDocNo: line.sapDocNo,
+      postingDate: line.postingDate,
       amount: line.amount,
       category: line.rapCategory ?? "Other",
       note: line.note,
@@ -1408,8 +1665,68 @@ export function getProjectCostView(data: EpiDemoData, projectId: string): Projec
     categories: getCostByCategory(data, projectId),
     lines: getCostLineRows(data, projectId),
     chart: getCostChart(data, projectId),
-    bridge: getMarginBridge(data, projectId)
+    bridge: getMarginBridge(data, projectId),
+    flow: getProcurementFlow(data, projectId)
   };
+}
+
+const PROCUREMENT_STEPS: { key: ProcurementStepKey; label: string }[] = [
+  { key: "pr", label: "Purchase requisition (PR)" },
+  { key: "po", label: "Purchase order (PO)" },
+  { key: "ses", label: "Service entry sheet (SES)" },
+  { key: "payment", label: "Payment (SAP document)" }
+];
+
+/**
+ * S5: each cost line through PR -> PO -> SES -> payment, with the SAP numbers already in
+ * the cost lines. Petty cash skips PR, PO and SES; an advance before SES is paid, not settled.
+ */
+export function getProcurementFlow(data: EpiDemoData, projectId: string): ProcurementFlow {
+  const lines = data.costLines
+    .filter((line) => line.projectId === projectId)
+    .sort((a, b) => a.lineNo - b.lineNo)
+    .map((line) => {
+      const pettyCash = line.procurementMethod === PETTY_CASH_METHOD;
+      const posted = Boolean(line.sapDocNo && line.postingDate);
+      const documentStep = (key: ProcurementStepKey, number: string | null): ProcurementFlowStep => ({
+        key,
+        label: PROCUREMENT_STEPS.find((step) => step.key === key)?.label ?? key,
+        number,
+        date: null,
+        state: pettyCash ? "not-applicable" : number ? "done" : "missing"
+      });
+      const payment: ProcurementFlowStep = {
+        key: "payment",
+        label: "Payment (SAP document)",
+        number: posted ? line.sapDocNo : line.advanceNo,
+        date: posted ? line.postingDate : line.transactionDate,
+        state: posted ? (line.advanceNo && !line.sesNo && !pettyCash ? "advance" : "done") : line.advanceNo ? "advance" : "missing"
+      };
+      return {
+        lineNo: line.lineNo,
+        item: line.description ?? "-",
+        vendor: line.vendor ?? "-",
+        amount: line.amount,
+        pettyCash,
+        steps: [documentStep("pr", line.prNo), documentStep("po", line.poNo), documentStep("ses", line.sesNo), payment]
+      };
+    });
+
+  const stages = PROCUREMENT_STEPS.map((step) => {
+    const applicable = lines.filter((line) => line.steps.find((item) => item.key === step.key)?.state !== "not-applicable");
+    const reached = applicable.filter((line) => {
+      const state = line.steps.find((item) => item.key === step.key)?.state;
+      return state === "done" || state === "advance";
+    });
+    return {
+      key: step.key,
+      label: step.label,
+      reached: reached.length,
+      applicable: applicable.length,
+      amount: sum(reached.map((line) => line.amount))
+    };
+  });
+  return { stages, lines };
 }
 
 export function getCostCategoryOptions(lines: CostLineRow[]): string[] {
@@ -1902,8 +2219,28 @@ export function getSCurveChart(data: EpiDemoData, projectId: string): SCurveChar
   const recovery = getRecoveryRate(data, projectId);
   const todayWeek = week?.weekNo ?? null;
   const actualToday = week?.actual === null || week?.actual === undefined ? null : round(week.actual * 100, 3);
+  const forecast = getProjectForecast(data, projectId);
+  const forecastAt = (weekNo: number) =>
+    forecast && forecast.pacePerWeek > 0 && todayWeek !== null && actualToday !== null && weekNo >= todayWeek
+      ? round(Math.min(100, actualToday + forecast.pacePerWeek * (weekNo - todayWeek)), 3)
+      : null;
 
-  const points = curve.map((point) => {
+  // Weeks past the planned schedule, so the forecast can be drawn to its finish.
+  const lastWeek = curve[curve.length - 1]?.weekNo ?? 0;
+  const extraWeeks = forecast?.finishWeek
+    ? Math.min(FORECAST_MAX_EXTRA_WEEKS, Math.max(0, forecast.finishWeek - lastWeek))
+    : 0;
+  const extended = [
+    ...curve,
+    ...Array.from({ length: extraWeeks }, (_, index) => ({
+      weekNo: lastWeek + index + 1,
+      label: `W${lastWeek + index + 1}`,
+      plan: null,
+      actual: null
+    }))
+  ];
+
+  const points = extended.map((point) => {
     const measured = point.actual !== null;
     const gap =
       measured && point.plan !== null && point.actual !== null
@@ -1920,7 +2257,8 @@ export function getSCurveChart(data: EpiDemoData, projectId: string): SCurveChar
       actual: point.actual,
       gapBase: measured ? point.actual : null,
       gap,
-      pace
+      pace: point.plan === null ? null : pace,
+      forecast: forecastAt(point.weekNo)
     };
   });
 
@@ -1929,18 +2267,20 @@ export function getSCurveChart(data: EpiDemoData, projectId: string): SCurveChar
     points,
     todayLabel: week ? `W${week.weekNo}` : null,
     requiredPace: recovery?.requiredPerWeek ?? null,
+    forecastPace: forecast && forecast.pacePerWeek > 0 ? forecast.pacePerWeek : null,
     takeaway:
       week && deviation !== null
         ? `Week ${week.weekNo}: ${formatPoints(deviation)} against plan${recovery ? `; finishing on the planned date needs ${formatDecimal(recovery.requiredPerWeek, 1)} points per week, the last 4 weeks gained ${formatPace(recovery.recentPerWeek)} per week.` : "."}`
         : null,
     table: chartTable(
-      ["Week", "Plan", "Actual", "Gap", "Required pace"],
+      ["Week", "Plan", "Actual", "Gap", "Required pace", "Scenario if best pace repeats (ATLAS-estimated)"],
       points.map((point) => [
         point.label,
         point.plan === null ? "-" : formatPctPoints(point.plan),
         point.actual === null ? "-" : formatPctPoints(point.actual),
         point.gap === null ? "-" : formatPointsUnsigned(point.gap),
-        point.pace === null ? "-" : formatPctPoints(point.pace)
+        point.pace === null ? "-" : formatPctPoints(point.pace),
+        point.forecast === null ? "-" : formatPctPoints(point.forecast)
       ])
     )
   };
@@ -2070,6 +2410,192 @@ export function getMarginBridge(data: EpiDemoData, projectId: string): Waterfall
 }
 
 /** S6: inspections done, due (scheduled) and overdue per contract. */
+/**
+ * S2: revenue carried into next year: contract value the plan does not reach by
+ * 31 December (getRevenueBreakdown spillNextYear), per project, largest first.
+ */
+export function getRevenueCarryOver(data: EpiDemoData): {
+  nextYear: number;
+  total: number;
+  projects: { projectId: string; customer: string; value: number }[];
+} {
+  const projects = data.projects
+    .map((project) => ({
+      projectId: project.projectId,
+      customer: project.customerShort,
+      value: getRevenueBreakdown(data, project.projectId).spillNextYear
+    }))
+    .filter((item) => item.value > 0)
+    .sort((a, b) => b.value - a.value);
+  return {
+    nextYear: Number(data.asAt.slice(0, 4)) + 1,
+    total: sum(projects.map((item) => item.value)),
+    projects
+  };
+}
+
+const ID_UNITS = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan"];
+
+/** A week number in Indonesian words, as on the T1 cover: 19 -> "Sembilan Belas". Up to 99. */
+export function weekInWords(n: number): string {
+  if (n <= 0 || n >= 100) return String(n);
+  if (n < 10) return ID_UNITS[n] ?? String(n);
+  if (n === 10) return "Sepuluh";
+  if (n === 11) return "Sebelas";
+  if (n < 20) return `${ID_UNITS[n - 10]} Belas`;
+  const tens = Math.floor(n / 10);
+  const units = n % 10;
+  return `${ID_UNITS[tens]} Puluh${units ? ` ${ID_UNITS[units]}` : ""}`;
+}
+
+/**
+ * S7 template T1 (Laporan Pekerjaan Mingguan) for a report week, from governed numbers.
+ * Last week = cumulative actual up to the previous week; this week stays empty until the
+ * weekly cut-off is entered, so nothing is invented. Null without a component schedule.
+ */
+export function getWeeklyReportDraft(data: EpiDemoData, projectId: string, weekNo: number): WeeklyReportDraft | null {
+  const project = getProject(data, projectId);
+  const rows = data.progressWeekly.filter((row) => row.projectId === projectId);
+  const weekRows = rows.filter((row) => row.weekNo === weekNo);
+  const total = weekRows.find((row) => row.component === "TOTAL");
+  if (!total) return null;
+  const previousOf = (component: string) =>
+    rows.find((row) => row.component === component && row.weekNo === weekNo - 1);
+  const thisWeekOf = (component: string) => {
+    const row = weekRows.find((item) => item.component === component);
+    return row && row.weekEnd <= data.asAt && row.actualCumulative !== null ? row : null;
+  };
+  const pts = (value: number | null | undefined) => (value === null || value === undefined ? null : round(value * 100, 3));
+
+  const toRow = (component: string, weight: number | null, plan: number | null): WeeklyReportRow => {
+    const last = pts(previousOf(component)?.actualCumulative);
+    const current = thisWeekOf(component);
+    const thisWeek = current && last !== null ? round((pts(current.actualCumulative) ?? 0) - last, 3) : null;
+    const toDate = last === null ? null : round(last + (thisWeek ?? 0), 3);
+    const planPts = pts(plan);
+    return {
+      component,
+      weight: round((weight ?? 0) * 100, 3),
+      lastWeek: last,
+      thisWeek,
+      toDate,
+      plan: planPts,
+      deviation: toDate === null || planPts === null ? null : round(toDate - planPts, 3)
+    };
+  };
+
+  const components = weekRows.filter((row) => row.component !== "TOTAL");
+  const reportRows = components.map((row) => toRow(row.component, row.weight, row.planCumulative));
+  const totalRow = toRow("TOTAL", 1, total.planCumulative);
+  const weightSum = round(sum(reportRows.map((row) => row.weight)), 3);
+  const critical = getCriticalItem(data, projectId);
+  const flat = getNoProgressPeriod(data, projectId);
+  // The evidence of each item sits on its last measured week; the report week has none yet.
+  const unsigned = components
+    .map((row) => data.baRegister.find((ba) => ba.baId === (thisWeekOf(row.component) ?? previousOf(row.component))?.evidenceBaId))
+    .filter((ba): ba is BaRegisterEntry => ba !== undefined && ba.status !== "Signed");
+  const reportBa = data.baRegister
+    .filter((ba) => ba.projectId === projectId && /weekly report/i.test(ba.documentType) && ba.status === "Signed")
+    .sort((a, b) => (b.documentDate ?? "").localeCompare(a.documentDate ?? ""))[0];
+  const [customerName, epiName] = (reportBa?.signatoryName ?? "").split(";").map((part) => part.replace(/\(.*\)/, "").trim());
+  const start = project.startDate;
+  const finish = project.endDateAddendum ?? project.endDate;
+
+  const narrative = [
+    totalRow.lastWeek !== null && totalRow.plan !== null
+      ? `Up to week ${weekNo - 1} the work reached ${formatPctPoints(totalRow.lastWeek)}; the plan for week ${weekNo} is ${formatPctPoints(totalRow.plan)}, a deviation of ${formatPoints(totalRow.deviation ?? 0)} before this week's progress.`
+      : `No measured progress before week ${weekNo}.`,
+    ...(flat ? [`No progress was recorded in ${flat.label}.`] : []),
+    ...(critical
+      ? [`${critical.label} is the critical item: ${formatPercent(critical.weight)} of the weight and ${formatPointsUnsigned(critical.behindPts)} behind plan.`]
+      : []),
+    `This week's progress is entered at the cut-off on ${formatDateLabel(total.weekEnd)}; ATLAS does not estimate it.`
+  ];
+
+  return {
+    projectId,
+    weekNo,
+    weekWords: weekInWords(weekNo),
+    periodStart: total.weekStart,
+    periodEnd: total.weekEnd,
+    cutOff: total.weekEnd,
+    contractTitle: project.description,
+    owner: project.customerName,
+    contractor: "PT Energi Pelabuhan Indonesia",
+    contractNumbers: project.contractNumber ?? "-",
+    startDate: start,
+    finishDate: finish,
+    durationDays: start && finish ? daysBetween(start, finish) + 1 : null,
+    rows: reportRows,
+    total: totalRow,
+    narrative,
+    checks: [
+      { label: "Weights sum to 100", passed: Math.abs(weightSum - 100) < 0.01, detail: `${formatPctPoints(weightSum)}` },
+      {
+        label: "To date equals last week plus this week",
+        passed: reportRows.every((row) => row.toDate === null || row.toDate === round((row.lastWeek ?? 0) + (row.thisWeek ?? 0), 3)),
+        detail: "Column 6 = 4 + 5"
+      },
+      {
+        label: "Deviation equals to date minus plan",
+        passed: reportRows.every((row) => row.deviation === null || row.deviation === round((row.toDate ?? 0) - (row.plan ?? 0), 3)),
+        detail: "Column 8 = 6 - 7"
+      },
+      {
+        label: "Every non-zero item has signed evidence",
+        passed: unsigned.length === 0,
+        detail: unsigned.length === 0 ? "All BAs signed" : unsigned.map((ba) => `${ba.baId} ${ba.status.toLowerCase()}`).join(", ")
+      }
+    ],
+    signatures: [
+      { block: "Menyetujui", role: reportBa?.customerSignatoryRole ?? "Customer", name: customerName || null },
+      { block: "Diajukan oleh", role: reportBa?.epiSignatoryRole ?? "EPI Project Manager", name: epiName || null }
+    ],
+    status: "Draft, needs PM approval"
+  };
+}
+
+/** Ageing buckets of Retensi held, in days since it fell due. */
+const RETENTION_BUCKETS = [
+  { label: "0 to 90 days", from: 0, to: 90 },
+  { label: "91 to 180 days", from: 91, to: RETENTION_ALERT_DAYS },
+  { label: "181 to 365 days", from: RETENTION_ALERT_DAYS + 1, to: 365 },
+  { label: "Over 365 days", from: 366, to: Number.POSITIVE_INFINITY }
+];
+
+/** S2: Retensi held by age; buckets past RETENTION_ALERT_DAYS are aged. */
+export function getRetentionAgeing(data: EpiDemoData): RetentionAgeingChartData {
+  const held = data.paymentStages.filter((stage) => stage.retentionHeld > 0);
+  const points = RETENTION_BUCKETS.map((bucket) => {
+    const items = held.filter(
+      (stage) => stage.retentionAgeDays >= bucket.from && stage.retentionAgeDays <= bucket.to
+    );
+    return {
+      label: bucket.label,
+      amount: sum(items.map((stage) => stage.retentionHeld)),
+      count: items.length,
+      aged: bucket.from > RETENTION_ALERT_DAYS
+    };
+  });
+  const total = sum(points.map((point) => point.amount));
+  const aged = held.filter((stage) => stage.retentionAgeDays > RETENTION_ALERT_DAYS);
+  const oldest = [...held].sort((a, b) => b.retentionAgeDays - a.retentionAgeDays)[0];
+  return {
+    points,
+    total,
+    takeaway:
+      held.length === 0
+        ? null
+        : `${formatRupiahMillions(total)} of Retensi held on ${held.length} payment stages; ${formatRupiahMillions(
+            sum(aged.map((stage) => stage.retentionHeld))
+          )} is older than ${RETENTION_ALERT_DAYS} days${oldest ? `, the oldest ${oldest.projectId} at ${oldest.retentionAgeDays} days` : ""}.`,
+    table: chartTable(
+      ["Age", "Retensi held", "Payment stages"],
+      points.map((point) => [point.label, formatRupiahMillions(point.amount), String(point.count)])
+    )
+  };
+}
+
 export function getCoverageChart(data: EpiDemoData): CoverageChartData {
   const points = getCoverageByContract(data);
   const summary = getServiceSummary(data);
@@ -2296,7 +2822,7 @@ export function getNexaContext(data: EpiDemoData): NexaContextKpi[] {
     {
       label: "PNP126 deviation",
       value: hero.deviationPts === null ? "-" : formatPoints(hero.deviationPts),
-      note: `${evidence.blocked} stage blocked by a missing BA`,
+      note: `${evidence.blocked} ${evidence.blocked === 1 ? "stage" : "stages"} blocked by a missing BA`,
       tone: hero.deviationPts !== null && hero.deviationPts <= -DEVIATION_ALERT_PTS ? "bad" : "neutral"
     }
   ];

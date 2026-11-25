@@ -1,5 +1,6 @@
 "use client";
 
+import { Tr } from "./Tr";
 import { useMemo } from "react";
 import { MousePointerClick } from "lucide-react";
 import { formatRupiahMillions } from "../format";
@@ -85,8 +86,7 @@ export function CommercialProjectPanel({ views, rows }: CommercialProjectPanelPr
       ) : (
         <div className="flex items-center gap-3 rounded-xl border border-dashed border-primary-200 bg-primary-50/50 px-5 py-4 text-sm text-gray-700">
           <MousePointerClick size={16} aria-hidden className="shrink-0 text-primary-700" />
-          Showing all projects. Pick a project in the filter above to see its contract-to-cash
-          waterfall and earning stages.
+          <Tr>Showing all projects. Pick a project in the filter above to see its contract-to-cash waterfall and earning stages.</Tr>
         </div>
       )}
 

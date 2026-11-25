@@ -1,3 +1,4 @@
+import { Tr } from "./Tr";
 import { CircleAlert, CircleCheck, Hourglass } from "lucide-react";
 import type { BillingSummary } from "../types";
 import { RupiahText } from "./RupiahText";
@@ -12,7 +13,7 @@ export function BillingReadinessStrip({ summary }: BillingReadinessStripProps) {
       <div className="ptepi-card ptepi-card--lift p-6">
         <div className="flex items-center gap-2 text-sm font-medium text-green-800">
           <CircleCheck size={16} aria-hidden />
-          Billable now
+          <Tr>Billable now</Tr>
         </div>
         <div className="mt-2 text-2xl font-bold">
           <RupiahText value={summary.billable.amount} millions />
@@ -24,7 +25,7 @@ export function BillingReadinessStrip({ summary }: BillingReadinessStripProps) {
       <div className="ptepi-card ptepi-card--lift p-6">
         <div className="flex items-center gap-2 text-sm font-medium text-amber-900">
           <Hourglass size={16} aria-hidden />
-          Due, awaiting BAST II
+          <Tr>Due, awaiting BAST II</Tr>
         </div>
         <div className="mt-2 text-2xl font-bold">
           <RupiahText value={summary["awaiting-bast"].amount} millions />
@@ -36,7 +37,7 @@ export function BillingReadinessStrip({ summary }: BillingReadinessStripProps) {
       <div className="ptepi-card ptepi-card--lift p-6">
         <div className="flex items-center gap-2 text-sm font-medium text-destructive">
           <CircleAlert size={16} aria-hidden />
-          Blocked
+          <Tr>Blocked</Tr>
         </div>
         <div className="mt-2 text-2xl font-bold">
           <RupiahText value={summary.blocked.amount} millions />

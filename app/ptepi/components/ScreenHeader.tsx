@@ -1,7 +1,10 @@
+import { Tr } from "./Tr";
 import type { ReactNode } from "react";
-import { CalendarClock, type LucideIcon } from "lucide-react";
-import { epiData } from "../data";
-import { getAsAtLabel } from "../selectors";
+import { type LucideIcon } from "lucide-react";
+import { DemoSnapshotPill } from "./DemoSnapshotPill";
+import { SyntheticDataBadge } from "./SyntheticDataBadge";
+
+export type DataTag = "synthetic" | "real";
 
 type ScreenHeaderProps = {
   title: string;
@@ -10,10 +13,12 @@ type ScreenHeaderProps = {
   actions?: ReactNode;
   /** Optional icon tile before the title */
   icon?: LucideIcon;
+  /** Data tags of the screen (NF-06); every header shows at least "Data sintetis" */
+  dataTags?: DataTag[];
 };
 
-/** Page title with the as-at date as a pill, taken from the data. The page's only h1. */
-export function ScreenHeader({ title, subtitle, actions, icon: Icon }: ScreenHeaderProps) {
+/** Page title with the data tags and the demo snapshot date as pills. The page's only h1. */
+export function ScreenHeader({ title, subtitle, actions, icon: Icon, dataTags = ["synthetic"] }: ScreenHeaderProps) {
   return (
     <header className="flex flex-wrap items-end justify-between gap-4">
       <div className="flex min-w-0 items-start gap-3">
@@ -23,16 +28,16 @@ export function ScreenHeader({ title, subtitle, actions, icon: Icon }: ScreenHea
           </span>
         )}
         <div className="min-w-0">
-        <h1 className="text-[28px] font-bold leading-tight tracking-[-0.02em] text-gray-950">{title}</h1>
-        <p className="mt-1 max-w-3xl text-sm leading-5 text-muted-foreground">{subtitle}</p>
+        <h1 className="text-[28px] font-bold leading-tight tracking-[-0.02em] text-gray-950"><Tr>{title}</Tr></h1>
+        <p className="mt-1 max-w-3xl text-sm leading-5 text-muted-foreground"><Tr>{subtitle}</Tr></p>
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {actions}
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary-100 bg-primary-50 px-3 py-1 text-xs font-medium text-primary-900">
-          <CalendarClock size={16} aria-hidden />
-          As at {getAsAtLabel(epiData)}
-        </span>
+        {dataTags.map((tag) => (
+          <SyntheticDataBadge key={tag} real={tag === "real"} />
+        ))}
+        <DemoSnapshotPill />
       </div>
     </header>
   );

@@ -1,3 +1,4 @@
+import { Tr } from "../Tr";
 type LegendItem = {
   label: string;
   color: string;
@@ -26,7 +27,7 @@ export function ChartLegend({ items }: ChartLegendProps) {
               style={{ backgroundColor: item.color }}
             />
           )}
-          {item.label}
+          <Tr>{item.label}</Tr>
         </li>
       ))}
     </ul>

@@ -1,4 +1,5 @@
 import { MetricLabel } from "./MetricLabel";
+import { Tr } from "./Tr";
 import type { CostMargin } from "../types";
 import { PercentText } from "./PercentText";
 import { RupiahText } from "./RupiahText";
@@ -15,7 +16,7 @@ export function CostMarginCard({ money, detailed = false }: CostMarginCardProps)
     <dl className="grid grid-cols-2 gap-5 text-sm">
       {detailed && (
         <div>
-          <dt className="text-muted-foreground">Contract value</dt>
+          <dt className="text-muted-foreground"><Tr>Contract value</Tr></dt>
           <dd className="font-semibold">
             <RupiahText value={money.contractValue} />
           </dd>
@@ -32,7 +33,7 @@ export function CostMarginCard({ money, detailed = false }: CostMarginCardProps)
         </div>
       )}
       <div>
-        <dt className="text-muted-foreground">Actual cost</dt>
+        <dt className="text-muted-foreground"><Tr>Actual cost</Tr></dt>
         <dd className="text-lg font-bold">
           <RupiahText value={money.cost} />
         </dd>
@@ -46,7 +47,7 @@ export function CostMarginCard({ money, detailed = false }: CostMarginCardProps)
         </dd>
         {detailed && money.vendorAdvances > 0 && (
           <dd className="text-xs text-muted-foreground">
-            Includes vendor advances (uang muka, SES not issued)
+            <Tr>Includes vendor advances (uang muka, SES not issued)</Tr>
           </dd>
         )}
       </div>
@@ -58,17 +59,17 @@ export function CostMarginCard({ money, detailed = false }: CostMarginCardProps)
           <dd className="text-lg font-bold">
             <RupiahText value={money.vendorAdvances} millions />{" "}
             <span className="text-sm font-medium text-muted-foreground">
-              (<PercentText fraction={money.advancesShareOfCost} digits={1} /> of realised cost)
+              (<PercentText fraction={money.advancesShareOfCost} digits={1} /> <Tr>of realised cost</Tr>)
             </span>
           </dd>
           <dd className="text-xs text-muted-foreground">
-            Not a margin: revenue is progress-based while material cost is only recognised on SES.
+            <Tr>Not a margin: revenue is progress-based while material cost is only recognised on SES.</Tr>
           </dd>
         </div>
       )}
       {detailed && (
         <div>
-          <dt className="text-muted-foreground">Profit to date</dt>
+          <dt className="text-muted-foreground"><Tr>Profit to date</Tr></dt>
           <dd className="font-semibold">
             <RupiahText value={money.profit} />
           </dd>
@@ -76,20 +77,20 @@ export function CostMarginCard({ money, detailed = false }: CostMarginCardProps)
       )}
       {detailed && (
         <div>
-          <dt className="text-muted-foreground">Margin at RAP budget</dt>
+          <dt className="text-muted-foreground"><Tr>Margin at RAP budget</Tr></dt>
           <dd className="font-semibold">
             <PercentText fraction={money.plannedMargin} digits={2} />
           </dd>
         </div>
       )}
       <div>
-        <dt className="text-muted-foreground">RAP (budget)</dt>
+        <dt className="text-muted-foreground"><Tr>RAP (budget)</Tr></dt>
         <dd className="font-semibold">
           <RupiahText value={money.rapPlanned} />
         </dd>
       </div>
       <div>
-        <dt className="text-muted-foreground">{overRap ? "Over RAP" : "Left in RAP"}</dt>
+        <dt className="text-muted-foreground"><Tr>{overRap ? "Over RAP" : "Left in RAP"}</Tr></dt>
         <dd className={overRap ? "font-semibold text-destructive" : "font-semibold"}>
           <RupiahText value={Math.abs(money.rapRemaining)} />
         </dd>
@@ -106,7 +107,7 @@ export function CostMarginCard({ money, detailed = false }: CostMarginCardProps)
       )}
       {!detailed && (
         <div>
-          <dt className="text-muted-foreground">Profit to date</dt>
+          <dt className="text-muted-foreground"><Tr>Profit to date</Tr></dt>
           <dd className="font-semibold">
             <RupiahText value={money.profit} />
           </dd>

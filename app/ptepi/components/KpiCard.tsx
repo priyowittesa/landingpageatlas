@@ -1,8 +1,10 @@
+import { Tr } from "./Tr";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import type { MetricId } from "../metrics";
 import { MetricLabel } from "./MetricLabel";
+import { GlossaryTerm } from "./GlossaryTerm";
 
 type KpiTone = "default" | "good" | "watch" | "bad";
 
@@ -51,7 +53,7 @@ export function KpiCard({
     >
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-medium text-muted-foreground">
-          {metricId ? <MetricLabel metricId={metricId} /> : title}
+          {metricId ? <MetricLabel metricId={metricId} /> : <GlossaryTerm>{title}</GlossaryTerm>}
         </p>
         <span
           aria-hidden
@@ -63,8 +65,8 @@ export function KpiCard({
           <Icon size={16} />
         </span>
       </div>
-      <p className="mt-3 text-2xl font-bold tracking-tight tabular-nums text-foreground">{value}</p>
-      {subtitle && <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>}
+      <p className="mt-3 text-2xl font-bold tracking-tight tabular-nums text-foreground">{typeof value === "string" ? <Tr>{value}</Tr> : value}</p>
+      {subtitle && <p className="mt-1 text-xs text-muted-foreground"><Tr>{subtitle}</Tr></p>}
       {footer && <div className="mt-3">{footer}</div>}
     </div>
   );

@@ -24,6 +24,9 @@ import {
   getSuggestedAction,
   getCostMargin,
   getCriticalItem,
+  getLookAhead,
+  getProjectForecast,
+  bestRollingAverage,
   getProjectExceptionItems,
   getProjectInfo,
   getRecoveryRate,
@@ -85,9 +88,9 @@ describe("PNP126 progress", () => {
     expect(progress.plan).toBeCloseTo(0.73487, 6);
     expect(progress.actual).toBeCloseTo(0.28498, 6);
     expect(progress.deviationPts).toBe(-44.989);
-    expect(formatPercent(progress.plan ?? 0)).toBe("73,487%");
-    expect(formatPercent(progress.actual ?? 0)).toBe("28,498%");
-    expect(formatPoints(progress.deviationPts ?? 0)).toBe("-44,989 pts");
+    expect(formatPercent(progress.plan ?? 0)).toBe("73,5%");
+    expect(formatPercent(progress.actual ?? 0)).toBe("28,5%");
+    expect(formatPoints(progress.deviationPts ?? 0)).toBe("-45 pts");
   });
 
   it("recognises revenue on measured progress", () => {
@@ -115,7 +118,7 @@ describe("health rating", () => {
 
   it("explains PNP126 with the schedule deviation", () => {
     const health = getProjectHealth(epiData, "PNP126");
-    expect(health.reason).toContain("Schedule deviation -44,989 pts");
+    expect(health.reason).toContain("Schedule deviation -45 pts");
     expect(health.signals[0]?.code).toBe("schedule-deviation");
   });
 
@@ -235,7 +238,7 @@ describe("S2 billing", () => {
     expect(blocked.map((r) => r.projectId).sort()).toEqual(["IKT0126", "IKT0126", "PNP126", "PTP1125"]);
     expect(blocked.find((r) => r.projectId === "PTP1125")?.reason).toBe("BAST I still draft, not signed");
     expect(blocked.find((r) => r.projectId === "PNP126")?.reason).toBe(
-      "Progress 28,498% below the 50% condition"
+      "Progress 28,5% below the 50% condition"
     );
   });
 
@@ -360,6 +363,41 @@ describe("S3 project cockpit", () => {
     expect(recovery?.recentPerWeek).toBe(0);
   });
 
+  it("benchmarks the required pace on the best 4-week rolling average (DP-04): 2,8 per week", () => {
+    const recovery = getRecoveryRate(epiData, "PNP126");
+    expect(recovery?.bestFourWeekAvg).toBeCloseTo(2.784, 3);
+    expect(recovery?.ratioToBestFour).toBeCloseTo(3.211, 3);
+    expect(bestRollingAverage([1, 2, 3, 4, 5], 4)).toBe(3.5);
+    expect(bestRollingAverage([2, 4], 4)).toBe(3);
+    expect(bestRollingAverage([], 4)).toBe(0);
+  });
+
+  it("forecasts the finish at the best 4-week pace (ATLAS-estimated): week 44, 126 days late", () => {
+    expect(getProjectForecast(epiData, "PNP126")).toEqual({
+      pacePerWeek: 2.784,
+      finishWeek: 44,
+      finishDate: "2027-05-08",
+      plannedEndDate: "2027-01-02",
+      floatDays: -126,
+      source: "ATLAS-estimated"
+    });
+    expect(getProjectForecast(epiData, "GS125")).toBeNull();
+    expect(getProjectForecast(epiData, "NK0126")).toBeNull();
+  });
+
+  it("has no forecast date when the pace is zero, never an invented one", () => {
+    const flat = structuredClone(epiData);
+    for (const row of flat.progressWeekly) if (row.projectId === "PNP126") row.actualCumulative = 0;
+    expect(getProjectForecast(flat, "PNP126")).toMatchObject({ pacePerWeek: 0, finishDate: null, floatDays: null });
+  });
+
+  it("lists the 4-week look-ahead: plan against the forecast", () => {
+    const rows = getLookAhead(epiData, "PNP126");
+    expect(rows.map((row) => row.weekNo)).toEqual([19, 20, 21, 22]);
+    expect(rows[0]).toMatchObject({ weekStart: "2026-11-09", weekEnd: "2026-11-15", plan: 82.102, planGain: 8.615, forecast: 31.282 });
+    expect(getLookAhead(epiData, "NK0126")).toEqual([]);
+  });
+
   it("flags the flat weeks 14 to 18", () => {
     const recovery = getRecoveryRate(epiData, "PNP126");
     expect(recovery?.flatWeeks).toBe(5);
@@ -372,12 +410,12 @@ describe("S3 project cockpit", () => {
     expect(getRecoveryRate(epiData, "NK0126")).toBeNull();
   });
 
-  it("computes cost and margin: Rp 239.270.000 and 22,26%", () => {
+  it("computes cost and margin: Rp 239.270.000 and 22,3%", () => {
     const money = getCostMargin(epiData, "PNP126");
     expect(money.cost).toBe(239_270_000);
     expect(money.recognisedRevenue).toBe(307_778_400);
     expect(money.margin).toBeCloseTo(0.22259, 5);
-    expect(formatPercent(money.margin ?? 0, 2)).toBe("22,26%");
+    expect(formatPercent(money.margin ?? 0, 2)).toBe("22,3%");
     expect(getCostMargin(epiData, "PSL0126").rapRemaining).toBe(-47_000_000);
     expect(getCostMargin(epiData, "NK0126").margin).toBeNull();
   });
@@ -388,6 +426,14 @@ describe("S3 project cockpit", () => {
     expect(item?.weight).toBe(0.64115);
     expect(item?.behindPts).toBe(32.058);
     expect(item?.claimedStage).toBe("Confirmation Order");
+    expect(item?.nextMilestone).toEqual({
+      label: "Material On Site (MOS)",
+      document: "BA Material On Site",
+      date: "2027-01-23",
+      source: "ATLAS-estimated"
+    });
+    expect(item?.floatDays).toBe(-126);
+    expect(item?.floatSource).toBe("ATLAS-estimated");
     expect(getCriticalItem(epiData, "GS125")).toBeNull();
   });
 
@@ -450,8 +496,17 @@ describe("S4 evidence gate", () => {
     expect(stage?.blockedValue).toBe(17_802_002);
   });
 
-  it("leaves the later stages not started: nothing is claimed and no BA exists", () => {
-    for (const stage of stages.slice(2)) {
+  it("blocks MOS: its BA is due by plan and missing, but no value is held because nothing is claimed", () => {
+    const mos = stages[2]!;
+    expect(mos.status).toBe("blocked");
+    expect(mos.units.every((unit) => unit.required && !unit.claimed)).toBe(true);
+    expect(mos.gate.reason).toContain("BA Material On Site not in the register (due by plan)");
+    expect(mos.blockedValue).toBe(0);
+    expect(mos.signedDate).toBeNull();
+  });
+
+  it("leaves the later stages not started: nothing is claimed or due and no BA exists", () => {
+    for (const stage of stages.slice(3)) {
       expect(stage.status).toBe("not-started");
       expect(stage.signedDate).toBeNull();
       expect(stage.gate.result).toBe("blocked");
@@ -464,10 +519,10 @@ describe("S4 evidence gate", () => {
   it("summarises the gate", () => {
     expect(getEvidenceSummary(stages)).toEqual({
       canEarn: 1,
-      blocked: 1,
+      blocked: 2,
       claimedWithoutBa: 1,
       blockedValue: 17_802_002,
-      notStarted: 3
+      notStarted: 2
     });
   });
 
@@ -550,14 +605,14 @@ describe("S4 evidence gate", () => {
 });
 
 describe("S5 procurement and cost", () => {
-  it("totals PNP126 exactly: cost Rp 239.270.000 and margin 22,26%", () => {
+  it("totals PNP126 exactly: cost Rp 239.270.000 and margin 22,3%", () => {
     const view = getProjectCostView(epiData, "PNP126");
     expect(view.customer).toBe("PT PNP");
     expect(view.margin.cost).toBe(239_270_000);
     expect(view.margin.contractValue).toBe(1_080_000_000);
     expect(view.margin.recognisedRevenue).toBe(307_778_400);
     expect(view.margin.profit).toBe(68_508_400);
-    expect(formatPercent(view.margin.margin ?? 0, 2)).toBe("22,26%");
+    expect(formatPercent(view.margin.margin ?? 0, 2)).toBe("22,3%");
     expect(view.lines).toHaveLength(9);
     expect(view.lines.reduce((a, l) => a + l.amount, 0)).toBe(239_270_000);
   });
@@ -602,7 +657,7 @@ describe("S5 procurement and cost", () => {
     expect(portfolio.cost).toBe(2_781_485_245);
     expect(portfolio.recognisedRevenue).toBe(3_703_064_856);
     expect(portfolio.margin).toBeCloseTo(0.24887, 5);
-    expect(formatPercent(portfolio.margin ?? 0, 2)).toBe("24,89%");
+    expect(formatPercent(portfolio.margin ?? 0, 2)).toBe("24,9%");
     expect(portfolio.rapPlanned).toBe(5_083_000_000);
     expect(portfolio.overRapProjects).toBe(3);
     const over = epiData.projects
@@ -794,7 +849,7 @@ describe("S6 service contracts", () => {
       nextDate: "2026-11-15"
     });
     expect(summary.coverage).toBeCloseTo(164 / 186, 6);
-    expect(formatPercent(summary.coverage, 2)).toBe("88,17%");
+    expect(formatPercent(summary.coverage, 2)).toBe("88,2%");
   });
 
   it("lists the next inspections soonest first", () => {

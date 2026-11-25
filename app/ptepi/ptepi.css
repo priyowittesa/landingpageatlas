@@ -107,3 +107,11 @@
     transform: none;
   }
 }
+
+/* React Flow attribution on the Workflow Studio canvas: readable at WCAG AA. */
+.ptepi-app .react-flow__attribution {
+  background: var(--color-primary-50);
+}
+.ptepi-app .react-flow__attribution a {
+  color: var(--color-gray-700);
+}

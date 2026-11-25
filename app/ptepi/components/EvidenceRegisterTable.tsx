@@ -1,5 +1,7 @@
 "use client";
 
+import { Tr, useT } from "./Tr";
+import { ExternalLink, FileText } from "lucide-react";
 import { formatDate } from "../format";
 import { useMemo, useState } from "react";
 import Table from "@/components/Table";
@@ -16,10 +18,36 @@ function RegisterStatus({ status }: { status: string }) {
   return <StatusBadge tone="bad" label="Missing" />;
 }
 
+/** The file behind a BA: a web link opens in a new tab; a repository path is shown as text. */
+function FileLinkCell({ link }: { link: string | null }) {
+  if (!link) return <span className="text-gray-600"><Tr>No file</Tr></span>;
+  const name = link.split("/").pop() ?? link;
+  if (link.startsWith("http://") || link.startsWith("https://")) {
+    return (
+      <a
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex max-w-52 items-center gap-1.5 text-primary-800 hover:underline"
+        title={link}
+      >
+        <ExternalLink size={14} aria-hidden className="shrink-0" />
+        <span className="truncate"><Tr>Open file</Tr></span>
+      </a>
+    );
+  }
+  return (
+    <span className="inline-flex max-w-52 items-center gap-1.5 text-gray-800" title={link}>
+      <FileText size={14} aria-hidden className="shrink-0 text-primary-700" />
+      <span className="truncate">{name}</span>
+    </span>
+  );
+}
+
 const COLUMNS: TableColumn<RegisterRow>[] = [
   {
     key: "document",
-    header: "Document",
+    header: <Tr>Document</Tr>,
     render: (row) => (
       <div className="min-w-48">
         <div className="font-medium">{row.documentType}</div>
@@ -34,19 +62,19 @@ const COLUMNS: TableColumn<RegisterRow>[] = [
   },
   {
     key: "scope",
-    header: "Component or stage",
+    header: <Tr>Component or stage</Tr>,
     render: (row) => row.component ?? row.relatedStage ?? "-"
   },
-  { key: "documentDate", header: "Date", className: "whitespace-nowrap", render: (row) => formatDate(row.documentDate) },
+  { key: "documentDate", header: <Tr>Date</Tr>, className: "whitespace-nowrap", render: (row) => formatDate(row.documentDate) },
   {
     key: "customerSigner",
-    header: "Customer signer",
+    header: <Tr>Customer signer</Tr>,
     render: (row) => row.customerSigner ?? "-"
   },
-  { key: "epiSigner", header: "EPI signer", render: (row) => row.epiSigner ?? "-" },
+  { key: "epiSigner", header: <Tr>EPI signer</Tr>, render: (row) => row.epiSigner ?? "-" },
   {
     key: "status",
-    header: "Status",
+    header: <Tr>Status</Tr>,
     render: (row) => (
       <div className="min-w-36 space-y-1">
         <RegisterStatus status={row.status} />
@@ -54,7 +82,7 @@ const COLUMNS: TableColumn<RegisterRow>[] = [
       </div>
     )
   },
-
+  { key: "fileLink", header: <Tr>File</Tr>, render: (row) => <FileLinkCell link={row.fileLink} /> }
 ];
 
 type EvidenceRegisterTableProps = {
@@ -65,6 +93,7 @@ export function EvidenceRegisterTable({ rows }: EvidenceRegisterTableProps) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const t = useT();
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -88,8 +117,8 @@ export function EvidenceRegisterTable({ rows }: EvidenceRegisterTableProps) {
         setSearch(value);
         setPage(1);
       }}
-      searchPlaceholder="Search document, number or status"
-      emptyState={{ description: "No BA record matches the search." }}
+      searchPlaceholder={t("Search document, number or status")}
+      emptyState={{ description: t("No BA record matches the search.") }}
       pagination={{
         page,
         pageSize,

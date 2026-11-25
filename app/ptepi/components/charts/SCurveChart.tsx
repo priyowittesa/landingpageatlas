@@ -18,21 +18,31 @@ import { ChartLegend } from "./ChartLegend";
 import { ChartTooltip } from "./ChartTooltip";
 import { formatPercentAxis } from "./formatters";
 import { useChartAnimation } from "./useChartAnimation";
+import { useT } from "../Tr";
 
 type SCurveChartProps = {
   points: SCurveChartPoint[];
   todayLabel: string | null;
   requiredPace: number | null;
+  /** Pace of the ATLAS-estimated forecast: best 4-week rolling average */
+  forecastPace?: number | null;
 };
 
-const SERIES_LABELS = { plan: "Plan", actual: "Actual", pace: "Required pace", gap: "Gap to plan" };
+const SERIES_LABELS = {
+  plan: "Plan",
+  actual: "Actual",
+  pace: "Required pace",
+  gap: "Gap to plan",
+  forecast: "Scenario if best pace repeats (ATLAS-estimated)"
+};
 
 /**
  * Plan (grey, dashed) against actual (primary), the gap to plan up to today shaded,
  * a today marker and the pace needed to finish on the planned date.
  */
-export function SCurveChart({ points, todayLabel, requiredPace }: SCurveChartProps) {
+export function SCurveChart({ points, todayLabel, requiredPace, forecastPace = null }: SCurveChartProps) {
   const animation = useChartAnimation();
+  const t = useT();
   return (
     <div>
       <div className="h-80 w-full">
@@ -69,7 +79,7 @@ export function SCurveChart({ points, todayLabel, requiredPace }: SCurveChartPro
             <Area dataKey="gapBase" stackId="gap" stroke="none" fill="transparent" activeDot={false} legendType="none" {...animation} />
             <Area
               dataKey="gap"
-              name={SERIES_LABELS.gap}
+              name={t(SERIES_LABELS.gap)}
               stackId="gap"
               stroke="none"
               fill="url(#ptepi-gap)"
@@ -81,12 +91,12 @@ export function SCurveChart({ points, todayLabel, requiredPace }: SCurveChartPro
                 x={todayLabel}
                 stroke={CHART_COLORS.actual}
                 strokeDasharray="2 4"
-                label={{ value: "Today", position: "insideTopLeft", fill: "var(--color-primary-700)", fontSize: 11 }}
+                label={{ value: t("Today"), position: "insideTopLeft", fill: "var(--color-primary-700)", fontSize: 11 }}
               />
             )}
             <Line
               dataKey="pace"
-              name={SERIES_LABELS.pace}
+              name={t(SERIES_LABELS.pace)}
               stroke={CHART_COLORS.pace}
               strokeWidth={2.5}
               strokeDasharray="1 5"
@@ -96,8 +106,18 @@ export function SCurveChart({ points, todayLabel, requiredPace }: SCurveChartPro
               {...animation}
             />
             <Line
+              dataKey="forecast"
+              name={t(SERIES_LABELS.forecast)}
+              stroke={CHART_COLORS.primaryLight}
+              strokeWidth={2.5}
+              strokeDasharray="8 5"
+              dot={false}
+              connectNulls={false}
+              {...animation}
+            />
+            <Line
               dataKey="plan"
-              name={SERIES_LABELS.plan}
+              name={t(SERIES_LABELS.plan)}
               stroke={CHART_COLORS.plan}
               strokeWidth={2}
               strokeDasharray="6 4"
@@ -106,7 +126,7 @@ export function SCurveChart({ points, todayLabel, requiredPace }: SCurveChartPro
             />
             <Line
               dataKey="actual"
-              name={SERIES_LABELS.actual}
+              name={t(SERIES_LABELS.actual)}
               stroke={CHART_COLORS.actual}
               strokeWidth={3}
               dot={{ r: 2 }}
@@ -123,7 +143,10 @@ export function SCurveChart({ points, todayLabel, requiredPace }: SCurveChartPro
           { label: SERIES_LABELS.gap, color: CHART_COLORS.bad },
           ...(requiredPace === null
             ? []
-            : [{ label: `${SERIES_LABELS.pace}: ${formatDecimal(requiredPace, 1)} pts per week`, color: CHART_COLORS.pace, shape: "dash" as const }])
+            : [{ label: `${SERIES_LABELS.pace}: ${formatDecimal(requiredPace, 1)} pts per week`, color: CHART_COLORS.pace, shape: "dash" as const }]),
+          ...(forecastPace === null
+            ? []
+            : [{ label: `${SERIES_LABELS.forecast}: ${formatDecimal(forecastPace, 1)} pts per week`, color: CHART_COLORS.primaryLight, shape: "dash" as const }])
         ]}
       />
     </div>

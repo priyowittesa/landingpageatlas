@@ -64,7 +64,7 @@ describe("no-progress wording", () => {
 });
 
 describe("S5 vendor advances", () => {
-  it("keeps the PNP126 margin at 22,26% and shows advances paid without an SES", async () => {
+  it("keeps the PNP126 margin at 22,3% and shows advances paid without an SES", async () => {
     const { getCostMargin, getVendorAdvances } = await import("./selectors");
     const { getMetric } = await import("./metrics");
     const money = getCostMargin(epiData, "PNP126");
@@ -92,6 +92,6 @@ describe("Nexa Intelligence context panel", () => {
     expect(context[0]?.value).toBe("Rp 6.683,1 m");
     expect(context[2]?.value).toBe("Rp 752,5 m");
     expect(context[3]?.value).toBe("Rp 37,9 m");
-    expect(context[4]?.value).toBe("-44,989 pts");
+    expect(context[4]?.value).toBe("-45 pts");
   });
 });

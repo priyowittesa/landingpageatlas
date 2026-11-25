@@ -1,3 +1,4 @@
+import { Tr } from "./Tr";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { SEVERITY_LABELS } from "../labels";
@@ -36,7 +37,7 @@ export function NeedsAttentionPanel({ groups }: NeedsAttentionPanelProps) {
                       {item.customer}
                     </span>
                     <span className="block text-sm text-muted-foreground">
-                      {item.label}
+                      <Tr>{item.label}</Tr>
                     </span>
                   </span>
                   <ChevronRight

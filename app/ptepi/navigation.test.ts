@@ -12,11 +12,11 @@ import {
 } from "./navigation";
 
 describe("ptepi sidebar navigation", () => {
-  it("links the eight prototype screens, all inside /ptepi", () => {
+  it("links the thirteen prototype screens, all inside /ptepi", () => {
     const hrefs = extractNavHrefs(PTEPI_NAV);
-    expect(hrefs).toHaveLength(8);
+    expect(hrefs).toHaveLength(13);
     expect(hrefs.every((href) => href === "/ptepi" || href.startsWith("/ptepi/"))).toBe(true);
-    expect(new Set(hrefs).size).toBe(8);
+    expect(new Set(hrefs).size).toBe(13);
   });
 
   it("highlights the portfolio only on the portfolio page", () => {

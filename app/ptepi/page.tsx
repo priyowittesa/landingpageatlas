@@ -1,4 +1,7 @@
 import { BillingExposure } from "./components/BillingExposure";
+import { DataQualityPanel } from "./components/DataQualityPanel";
+import { PipelineByCustomer } from "./components/PipelineByCustomer";
+import { PortfolioLifecycle } from "./components/PortfolioLifecycle";
 import { DumbbellCard, ValueByStatusCard } from "./components/charts/ScreenCharts";
 import { NeedsAttentionPanel } from "./components/NeedsAttentionPanel";
 import { PageHero } from "./components/PageHero";
@@ -10,6 +13,9 @@ import { epiData } from "./data";
 import { formatRupiahMillions } from "./format";
 import {
   getAttentionGroups,
+  getDataQualityFlags,
+  getPipelineByCustomer,
+  getPortfolioLifecycle,
   getPlanActualDumbbell,
   getPortfolioHeadline,
   getPortfolioRows,
@@ -26,6 +32,9 @@ export default function PortfolioHealthPage() {
   const valueByStatus = getValueByStatusChart(epiData);
   const dumbbell = getPlanActualDumbbell(epiData);
   const badge = <SyntheticDataBadge />;
+  const lifecycle = getPortfolioLifecycle(epiData);
+  const pipeline = getPipelineByCustomer(epiData);
+  const qualityFlags = getDataQualityFlags(epiData);
 
   return (
     <div className="space-y-8">
@@ -47,6 +56,14 @@ export default function PortfolioHealthPage() {
 
       <BillingExposure totals={totals} />
 
+      <SectionCard
+        title="Project lifecycle"
+        subtitle="Projects and value at each stage, from offer to close"
+        badge={badge}
+      >
+        <PortfolioLifecycle steps={lifecycle} />
+      </SectionCard>
+
       <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-5">
         <SectionCard
           id="needs-attention"
@@ -61,6 +78,29 @@ export default function PortfolioHealthPage() {
           <DumbbellCard chart={dumbbell} badge={badge} />
           <ValueByStatusCard chart={valueByStatus} badge={badge} />
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-5">
+        {pipeline.length > 0 && (
+          <SectionCard
+            title="Pipeline by customer"
+            subtitle="Offers and procurement not yet contracted"
+            badge={badge}
+            className="xl:col-span-2"
+          >
+            <PipelineByCustomer customers={pipeline} />
+          </SectionCard>
+        )}
+        {qualityFlags.length > 0 && (
+          <SectionCard
+            title="Data-quality flags"
+            subtitle="Records to fix before they can be trusted"
+            badge={badge}
+            className="xl:col-span-3"
+          >
+            <DataQualityPanel flags={qualityFlags} />
+          </SectionCard>
+        )}
       </div>
 
       <SectionCard

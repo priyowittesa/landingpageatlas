@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Tr } from "../../../components/Tr";
 import {
   CircleCheck,
   CalendarClock,
@@ -69,19 +70,18 @@ export default async function EvidenceGatePage({ params }: EvidencePageProps) {
         title={`Evidence gate: ${info.projectId}`}
         subtitle={`${info.customer}. Nothing is earned or billed without a signed BA for that stage.`}
         actions={<ProjectFilter options={getProjectFilterOptions(epiData)} />}
+        dataTags={register.some((row) => row.dataOrigin === "real") ? ["synthetic", "real"] : ["synthetic"]}
       />
 
       <div className="flex items-start gap-3 ptepi-card p-6">
         <ShieldCheck size={16} className="mt-1 shrink-0 text-primary-700" aria-hidden />
         <div className="space-y-1 text-sm">
-          <p className="font-semibold">Who signs what</p>
+          <p className="font-semibold"><Tr>Who signs what</Tr></p>
           <p className="text-muted-foreground">
-            The customer {PROGRESS_SIGNER} signs progress documents: S-curve, approval drawings
-            and material, weekly and monthly reports. The customer President Director signs the
-            payment BA and the handover BA (BAST). Source: kick-off BA, 2 Jul 2026.
+            <Tr>{`The customer ${PROGRESS_SIGNER} signs progress documents: S-curve, approval drawings and material, weekly and monthly reports. The customer President Director signs the payment BA and the handover BA (BAST). Source: kick-off BA, 2 Jul 2026.`}</Tr>
           </p>
           <p className="text-muted-foreground">
-            A BA signed by any other role does not open the gate.
+            <Tr>A BA signed by any other role does not open the gate.</Tr>
           </p>
         </div>
       </div>

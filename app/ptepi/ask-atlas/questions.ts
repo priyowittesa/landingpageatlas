@@ -73,6 +73,22 @@ export const QUESTIONS: Question[] = [
     ]
   },
   {
+    id: "report",
+    label: "Draft weekly report week 19",
+    groups: [
+      { words: ["weekly report", "report", "laporan", "laporan mingguan", "t1"], weight: 4 },
+      { words: ["week 19", "minggu 19", "draft", "buat"], weight: 1 }
+    ]
+  },
+  {
+    id: "mos",
+    label: "When is the MOS BA for PNP126 signed?",
+    groups: [
+      { words: ["mos", "material on site", "material di lokasi"], weight: 4 },
+      { words: ["signed", "ditandatangani", "when", "kapan", "date", "tanggal"], weight: 1 }
+    ]
+  },
+  {
     id: "rap",
     label: "Which projects are over RAP?",
     groups: [

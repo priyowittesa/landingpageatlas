@@ -1,5 +1,6 @@
 "use client";
 
+import { Tr, useT } from "./Tr";
 import { formatDate } from "../format";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -49,14 +50,14 @@ function StatusCell({ action, asAt }: { action: EpiAction; asAt: string }) {
       {action.status === "in-progress" && (
         <Badge variant="secondary" className="gap-1.5">
           <Clock size={16} aria-hidden />
-          In progress
+          <Tr>In progress</Tr>
         </Badge>
       )}
       {action.status === "done" && <StatusBadge tone="good" label="Done" />}
       {isOverdue(action, asAt) && (
         <div className="flex items-center gap-1 text-xs font-medium text-destructive">
           <TriangleAlert size={16} aria-hidden />
-          Overdue
+          <Tr>Overdue</Tr>
         </div>
       )}
     </div>
@@ -71,6 +72,7 @@ type RowControlsProps = {
 
 function RowControls({ action, role, onAssign }: RowControlsProps) {
   const setStatus = useActionsStore((state) => state.setStatus);
+  const t = useT();
   const canStatus = canPerform(role, "status", action);
   const canAssign = canPerform(role, "assign", action);
   const canClose = canPerform(role, "close", action);
@@ -78,7 +80,7 @@ function RowControls({ action, role, onAssign }: RowControlsProps) {
   const change = (status: ActionStatus) => {
     setStatus(action.id, status);
     toast.success(
-      status === "done" ? `${action.id} closed` : `${action.id} set to ${STATUS_LABELS[status].toLowerCase()}`
+      status === "done" ? `${action.id} ${t("closed")}` : `${action.id}: ${t(STATUS_LABELS[status])}`
     );
   };
 
@@ -99,7 +101,7 @@ function RowControls({ action, role, onAssign }: RowControlsProps) {
         <SelectContent>
           {STATUSES.map((status) => (
             <SelectItem key={status} value={status}>
-              {STATUS_LABELS[status]}
+              {t(STATUS_LABELS[status])}
             </SelectItem>
           ))}
         </SelectContent>
@@ -112,7 +114,7 @@ function RowControls({ action, role, onAssign }: RowControlsProps) {
         title={canAssign ? undefined : `${role.label} cannot assign actions`}
         onClick={() => onAssign(action)}
       >
-        Assign
+        <Tr>Assign</Tr>
       </Button>
       {action.status !== "done" && (
         <Button
@@ -123,7 +125,7 @@ function RowControls({ action, role, onAssign }: RowControlsProps) {
           className="bg-primary-700 text-white hover:bg-primary-800"
           onClick={() => change("done")}
         >
-          Close
+          <Tr>Close</Tr>
         </Button>
       )}
     </div>
@@ -137,6 +139,7 @@ type ActionsBoardProps = {
 };
 
 export function ActionsBoard({ seeds, asAt, projectOptions }: ActionsBoardProps) {
+  const t = useT();
   const actions = useActionsStore((state) => state.actions);
   const seed = useActionsStore((state) => state.seed);
   const seeded = useActionsStore((state) => state.seeded);
@@ -181,74 +184,74 @@ export function ActionsBoard({ seeds, asAt, projectOptions }: ActionsBoardProps)
       placeholder: "Project",
       value: project,
       onChange: reset(setProject),
-      options: [{ label: "All projects", value: ALL }, ...getProjectOptions(actions).map((id) => ({ label: id, value: id }))]
+      options: [{ label: t("All projects"), value: ALL }, ...getProjectOptions(actions).map((id) => ({ label: id, value: id }))]
     },
     {
       key: "owner",
       placeholder: "Owner role",
       value: owner,
       onChange: reset(setOwner),
-      options: [{ label: "All owner roles", value: ALL }, ...OWNER_ROLES.map((r) => ({ label: r, value: r }))]
+      options: [{ label: t("All owner roles"), value: ALL }, ...OWNER_ROLES.map((r) => ({ label: r, value: r }))]
     },
     {
       key: "status",
       placeholder: "Status",
       value: status,
       onChange: reset(setStatus),
-      options: [{ label: "All statuses", value: ALL }, ...STATUSES.map((s) => ({ label: STATUS_LABELS[s], value: s }))]
+      options: [{ label: t("All statuses"), value: ALL }, ...STATUSES.map((s) => ({ label: t(STATUS_LABELS[s]), value: s }))]
     },
     {
       key: "source",
       placeholder: "Source screen",
       value: source,
       onChange: reset(setSource),
-      options: [{ label: "All sources", value: ALL }, ...getSourceOptions(actions).map((s) => ({ label: s, value: s }))]
+      options: [{ label: t("All sources"), value: ALL }, ...getSourceOptions(actions).map((s) => ({ label: t(s), value: s }))]
     }
   ];
 
   const rawColumns: TableColumn<EpiAction>[] = [
     {
       key: "action",
-      header: "Action",
+      header: <Tr>Action</Tr>,
       render: (row) => (
         <div className="min-w-52 max-w-72 whitespace-normal">
           <div className="text-xs font-semibold text-muted-foreground">{row.id}</div>
-          <div className="font-medium">{row.title}</div>
+          <div className="font-medium"><Tr>{row.title}</Tr></div>
         </div>
       )
     },
-    { key: "projectId", header: "Project", render: (row) => <span className="font-semibold">{row.projectId}</span> },
+    { key: "projectId", header: <Tr>Project</Tr>, render: (row) => <span className="font-semibold">{row.projectId}</span> },
     {
       key: "owner",
-      header: "Owner role",
+      header: <Tr>Owner role</Tr>,
       render: (row) => (
         <div className="min-w-36 max-w-44 space-y-1 whitespace-normal">
           <div>{row.ownerRole}</div>
           {isRelevantTo(role, row) && (
             <Badge variant="outline" className="gap-1.5 border-primary-500 text-primary-700">
               <UserCheck size={16} aria-hidden />
-              Yours
+              <Tr>Yours</Tr>
             </Badge>
           )}
         </div>
       )
     },
-    { key: "dueDate", header: "Due", className: "whitespace-nowrap", render: (row) => formatDate(row.dueDate) },
-    { key: "status", header: "Status", render: (row) => <StatusCell action={row} asAt={asAt} /> },
+    { key: "dueDate", header: <Tr>Due</Tr>, className: "whitespace-nowrap", render: (row) => formatDate(row.dueDate) },
+    { key: "status", header: <Tr>Status</Tr>, render: (row) => <StatusCell action={row} asAt={asAt} /> },
     {
       key: "source",
-      header: "Source",
-      render: (row) => <div className="max-w-40 whitespace-normal text-xs text-muted-foreground">{row.source}</div>
+      header: <Tr>Source</Tr>,
+      render: (row) => <div className="max-w-40 whitespace-normal text-xs text-muted-foreground"><Tr>{row.source}</Tr></div>
     },
     {
       key: "autonomy",
-      header: "Autonomy",
+      header: <Tr>Autonomy</Tr>,
       className: "max-w-28 whitespace-normal",
-      render: (row) => AUTONOMY_LABELS[row.autonomy]
+      render: (row) => <Tr>{AUTONOMY_LABELS[row.autonomy]}</Tr>
     },
     {
       key: "controls",
-      header: "Update",
+      header: <Tr>Update</Tr>,
       render: (row) => <RowControls action={row} role={role} onAssign={setAssigning} />
     }
   ];
@@ -284,7 +287,7 @@ export function ActionsBoard({ seeds, asAt, projectOptions }: ActionsBoardProps)
       <section className="ptepi-card overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-6">
           <div>
-            <h2 className="text-base font-semibold">All actions</h2>
+            <h2 className="text-base font-semibold"><Tr>All actions</Tr></h2>
             <p className="text-sm text-muted-foreground">
               Raised by the agents from the seeded exceptions and by the Evidence gate and Nexa Intelligence. Demo role: {role.label}.
             </p>
@@ -301,7 +304,7 @@ export function ActionsBoard({ seeds, asAt, projectOptions }: ActionsBoardProps)
               }}
             >
               <UserCheck size={16} aria-hidden />
-              My role only
+              <Tr>My role only</Tr>
             </Button>
             <Button
               type="button"
@@ -311,14 +314,14 @@ export function ActionsBoard({ seeds, asAt, projectOptions }: ActionsBoardProps)
               onClick={() => setCreating(true)}
             >
               <Plus size={16} aria-hidden />
-              New action
+              <Tr>New action</Tr>
             </Button>
           </div>
         </div>
         <div className="p-2">
           {!seeded ? (
             <p role="status" className="p-10 text-center text-sm text-muted-foreground">
-              Loading actions
+              <Tr>Loading actions</Tr>
             </p>
           ) : actions.length === 0 ? (
             <EmptyState title="No actions yet" description="Actions appear here once the agents raise them." />
@@ -333,7 +336,7 @@ export function ActionsBoard({ seeds, asAt, projectOptions }: ActionsBoardProps)
                 setSearch(value);
                 setPage(1);
               }}
-              searchPlaceholder="Search action, project or owner"
+              searchPlaceholder={t("Search action, project or owner")}
               filters={filters}
               onResetFilters={() => {
                 setProject(ALL);
@@ -360,8 +363,7 @@ export function ActionsBoard({ seeds, asAt, projectOptions }: ActionsBoardProps)
       </section>
 
       <p className="text-xs text-muted-foreground">
-        AI recommends, people decide. The role switcher in the top bar is a demo only: it changes what
-        this screen enables and highlights, and is not real access control.
+        <Tr>AI recommends, people decide. The role switcher in the top bar is a demo only: it changes what this screen enables and highlights, and is not real access control.</Tr>
       </p>
 
       <CreateActionDialog

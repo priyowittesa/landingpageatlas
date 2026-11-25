@@ -1,5 +1,6 @@
 "use client";
 
+import { Tr, useT } from "./Tr";
 import { Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -16,9 +17,10 @@ type MetricLabelProps = {
  */
 export function MetricLabel({ metricId, className }: MetricLabelProps) {
   const metric = getMetric(metricId);
+  const t = useT();
   return (
     <span className={cn("inline-flex items-center gap-1", className)}>
-      {metric.label}
+      {t(metric.label)}
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -31,8 +33,8 @@ export function MetricLabel({ metricId, className }: MetricLabelProps) {
             </button>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs">
-            <p>{metric.formula}</p>
-            {metric.threshold && <p className="mt-1 opacity-80">{metric.threshold}</p>}
+            <p><Tr>{metric.formula}</Tr></p>
+            {metric.threshold && <p className="mt-1 opacity-80"><Tr>{metric.threshold}</Tr></p>}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

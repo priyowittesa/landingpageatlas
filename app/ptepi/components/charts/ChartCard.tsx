@@ -1,5 +1,6 @@
 "use client";
 
+import { Tr } from "../Tr";
 import { useId, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { BarChart3, Info, Lightbulb, Table2 } from "lucide-react";
@@ -17,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { getMetric, type MetricId } from "../../metrics";
 import type { ChartTable } from "../../types";
 import { EmptyState } from "../EmptyState";
+import { SyntheticDataBadge } from "../SyntheticDataBadge";
 
 type ChartCardProps = {
   title: string;
@@ -66,7 +68,7 @@ export function ChartCard({
         <div className="min-w-0 space-y-2">
           <div className="flex items-center gap-2">
             <span aria-hidden className="h-5 w-1 shrink-0 rounded-full bg-primary-600" />
-            <h2 className="text-base font-semibold">{title}</h2>
+            <h2 className="text-base font-semibold"><Tr>{title}</Tr></h2>
             {formulaText && (
               <TooltipProvider>
                 <Tooltip>
@@ -80,8 +82,8 @@ export function ChartCard({
                     </button>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
-                    <p>{formulaText}</p>
-                    {threshold && <p className="mt-1 opacity-80">{threshold}</p>}
+                    <p><Tr>{formulaText}</Tr></p>
+                    {threshold && <p className="mt-1 opacity-80"><Tr>{threshold}</Tr></p>}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -90,7 +92,7 @@ export function ChartCard({
           {takeaway && (
             <p className="flex items-start gap-2 rounded-lg bg-primary-50 px-3 py-2 text-sm text-primary-900">
               <Lightbulb size={16} className="mt-0.5 shrink-0 text-primary-700" aria-hidden />
-              {takeaway}
+              <Tr>{takeaway}</Tr>
             </p>
           )}
         </div>
@@ -106,7 +108,7 @@ export function ChartCard({
               onClick={() => setShowTable((value) => !value)}
             >
               {showTable ? <BarChart3 size={16} aria-hidden /> : <Table2 size={16} aria-hidden />}
-              {showTable ? "View chart" : "View data"}
+              <Tr>{showTable ? "View chart" : "View data"}</Tr>
             </Button>
           )}
         </div>
@@ -119,7 +121,12 @@ export function ChartCard({
             description={empty?.description}
           />
         ) : showTable ? (
-          <DataTable table={table} caption={title} />
+          <div className="space-y-2">
+            <p className="flex flex-wrap items-center gap-2 text-xs text-gray-700">
+              {badge ?? <SyntheticDataBadge />}
+            </p>
+            <DataTable table={table} caption={title} />
+          </div>
         ) : (
           <div role="img" aria-label={ariaLabel}>
             {children}
@@ -139,7 +146,7 @@ function DataTable({ table, caption }: { table: ChartTable; caption: string }) {
           <TableRow>
             {table.columns.map((column, index) => (
               <TableHead key={column} className={cn(index > 0 && "text-right")}>
-                {column}
+                <Tr>{column}</Tr>
               </TableHead>
             ))}
           </TableRow>
@@ -154,7 +161,7 @@ function DataTable({ table, caption }: { table: ChartTable; caption: string }) {
                 >
                   {index === 0 && row.href ? (
                     <Link href={row.href} className="font-medium text-primary-700 hover:underline">
-                      {cell}
+                      <Tr>{cell}</Tr>
                     </Link>
                   ) : (
                     cell

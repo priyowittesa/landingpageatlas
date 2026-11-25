@@ -40,7 +40,7 @@ describe("S1 charts", () => {
     expect(chart.points.length).toBeLessThanOrEqual(10);
     expect(chart.points.every((p) => p.gapSize >= 0 && p.gapStart === Math.min(p.plan, p.actual))).toBe(true);
     expect(chart.table.rows[0]?.href).toBe("/ptepi/project/PNP126");
-    expect(chart.takeaway).toContain("PNP126 is furthest behind plan (-44,989 pts)");
+    expect(chart.takeaway).toContain("PNP126 is furthest behind plan (-45 pts)");
   });
 
   it("limits the dumbbell to the number asked", () => {
@@ -125,13 +125,21 @@ describe("S3 charts", () => {
   it("starts the pace line at today's actual and ends it at 100%", () => {
     expect(curve.points.find((p) => p.label === "W17")?.pace).toBeNull();
     expect(curve.points.find((p) => p.label === "W18")?.pace).toBeCloseTo(28.498, 3);
-    expect(curve.points[curve.points.length - 1]?.pace).toBeCloseTo(100, 2);
+    expect(curve.points.find((p) => p.label === "W26")?.pace).toBeCloseTo(100, 2);
   });
 
-  it("has a computed takeaway and a table of every week", () => {
-    expect(curve.takeaway).toContain("Week 18: -44,989 pts against plan");
+  it("draws the ATLAS-estimated forecast at the best 4-week pace to its finish in week 44", () => {
+    expect(curve.forecastPace).toBeCloseTo(2.784, 3);
+    expect(curve.points.find((p) => p.label === "W17")?.forecast).toBeNull();
+    expect(curve.points.find((p) => p.label === "W18")?.forecast).toBeCloseTo(28.498, 3);
+    expect(curve.points.find((p) => p.label === "W19")?.forecast).toBeCloseTo(31.282, 3);
+    expect(curve.points[curve.points.length - 1]).toMatchObject({ label: "W44", plan: null, forecast: 100 });
+  });
+
+  it("has a computed takeaway and a table of every week, to the forecast finish", () => {
+    expect(curve.takeaway).toContain("Week 18: -45 pts against plan");
     expect(curve.takeaway).toContain("8,9 points per week");
-    expect(curve.table.rows).toHaveLength(26);
+    expect(curve.table.rows).toHaveLength(44);
   });
 
   it("has no S-curve data for a pipeline project", () => {
@@ -158,7 +166,7 @@ describe("S3 charts", () => {
     expect(chart.points.reduce((a, p) => a + p.deficitPts, 0)).toBeCloseTo(44.989, 2);
     expect(chart.points.reduce((a, p) => a + p.share, 0)).toBeCloseTo(1, 3);
     expect(chart.takeaway).toContain("Panel SVGm explains");
-    expect(chart.takeaway).toContain("44,989 pts deficit");
+    expect(chart.takeaway).toContain("45 pts deficit");
   });
 });
 
@@ -179,7 +187,7 @@ describe("S5 charts", () => {
     const deltas = bridge.steps.filter((s) => s.kind === "delta");
     expect(deltas.reduce((a, s) => a + s.value, 0)).toBe(-239_270_000);
     expect(bridge.steps[bridge.steps.length - 2]?.end).toBe(last?.value);
-    expect(bridge.takeaway).toContain("margin of 22,26%");
+    expect(bridge.takeaway).toContain("margin of 22,3%");
   });
 
   it("has no bridge for a project without recognised revenue", () => {
@@ -191,7 +199,7 @@ describe("S6 chart", () => {
   it("splits inspections into done, due and overdue per contract", () => {
     const chart = getCoverageChart(epiData);
     expect(chart.points.map((p) => p.contractId).sort()).toEqual(["IKT0126", "PTP1025", "TPK0226"]);
-    expect(chart.takeaway).toContain("88,17% of required inspections are done");
+    expect(chart.takeaway).toContain("88,2% of required inspections are done");
     expect(chart.takeaway).toContain("IKT0126 is lowest");
     expect(chart.table.columns).toContain("Due (scheduled)");
   });

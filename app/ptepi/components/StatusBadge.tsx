@@ -1,3 +1,4 @@
+import { Tr } from "./Tr";
 import { CircleAlert, CircleCheck, Clock, TriangleAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -21,7 +22,7 @@ export function StatusBadge({ tone, label }: StatusBadgeProps) {
   return (
     <Badge variant={variant} className={`shrink-0 gap-1.5 whitespace-nowrap rounded-full px-2.5 ring-1 ring-inset ring-current/15 ${text}`}>
       <Icon size={16} aria-hidden />
-      {label}
+      <Tr>{label}</Tr>
     </Badge>
   );
 }

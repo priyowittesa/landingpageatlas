@@ -1,3 +1,4 @@
+import { Tr } from "./Tr";
 import { FlaskConical } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -13,7 +14,7 @@ export function SyntheticDataBadge({ real = false }: SyntheticDataBadgeProps) {
       className={`gap-1.5 rounded-full px-2.5 ring-1 ring-inset ring-current/15 ${real ? "text-green-800" : "text-amber-900"}`}
     >
       <FlaskConical size={16} aria-hidden />
-      {real ? "Actual data" : "Synthetic data"}
+      <Tr>{real ? "Actual data" : "Synthetic data"}</Tr>
     </Badge>
   );
 }

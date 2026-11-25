@@ -1,12 +1,13 @@
 "use client";
 
+import { Tr, useT } from "./Tr";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { TrendingDown } from "lucide-react";
 import Table from "@/components/Table";
 import { cn } from "@/lib/utils";
 import type { TableColumn, TableFilter } from "@/types/type";
-import { formatPoints } from "../format";
+import { formatDate, formatPoints } from "../format";
 import { HEALTH_LABELS, STATUS_GROUP_LABELS } from "../labels";
 import {
   filterPortfolioRows,
@@ -42,7 +43,7 @@ function isSortKey(key: string | null): key is PortfolioSortKey {
 const RAW_COLUMNS: TableColumn<PortfolioRow>[] = [
   {
     key: "project",
-    header: "Project",
+    header: <Tr>Project</Tr>,
     sortable: true,
     render: (row) => (
       <div className="min-w-32">
@@ -56,31 +57,44 @@ const RAW_COLUMNS: TableColumn<PortfolioRow>[] = [
       </div>
     )
   },
-  { key: "customer", header: "Customer", sortable: true },
+  { key: "customer", header: <Tr>Customer</Tr>, sortable: true },
   {
     key: "contractValue",
-    header: "Contract value",
+    header: <Tr>Final contract value</Tr>,
     sortable: true,
     className: "text-right whitespace-nowrap",
-    render: (row) => <RupiahText value={row.contractValue} />
+    render: (row) => (
+      <div className="leading-tight">
+        <RupiahText value={row.contractValue} className="font-semibold" />
+        <div className="text-xs text-muted-foreground">
+          <Tr>Original</Tr> <RupiahText value={row.originalValue} /> · <Tr>Addendum</Tr>{" "}
+          <RupiahText value={row.addendumValue} />
+        </div>
+        {row.timeAddendumTo && (
+          <div className="text-xs font-medium text-amber-900">
+            <Tr>Time addendum to</Tr> {formatDate(row.timeAddendumTo)}
+          </div>
+        )}
+      </div>
+    )
   },
   {
     key: "plan",
-    header: "Plan %",
+    header: <Tr>Plan %</Tr>,
     sortable: true,
     className: "text-right whitespace-nowrap",
     render: (row) => <PercentText fraction={row.plan} />
   },
   {
     key: "actual",
-    header: "Actual %",
+    header: <Tr>Actual %</Tr>,
     sortable: true,
     className: "text-right whitespace-nowrap",
     render: (row) => <PercentText fraction={row.actual} />
   },
   {
     key: "deviation",
-    header: "Deviation",
+    header: <Tr>Deviation</Tr>,
     sortable: true,
     className: "text-right whitespace-nowrap",
     render: (row) =>
@@ -101,21 +115,21 @@ const RAW_COLUMNS: TableColumn<PortfolioRow>[] = [
   },
   {
     key: "stage",
-    header: "Lifecycle stage",
+    header: <Tr>Lifecycle stage</Tr>,
     sortable: true,
     className: "min-w-24 max-w-28 whitespace-normal",
     render: (row) => row.stageLabel
   },
   {
     key: "exceptions",
-    header: "Exceptions",
+    header: <Tr>Exceptions</Tr>,
     sortable: true,
     className: "text-right",
     render: (row) => row.exceptionCount
   },
   {
     key: "health",
-    header: "Health",
+    header: <Tr>Health</Tr>,
     sortable: true,
     render: (row) => (
       <div className="min-w-36 space-y-1">
@@ -127,7 +141,7 @@ const RAW_COLUMNS: TableColumn<PortfolioRow>[] = [
           className="max-w-36 truncate text-xs text-muted-foreground"
           title={row.health.reason}
         >
-          {row.health.reason}
+          <Tr>{row.health.reason}</Tr>
         </div>
       </div>
     )
@@ -145,6 +159,7 @@ type PortfolioTableProps = {
 };
 
 export function PortfolioTable({ rows }: PortfolioTableProps) {
+  const t = useT();
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [customer, setCustomer] = useState(ALL);
@@ -177,7 +192,7 @@ export function PortfolioTable({ rows }: PortfolioTableProps) {
       value: customer,
       onChange: withReset(setCustomer),
       options: [
-        { label: "All customers", value: ALL },
+        { label: t("All customers"), value: ALL },
         ...getCustomerOptions(rows).map((name) => ({ label: name, value: name }))
       ]
     },
@@ -187,7 +202,7 @@ export function PortfolioTable({ rows }: PortfolioTableProps) {
       value: statusGroup,
       onChange: withReset(setStatusGroup),
       options: [
-        { label: "All status groups", value: ALL },
+        { label: t("All status groups"), value: ALL },
         ...Object.entries(STATUS_GROUP_LABELS).map(([value, label]) => ({ label, value }))
       ]
     },
@@ -197,7 +212,7 @@ export function PortfolioTable({ rows }: PortfolioTableProps) {
       value: health,
       onChange: withReset(setHealth),
       options: [
-        { label: "All health ratings", value: ALL },
+        { label: t("All health ratings"), value: ALL },
         ...Object.entries(HEALTH_LABELS).map(([value, label]) => ({ label, value }))
       ]
     }
@@ -221,7 +236,7 @@ export function PortfolioTable({ rows }: PortfolioTableProps) {
         setSearch(value);
         setPage(1);
       }}
-      searchPlaceholder="Search project, customer or description"
+      searchPlaceholder={t("Search project, customer or description")}
       filters={filters}
       onResetFilters={resetFilters}
       sortKey={sortKey}

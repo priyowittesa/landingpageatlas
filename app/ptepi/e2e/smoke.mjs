@@ -23,7 +23,12 @@ const MAIN_ROUTES = [
   "/ptepi/cost?project=PNP126",
   "/ptepi/ask-atlas",
   "/ptepi/actions",
-  "/ptepi/service-contracts"
+  "/ptepi/service-contracts",
+  "/ptepi/workflows",
+  "/ptepi/connections",
+  "/ptepi/knowledge-base",
+  "/ptepi/knowledge-source",
+  "/ptepi/audit-log"
 ];
 const ROUTES = [
   ...MAIN_ROUTES,
@@ -33,7 +38,7 @@ const ROUTES = [
   ])
 ];
 const WIDTHS = [768, 1024, 1440];
-const TAG = /Synthetic data|Actual data/;
+const TAG = /Synthetic data|Actual data|Data sintetis|Data aktual/;
 
 const failures = [];
 const notes = [];
@@ -55,6 +60,16 @@ async function launchBrowser() {
 
 const browser = await launchBrowser();
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+// The demo opens in Bahasa Indonesia; first check that, then run the checks in English.
+{
+  const fresh = await browser.newPage();
+  await fresh.goto(BASE + "/ptepi", { waitUntil: "networkidle" });
+  if ((await fresh.getByText("Kesehatan portofolio").count()) === 0) fail("/ptepi", "default language should be Bahasa Indonesia");
+  await fresh.close();
+}
+await context.addInitScript(() => {
+  window.localStorage.setItem("ptepi-language", JSON.stringify({ state: { language: "en" }, version: 0 }));
+});
 const page = await context.newPage();
 
 const consoleErrors = [];
@@ -113,7 +128,7 @@ async function visit(route) {
 // 1. Every route loads logged out, with the shell, a tag and no console error.
 for (const route of ROUTES) {
   if (!(await visit(route))) continue;
-  if ((await page.locator("aside nav a").count()) !== 8) fail(route, "sidebar should have 8 links");
+  if ((await page.locator("aside nav a").count()) !== 13) fail(route, "sidebar should have 13 links");
   if ((await page.locator("aside nav a[aria-current], aside nav a.bg-primary-700").count()) < 1) {
     fail(route, "no active sidebar item");
   }
@@ -252,12 +267,12 @@ async function flows() {
   await page.goto(`${BASE}/ptepi`, { waitUntil: "networkidle" });
   await page.getByRole("row", { name: /PNP126/ }).first().click();
   await page.waitForURL("**/ptepi/project/PNP126");
-  for (const text of ["73,487%", "28,498%", "-44,989 pts"]) {
+  for (const text of ["73,5%", "28,5%", "-45 pts"]) {
     if ((await page.getByText(text).count()) === 0) fail("S3 PNP126", `missing ${text}`);
   }
 
   // S3: the critical-item callout leads to the evidence gate.
-  await page.getByRole("link", { name: /Critical item/ }).click();
+  await page.getByRole("link", { name: /Open evidence gate/ }).click();
   await page.waitForURL("**/ptepi/project/PNP126/evidence");
 
   // S4: a blocked stage opens a dialog; the transformer PO issue is already tracked by EXC-03

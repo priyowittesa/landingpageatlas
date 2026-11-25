@@ -1,5 +1,6 @@
 "use client";
 
+import { Tr } from "./Tr";
 import { useMemo, useState } from "react";
 import { CalendarClock } from "lucide-react";
 import Table from "@/components/Table";
@@ -29,7 +30,7 @@ const GROUP_OPTIONS = [
 const SCOPE_COLUMNS: TableColumn<ServiceScopeRow>[] = [
   {
     key: "item",
-    header: "Scope item",
+    header: <Tr>Scope item</Tr>,
     render: (row) => (
       <div className="min-w-64">
         <div className="font-medium">
@@ -43,7 +44,7 @@ const SCOPE_COLUMNS: TableColumn<ServiceScopeRow>[] = [
   },
   {
     key: "contract",
-    header: "Contract",
+    header: <Tr>Contract</Tr>,
     render: (row) => (
       <div>
         <div className="font-semibold">{row.contractId}</div>
@@ -51,41 +52,41 @@ const SCOPE_COLUMNS: TableColumn<ServiceScopeRow>[] = [
       </div>
     )
   },
-  { key: "group", header: "Frequency", render: (row) => (row.group === "weekly" ? "Weekly" : "Monthly") },
+  { key: "group", header: <Tr>Frequency</Tr>, render: (row) => (row.group === "weekly" ? "Weekly" : "Monthly") },
   {
     key: "period",
-    header: "Period",
+    header: <Tr>Period</Tr>,
     className: "whitespace-nowrap",
     render: (row) => formatDateRange(row.periodStart, row.periodEnd)
   },
-  { key: "required", header: "Required", className: "text-right", render: (row) => row.required },
-  { key: "done", header: "Done", className: "text-right", render: (row) => row.done },
+  { key: "required", header: <Tr>Required</Tr>, className: "text-right", render: (row) => row.required },
+  { key: "done", header: <Tr>Done</Tr>, className: "text-right", render: (row) => row.done },
   {
     key: "overdue",
-    header: "Overdue",
+    header: <Tr>Overdue</Tr>,
     className: "text-right",
     render: (row) =>
       row.overdue > 0 ? <span className="font-semibold text-destructive">{row.overdue}</span> : 0
   },
-  { key: "upcoming", header: "Scheduled", className: "text-right", render: (row) => row.upcoming },
+  { key: "upcoming", header: <Tr>Scheduled</Tr>, className: "text-right", render: (row) => row.upcoming },
   {
     key: "compliance",
-    header: "Compliance",
+    header: <Tr>Compliance</Tr>,
     className: "text-right whitespace-nowrap",
     render: (row) => formatPercent(row.compliance, 2)
   },
   {
     key: "status",
-    header: "Status",
+    header: <Tr>Status</Tr>,
     render: (row) => <StatusBadge tone={STATUS[row.status].tone} label={STATUS[row.status].label} />
   },
 ];
 
 const INSPECTION_COLUMNS: TableColumn<ServiceInspectionRow>[] = [
-  { key: "inspectionDate", header: "Date", className: "whitespace-nowrap", render: (row) => formatDate(row.inspectionDate) },
+  { key: "inspectionDate", header: <Tr>Date</Tr>, className: "whitespace-nowrap", render: (row) => formatDate(row.inspectionDate) },
   {
     key: "contract",
-    header: "Contract",
+    header: <Tr>Contract</Tr>,
     render: (row) => (
       <div>
         <div className="font-semibold">{row.contractId}</div>
@@ -95,7 +96,7 @@ const INSPECTION_COLUMNS: TableColumn<ServiceInspectionRow>[] = [
   },
   {
     key: "item",
-    header: "Scope item",
+    header: <Tr>Scope item</Tr>,
     render: (row) => (
       <div className="min-w-56">
         <div className="font-medium">
@@ -107,7 +108,7 @@ const INSPECTION_COLUMNS: TableColumn<ServiceInspectionRow>[] = [
   },
   {
     key: "checks",
-    header: "Checks",
+    header: <Tr>Checks</Tr>,
     render: (row) =>
       row.timing === "scheduled" ? (
         <span className="text-muted-foreground">-</span>
@@ -117,10 +118,10 @@ const INSPECTION_COLUMNS: TableColumn<ServiceInspectionRow>[] = [
         <StatusBadge tone="bad" label={`Failed: ${row.failedChecks.join(", ")}`} />
       )
   },
-  { key: "measurement", header: "Measurement", className: "whitespace-nowrap", render: (row) => row.measurement ?? "-" },
+  { key: "measurement", header: <Tr>Measurement</Tr>, className: "whitespace-nowrap", render: (row) => row.measurement ?? "-" },
   {
     key: "finding",
-    header: "Finding and follow-up",
+    header: <Tr>Finding and follow-up</Tr>,
     render: (row) =>
       row.finding ? (
         <div className="min-w-56">
@@ -131,15 +132,15 @@ const INSPECTION_COLUMNS: TableColumn<ServiceInspectionRow>[] = [
         "-"
       )
   },
-  { key: "witness", header: "Witness", render: (row) => row.witness ?? "-" },
+  { key: "witness", header: <Tr>Witness</Tr>, render: (row) => row.witness ?? "-" },
   {
     key: "timing",
-    header: "Status",
+    header: <Tr>Status</Tr>,
     render: (row) =>
       row.timing === "scheduled" ? (
         <Badge variant="secondary" className="gap-1.5">
           <CalendarClock size={16} aria-hidden />
-          Scheduled
+          <Tr>Scheduled</Tr>
         </Badge>
       ) : (
         <StatusBadge tone="good" label="Done" />

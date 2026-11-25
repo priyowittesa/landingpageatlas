@@ -1,11 +1,13 @@
 "use client";
 
+import { Tr } from "./Tr";
 import { formatPercent, formatRupiahMillions } from "../format";
 import { useProjectStore } from "../store/project-store";
 import type { ProjectCostView } from "../types";
 import { CostBulletCard, MarginBridgeCard } from "./charts/ScreenCharts";
 import { CostLinesTable } from "./CostLinesTable";
 import { CostMarginCard } from "./CostMarginCard";
+import { ProcurementFlowCard } from "./ProcurementFlowCard";
 import { EmptyState } from "./EmptyState";
 import { SectionCard } from "./SectionCard";
 import { SyntheticDataBadge } from "./SyntheticDataBadge";
@@ -32,11 +34,11 @@ export function CostExplorer({ views }: CostExplorerProps) {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left">
-                <th scope="col" className="px-4 py-3 font-medium">Project</th>
-                <th scope="col" className="px-4 py-3 text-right font-medium">RAP budget</th>
-                <th scope="col" className="px-4 py-3 text-right font-medium">Realised cost</th>
-                <th scope="col" className="px-4 py-3 text-right font-medium">RAP remaining</th>
-                <th scope="col" className="px-4 py-3 text-right font-medium">Margin</th>
+                <th scope="col" className="px-4 py-3 font-medium"><Tr>Project</Tr></th>
+                <th scope="col" className="px-4 py-3 text-right font-medium"><Tr>RAP budget</Tr></th>
+                <th scope="col" className="px-4 py-3 text-right font-medium"><Tr>Realised cost</Tr></th>
+                <th scope="col" className="px-4 py-3 text-right font-medium"><Tr>RAP remaining</Tr></th>
+                <th scope="col" className="px-4 py-3 text-right font-medium"><Tr>Margin</Tr></th>
               </tr>
             </thead>
             <tbody>
@@ -97,6 +99,8 @@ export function CostExplorer({ views }: CostExplorerProps) {
             <CostLinesTable key={view.projectId} lines={view.lines} />
           </SectionCard>
           )}
+
+          {view.flow.lines.length > 0 && <ProcurementFlowCard projectId={view.projectId} flow={view.flow} />}
         </>
       ) : (
         <EmptyState title="Unknown project" />

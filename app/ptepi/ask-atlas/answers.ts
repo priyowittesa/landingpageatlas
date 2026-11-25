@@ -1,6 +1,7 @@
 import {
   formatDate,
   formatDecimal,
+  formatPctPoints,
   formatPercent,
   formatPoints,
   formatPointsUnsigned,
@@ -25,7 +26,8 @@ import {
   getServiceScopeRows,
   getServiceSummary,
   getSuggestedAction,
-  getWeekCard
+  getWeekCard,
+  getWeeklyReportDraft
 } from "../selectors";
 import type { EpiDemoData } from "../types";
 import type { NewEpiAction } from "../store/actions-store";
@@ -73,6 +75,7 @@ function noEvidence(id: QuestionId, data: EpiDemoData, what: string): Answer {
     points: ["No guess is made without evidence. Add the missing record and ask again."],
     sources: [{ kind: "table", label: "No matching record" }],
     actions: [],
+    refused: true,
     refreshedAt: data.asAt
   };
 }
@@ -87,29 +90,38 @@ function behind(data: EpiDemoData): Answer {
   const stages = getEvidenceStages(data, HERO_PROJECT_ID);
   const blockedStage = stages.find((stage) => stage.status === "blocked");
 
+// Sources of this answer, cited by number on each point: [1] progress table, [2] weekly report,
+  // [3] BA register, [4] early-warning rule, [5] evidence rule.
   const points: string[] = [];
+  const citations: number[][] = [];
+  const cite = (...sources: number[]) => citations.push(sources);
   if (recovery && recovery.flatWeeks >= 2) {
+    cite(1, 2);
     points.push(
       `No progress in ${formatWeekRange(recovery.flatFromWeek ?? week.weekNo, recovery.flatToWeek ?? week.weekNo)}: the cumulative actual stayed at ${formatPercent(week.actual)}.`
     );
   }
   if (critical) {
+    cite(1, 4);
     points.push(
       `${critical.label} is the critical item: ${formatPercent(critical.weight)} of the project weight, ${formatPointsUnsigned(critical.behindPts)} behind plan${critical.claimedStage ? `, claimed stage ${critical.claimedStage}` : ""}.`
     );
     const unit = stages[2]?.units.find((u) => u.unit === critical.label);
     if (unit?.issue) {
+      cite(3, 5);
       points.push(
         `${unit.unit}: ${unit.issue}. No FAT or delivery date is held in the data, so none is shown.`
       );
     }
   }
   if (recovery) {
+    cite(1);
     points.push(
-      `Finishing on time needs ${formatDecimal(recovery.requiredPerWeek, 1)} points per week for ${recovery.weeksRemaining} weeks (${formatDecimal(recovery.remainingPts, 2)} points); the best week so far was ${formatPoints(recovery.bestPerWeek)}.`
+      `Finishing on time needs ${formatDecimal(recovery.requiredPerWeek, 1)} points per week for ${recovery.weeksRemaining} weeks (${formatDecimal(recovery.remainingPts, 2)} points); the best 4-week rolling average is ${formatDecimal(recovery.bestFourWeekAvg, 1)} points per week (best single week ${formatPoints(recovery.bestPerWeek)}).`
     );
   }
   if (blockedStage) {
+    cite(3, 5);
     points.push(`${blockedStage.label}: ${blockedStage.gate.reason}.`);
   }
 
@@ -123,6 +135,7 @@ function behind(data: EpiDemoData): Answer {
       { label: "Deviation", value: formatPoints(week.deviationPts) }
     ],
     points,
+    citations,
     sources: [
       { kind: "table", label: `PROGRESS_WEEKLY, week ${week.weekNo}` },
       { kind: "document", label: "Weekly report, week 18" },
@@ -419,7 +432,80 @@ function rap(data: EpiDemoData): Answer {
   };
 }
 
+/** Weekly report week that follows the as-at week (walkthrough step 7: week 19). */
+function reportWeekOf(data: EpiDemoData): number {
+  return (getWeekCard(data, HERO_PROJECT_ID)?.weekNo ?? 0) + 1;
+}
+
+/** AS-03: the next weekly report in template T1, a draft for the Project Manager to approve. */
+function report(data: EpiDemoData): Answer {
+  const weekNo = reportWeekOf(data);
+  const draftReport = getWeeklyReportDraft(data, HERO_PROJECT_ID, weekNo);
+  if (!draftReport) {
+    return noEvidence("report", data, `there is no weekly schedule for ${HERO_PROJECT_ID} week ${weekNo}`);
+  }
+  const failed = draftReport.checks.filter((check) => !check.passed);
+  return {
+    questionId: "report",
+    question: questionLabel("report"),
+    conclusion: `Week ${weekNo} report for ${HERO_PROJECT_ID} is drafted in template T1 from the governed numbers. It is a draft: the Project Manager approves it before it goes to the customer.`,
+    figures: [
+      { label: "Actual to week " + (weekNo - 1), value: formatPctPoints(draftReport.total.lastWeek ?? 0) },
+      { label: `Plan week ${weekNo}`, value: formatPctPoints(draftReport.total.plan ?? 0) },
+      { label: "Checks passed", value: `${draftReport.checks.length - failed.length} of ${draftReport.checks.length}` }
+    ],
+    points: [
+      `Period ${formatDate(draftReport.periodStart)} to ${formatDate(draftReport.periodEnd)}; this week's progress is entered at the cut-off.`,
+      ...failed.map((check) => `Check not passed: ${check.label} (${check.detail}).`)
+    ],
+    citations: [[1], ...failed.map(() => [2])],
+    sources: [
+      { kind: "table", label: `PROGRESS_WEEKLY, weeks ${weekNo - 1} and ${weekNo}` },
+      { kind: "table", label: "BA_REGISTER" },
+      { kind: "document", label: "Template T1, from the week 18 report" }
+    ],
+    actions: [
+      draft(data, {
+        title: `Approve and submit the week ${weekNo} report (${HERO_PROJECT_ID})`,
+        projectId: HERO_PROJECT_ID,
+        ownerRole: "Project Manager",
+        source: `Nexa Intelligence: week ${weekNo} report draft`,
+        issue: "weekly-report",
+        dueInDays: 7
+      })
+    ],
+    report: draftReport,
+    refreshedAt: data.asAt
+  };
+}
+
+/** NF-04 refusal: the MOS BA is not in the register, so ATLAS gives no date rather than a guess. */
+function mos(data: EpiDemoData): Answer {
+  const entry = data.baRegister.find(
+    (ba) => ba.projectId === HERO_PROJECT_ID && ba.documentType === "BA Material On Site" && ba.status === "Signed"
+  );
+  if (!entry?.documentDate) {
+    return noEvidence(
+      "mos",
+      data,
+      `no BA Material On Site for ${HERO_PROJECT_ID} is in the BA register, so there is no signing date to report`
+    );
+  }
+  return {
+    questionId: "mos",
+    question: questionLabel("mos"),
+    conclusion: `The BA Material On Site for ${HERO_PROJECT_ID} was signed on ${formatDate(entry.documentDate)}.`,
+    figures: [],
+    points: [],
+    sources: [{ kind: "table", label: "BA_REGISTER" }],
+    actions: [],
+    refreshedAt: data.asAt
+  };
+}
+
 const BUILDERS: Record<QuestionId, (data: EpiDemoData) => Answer> = {
+  report,
+  mos,
   behind,
   billing,
   next,
@@ -441,6 +527,8 @@ export function buildAllAnswers(data: EpiDemoData): Record<QuestionId, Answer> {
     attention: attention(data),
     bast: bast(data),
     inspections: inspections(data),
-    rap: rap(data)
+    rap: rap(data),
+    report: report(data),
+    mos: mos(data)
   };
 }

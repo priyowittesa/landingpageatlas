@@ -7,9 +7,10 @@ const oneDecimalFormat = new Intl.NumberFormat("id-ID", {
   minimumFractionDigits: 1,
   maximumFractionDigits: 1
 });
+/** Every percentage and percentage point is displayed with one decimal (display only; data keeps full precision). */
 const percentFormat = new Intl.NumberFormat("id-ID", {
   minimumFractionDigits: 0,
-  maximumFractionDigits: 3
+  maximumFractionDigits: 1
 });
 
 /** 1234567 -> "Rp 1.234.567" */
@@ -25,23 +26,16 @@ export function formatRupiahMillions(value: number): string {
   return `${sign}Rp ${oneDecimalFormat.format(Math.abs(value) / 1_000_000)} m`;
 }
 
-const percentTwoFormat = new Intl.NumberFormat("id-ID", {
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 2
-});
-
-/** Fraction to percent: 0.73487 -> "73,487%", 1 -> "100%". Pass 2 for "22,26%". */
-const percentOneFormat = new Intl.NumberFormat("id-ID", {
-  minimumFractionDigits: 1,
-  maximumFractionDigits: 1
-});
-
-export function formatPercent(fraction: number, maxDigits: 1 | 2 | 3 = 3): string {
-  const format = maxDigits === 1 ? percentOneFormat : maxDigits === 2 ? percentTwoFormat : percentFormat;
-  return `${format.format(fraction * 100)}%`;
+/**
+ * Fraction to percent with one decimal: 0.73487 -> "73,5%", 0.2226 -> "22,3%".
+ * The digits argument is kept for older call sites; every percentage shows one decimal.
+ */
+export function formatPercent(fraction: number, digits?: 1 | 2 | 3): string;
+export function formatPercent(fraction: number): string {
+  return `${percentFormat.format(fraction * 100)}%`;
 }
 
-/** Value already in percentage points: 73.487 -> "73,487%". */
+/** Value already in percentage points: 73.487 -> "73,5%". */
 export function formatPctPoints(points: number): string {
   return `${percentFormat.format(points)}%`;
 }
@@ -54,12 +48,12 @@ export function formatDecimal(value: number, digits: number): string {
   }).format(value);
 }
 
-/** Percentage points without sign: 32.058 -> "32,058 pts". */
+/** Percentage points without sign: 32.058 -> "32,1 pts". */
 export function formatPointsUnsigned(points: number): string {
   return `${percentFormat.format(points)} pts`;
 }
 
-/** Percentage points with sign: -44.989 -> "-44,989 pts". */
+/** Percentage points with sign: -44.989 -> "-45,0 pts". */
 export function formatPoints(points: number): string {
   const sign = points < 0 ? "-" : points > 0 ? "+" : "";
   return `${sign}${percentFormat.format(Math.abs(points))} pts`;

@@ -262,3 +262,11 @@ export function toEnglishName(name: string | null): string | null {
   if (name === null) return null;
   return NAME_REPLACEMENTS.reduce((text, [from, to]) => text.split(from).join(to), name);
 }
+
+/**
+ * English display text back to the Indonesian source text, for the ID interface: the
+ * free-text fields and RAP categories show as written in the client workbook.
+ */
+export const INDONESIAN_SOURCE: Record<string, string> = Object.fromEntries(
+  [...Object.entries(EXACT), ...Object.entries(CATEGORIES)].map(([source, english]) => [english, source])
+);

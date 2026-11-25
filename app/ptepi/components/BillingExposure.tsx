@@ -2,6 +2,7 @@ import { Progress } from "@/components/ui/progress";
 import { formatPercent } from "../format";
 import type { PortfolioTotals } from "../types";
 import { MetricLabel } from "./MetricLabel";
+import { Tr } from "./Tr";
 import { RupiahText } from "./RupiahText";
 
 type BillingExposureProps = {
@@ -12,9 +13,9 @@ export function BillingExposure({ totals }: BillingExposureProps) {
   return (
     <div className="ptepi-card ptepi-card--lift p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-base font-semibold">Billed vs unbilled</h2>
+        <h2 className="text-base font-semibold"><Tr>Billed vs unbilled</Tr></h2>
         <span className="text-xs text-muted-foreground">
-          Tagihan issued against recognised revenue
+          <Tr>Tagihan issued against recognised revenue</Tr>
         </span>
       </div>
       <Progress
@@ -33,14 +34,14 @@ export function BillingExposure({ totals }: BillingExposureProps) {
         </div>
         <div>
           <dt className="text-muted-foreground">
-            Billed ({formatPercent(totals.billedShare, 2)})
+            <Tr>Billed</Tr> ({formatPercent(totals.billedShare, 2)})
           </dt>
           <dd className="font-semibold">
             <RupiahText value={totals.billed} millions />
           </dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Unbilled</dt>
+          <dt className="text-muted-foreground"><Tr>Unbilled</Tr></dt>
           <dd className="font-semibold">
             <RupiahText value={totals.unbilled} millions />
           </dd>

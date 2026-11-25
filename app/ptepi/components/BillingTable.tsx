@@ -1,9 +1,11 @@
 "use client";
 
+import { Tr, useT } from "./Tr";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Clock, FileSearch } from "lucide-react";
+import { AlertCircle, Clock, FileSearch } from "lucide-react";
+import { formatDate } from "../format";
 import Table from "@/components/Table";
 import { Badge } from "@/components/ui/badge";
 import type { TableColumn, TableFilter } from "@/types/type";
@@ -11,6 +13,7 @@ import { filterBillingRows, getCustomerOptions } from "../selectors";
 import type { BillingReadiness, BillingRow, DocStatus } from "../types";
 import { RupiahText } from "./RupiahText";
 import { StatusBadge } from "./StatusBadge";
+import { GlossaryTerm } from "./GlossaryTerm";
 
 const ALL = "all";
 const PAGE_SIZE_OPTIONS = [5, 10, 20];
@@ -50,7 +53,7 @@ function ReadinessBadge({ readiness }: { readiness: BillingReadiness }) {
   return (
     <Badge variant="secondary" className="gap-1.5">
       <Clock size={16} aria-hidden />
-      {READINESS_LABELS[readiness]}
+      <Tr>{READINESS_LABELS[readiness]}</Tr>
     </Badge>
   );
 }
@@ -58,7 +61,7 @@ function ReadinessBadge({ readiness }: { readiness: BillingReadiness }) {
 const COLUMNS: TableColumn<BillingRow>[] = [
   {
     key: "project",
-    header: "Project",
+    header: <Tr>Project</Tr>,
     render: (row) => (
       <div className="min-w-28">
         <div className="font-semibold">{row.projectId}</div>
@@ -68,10 +71,10 @@ const COLUMNS: TableColumn<BillingRow>[] = [
   },
   {
     key: "payment",
-    header: "Payment",
+    header: <Tr>Payment</Tr>,
     render: (row) => (
       <div className="min-w-44">
-        <div className="font-medium">{row.stageType}</div>
+        <div className="font-medium"><GlossaryTerm>{row.stageType}</GlossaryTerm></div>
         <div className="max-w-56 truncate text-xs text-muted-foreground" title={row.condition ?? ""}>
           {row.condition}
         </div>
@@ -80,18 +83,20 @@ const COLUMNS: TableColumn<BillingRow>[] = [
   },
   {
     key: "amount",
-    header: "Amount",
+    header: <Tr>Amount</Tr>,
     className: "text-right whitespace-nowrap",
     render: (row) => <RupiahText value={row.amount} />
   },
   {
     key: "document",
-    header: "Required BA",
+    header: <Tr>Required BA</Tr>,
     render: (row) => (
       <div className="min-w-40 space-y-1">
-        <div className="text-sm">{row.requiredDocument ?? "Progress condition"}</div>
+        <div className="text-sm">{row.requiredDocument ? <GlossaryTerm>{row.requiredDocument}</GlossaryTerm> : <Tr>Progress condition</Tr>}</div>
         {row.expectedSigner && (
-          <div className="text-xs text-muted-foreground">Signer: {row.expectedSigner}</div>
+          <div className="text-xs text-muted-foreground">
+            <Tr>Signer</Tr>: <Tr>{row.expectedSigner}</Tr>
+          </div>
         )}
         <DocStatusBadge status={row.docStatus} />
       </div>
@@ -99,12 +104,12 @@ const COLUMNS: TableColumn<BillingRow>[] = [
   },
   {
     key: "readiness",
-    header: "Readiness",
+    header: <Tr>Readiness</Tr>,
     render: (row) => (
       <div className="min-w-48 space-y-1">
         <ReadinessBadge readiness={row.readiness} />
         {row.reason && (
-          <div className="max-w-64 text-xs text-muted-foreground">{row.reason}</div>
+          <div className="max-w-64 text-xs text-muted-foreground"><Tr>{row.reason}</Tr></div>
         )}
         {row.readiness === "blocked" && (
           <Link
@@ -112,13 +117,53 @@ const COLUMNS: TableColumn<BillingRow>[] = [
             className="inline-flex items-center gap-1 text-xs font-medium text-primary-700 hover:underline"
           >
             <FileSearch size={16} aria-hidden />
-            View evidence
+            <Tr>View evidence</Tr>
           </Link>
         )}
       </div>
     )
   },
+  {
+    key: "invoice",
+    header: <Tr>Invoice and payment</Tr>,
+    render: (row) => <InvoiceCell row={row} />
+  }
 ];
+
+/** Invoice date, paid date and days outstanding (overdue in red with an icon and text). */
+function InvoiceCell({ row }: { row: BillingRow }) {
+  if (!row.invoiceDate) {
+    return (
+      <span className="text-xs text-gray-600">
+        <Tr>Not invoiced</Tr>
+      </span>
+    );
+  }
+  return (
+    <dl className="min-w-44 space-y-0.5 text-xs">
+      <div className="flex gap-1.5">
+        <dt className="text-muted-foreground"><Tr>Invoiced</Tr></dt>
+        <dd className="font-medium tabular-nums">{formatDate(row.invoiceDate)}</dd>
+      </div>
+      <div className="flex gap-1.5">
+        <dt className="text-muted-foreground"><Tr>Paid</Tr></dt>
+        <dd className="font-medium tabular-nums">{row.paidDate ? formatDate(row.paidDate) : <Tr>Not yet</Tr>}</dd>
+      </div>
+      {!row.paidDate && (
+        <div className="flex gap-1.5">
+          <dt className="text-muted-foreground"><Tr>Days outstanding</Tr></dt>
+          <dd className="font-semibold tabular-nums">{row.daysOutstanding}</dd>
+        </div>
+      )}
+      {!row.paidDate && row.daysOverdue > 0 && (
+        <dd className="inline-flex items-center gap-1 font-semibold text-red-700">
+          <AlertCircle size={12} aria-hidden />
+          {row.daysOverdue} <Tr>days overdue</Tr>
+        </dd>
+      )}
+    </dl>
+  );
+}
 
 type BillingTableProps = {
   rows: BillingRow[];
@@ -127,6 +172,7 @@ type BillingTableProps = {
 };
 
 export function BillingTable({ rows, showFilters = true }: BillingTableProps) {
+  const t = useT();
   const router = useRouter();
   const [customer, setCustomer] = useState(ALL);
   const [stageType, setStageType] = useState(ALL);
@@ -152,7 +198,7 @@ export function BillingTable({ rows, showFilters = true }: BillingTableProps) {
       value: customer,
       onChange: withReset(setCustomer),
       options: [
-        { label: "All customers", value: ALL },
+        { label: t("All customers"), value: ALL },
         ...getCustomerOptions(rows).map((name) => ({ label: name, value: name }))
       ]
     },
@@ -162,7 +208,7 @@ export function BillingTable({ rows, showFilters = true }: BillingTableProps) {
       value: stageType,
       onChange: withReset(setStageType),
       options: [
-        { label: "All payment stages", value: ALL },
+        { label: t("All payment stages"), value: ALL },
         ...STAGE_TYPE_OPTIONS.map((value) => ({ label: value, value }))
       ]
     },
@@ -172,7 +218,7 @@ export function BillingTable({ rows, showFilters = true }: BillingTableProps) {
       value: readiness,
       onChange: withReset(setReadiness),
       options: [
-        { label: "All readiness", value: ALL },
+        { label: t("All readiness"), value: ALL },
         ...Object.entries(READINESS_LABELS).map(([value, label]) => ({ label, value }))
       ]
     }

@@ -1,5 +1,7 @@
 "use client";
 
+import { Tr } from "../../components/Tr";
+import { useT } from "../../components/Tr";
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import {
   ArrowUp,
@@ -24,9 +26,9 @@ const NAME = "Nexa";
 
 /** Prompt categories; each asks its first question. Counts are the scripted questions in it. */
 const CATEGORIES: { label: string; ids: QuestionId[] }[] = [
-  { label: "Progress and schedule", ids: ["behind", "next"] },
+  { label: "Progress and schedule", ids: ["behind", "next", "report"] },
   { label: "Billing readiness", ids: ["billing"] },
-  { label: "Evidence and BAST", ids: ["bast"] },
+  { label: "Evidence and BAST", ids: ["bast", "mos"] },
   { label: "Portfolio health", ids: ["attention"] },
   { label: "Cost and RAP", ids: ["rap"] },
   { label: "Service contracts", ids: ["inspections"] }
@@ -92,6 +94,7 @@ const TONE_TEXT: Record<NexaContextKpi["tone"], string> = {
 };
 
 export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps) {
+  const t = useT();
   const [conversations, setConversations] = useState<Conversation[]>(INITIAL);
   const [activeId, setActiveId] = useState("c-new");
   const [tab, setTab] = useState<"history" | "saved">("history");
@@ -183,7 +186,7 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-medium text-muted-foreground">Capabilities</span>
+        <span className="text-xs font-medium text-muted-foreground">{t("Capabilities")}</span>
         {CATEGORIES.map((category) => (
           <button
             key={category.label}
@@ -191,14 +194,14 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
             onClick={() => ask(labelOf(category.ids[0] ?? "behind"))}
             className="rounded-full border border-primary-100 bg-background px-3 py-1 text-xs font-medium text-gray-800 transition-colors hover:border-primary-300 hover:bg-primary-50"
           >
-            {category.label}
+            {t(category.label)}
           </button>
         ))}
       </div>
 
       <div className="ptepi-card grid h-[calc(100vh-15rem)] min-h-[600px] grid-cols-1 overflow-hidden lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)_300px]">
         {/* Conversations */}
-        <aside aria-label="Conversations" className="hidden min-h-0 flex-col border-r border-primary-100/70 lg:flex">
+        <aside aria-label={t("Conversations")} className="hidden min-h-0 flex-col border-r border-primary-100/70 lg:flex">
           <div className="space-y-3 p-3">
             <button
               type="button"
@@ -206,19 +209,19 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
               className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary-700 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-800"
             >
               <Plus size={16} aria-hidden />
-              New conversation
+              {t("New conversation")}
             </button>
             <label className="relative block">
-              <span className="sr-only">Search conversations</span>
+              <span className="sr-only"><Tr>Search conversations</Tr></span>
               <Search size={14} aria-hidden className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search conversations..."
+                placeholder={t("Search conversations...")}
                 className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-8 pr-2 text-xs outline-none focus:border-primary-300 focus:ring-2 focus:ring-primary-100"
               />
             </label>
-            <div role="tablist" aria-label="Conversation list" className="grid grid-cols-2 rounded-lg bg-primary-50 p-1 text-xs font-medium">
+            <div role="tablist" aria-label={t("Conversation list")} className="grid grid-cols-2 rounded-lg bg-primary-50 p-1 text-xs font-medium">
               {(["history", "saved"] as const).map((key) => (
                 <button
                   key={key}
@@ -231,7 +234,7 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
                     tab === key ? "bg-white text-primary-800 shadow-sm" : "text-gray-600 hover:text-gray-900"
                   )}
                 >
-                  {key === "history" ? "History" : `Saved (${savedCount})`}
+                  {key === "history" ? t("History") : `${t("Saved")} (${savedCount})`}
                 </button>
               ))}
             </div>
@@ -243,7 +246,7 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
               if (items.length === 0) return null;
               return (
                 <div key={group}>
-                  <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-500">{group}</p>
+                  <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-500">{t(group)}</p>
                   <ul className="space-y-1">
                     {items.map((item) => {
                       const selected = item.id === active?.id;
@@ -262,7 +265,7 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
                           >
                             <MessageSquare size={14} aria-hidden className="mt-0.5 shrink-0 text-primary-600" />
                             <span className="min-w-0">
-                              <span className="block truncate text-xs font-semibold text-gray-900">{item.title}</span>
+                              <span className="block truncate text-xs font-semibold text-gray-900">{item.title === "New conversation" ? t(item.title) : item.title}</span>
                               <span className="block text-[10px] text-gray-600">
                                 {item.messages.length} {item.messages.length === 1 ? "message" : "messages"}
                               </span>
@@ -284,11 +287,11 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
                 </div>
               );
             })}
-            {listed.length === 0 && <p className="px-1 text-xs text-gray-500">No conversation matches.</p>}
+            {listed.length === 0 && <p className="px-1 text-xs text-gray-500"><Tr>No conversation matches.</Tr></p>}
 
             <div>
               <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-500">
-                Prompt categories
+                {t("Prompt categories")}
               </p>
               <ul>
                 {CATEGORIES.map((category) => (
@@ -298,7 +301,7 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
                       onClick={() => ask(labelOf(category.ids[0] ?? "behind"))}
                       className="flex w-full items-center justify-between rounded-md px-1.5 py-1.5 text-left text-xs text-gray-800 hover:bg-primary-50"
                     >
-                      {category.label}
+                      {t(category.label)}
                       <span className="rounded-full bg-primary-50 px-1.5 text-[10px] font-semibold tabular-nums text-primary-800">
                         {category.ids.length}
                       </span>
@@ -311,17 +314,16 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
         </aside>
 
         {/* Conversation */}
-        <section aria-label="Nexa conversation" className="flex min-h-0 min-w-0 flex-col bg-gray-50/40">
+        <section aria-label={t("Nexa conversation")} className="flex min-h-0 min-w-0 flex-col bg-gray-50/40">
           <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5" role="log" aria-live="polite">
             {messages.length === 0 ? (
               <div className="mx-auto max-w-3xl">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-800 text-white shadow-md shadow-primary-500/25">
                   <Sparkles size={18} aria-hidden />
                 </span>
-                <p className="mt-4 text-lg font-semibold text-gray-950">How can I help run the portfolio today?</p>
+                <p className="mt-4 text-lg font-semibold text-gray-950">{t("How can I help run the portfolio today?")}</p>
                 <p className="mt-1 text-sm text-gray-600">
-                  Ask about progress, billing, evidence, cost or service contracts. Answers cite their sources and
-                  the data date, in English or Bahasa Indonesia.
+                  {t("Ask about progress, billing, evidence, cost or service contracts. Answers cite their sources and the data date, in English or Bahasa Indonesia.")}
                 </p>
                 <ul className="mt-5 space-y-2">
                   {PROMPTS.map((prompt) => (
@@ -357,7 +359,7 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
                           <span className="text-gray-500">Data as at {asAtLabel}</span>
                           <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 font-medium text-amber-900 ring-1 ring-inset ring-amber-700/15">
                             <FlaskConical size={12} aria-hidden />
-                            Mock answer
+                            {t("Mock answer")}
                           </span>
                         </div>
                         {message.questionId !== null ? (
@@ -400,50 +402,50 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
                 onChange={(event) => setDraft(event.target.value)}
                 onKeyDown={onKeyDown}
                 rows={1}
-                placeholder="Ask me anything..."
-                aria-label="Your question"
+                placeholder={t("Ask me anything...")}
+                aria-label={t("Your question")}
                 className="max-h-32 min-h-9 flex-1 resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-gray-500"
               />
               <button
                 type="submit"
                 disabled={draft.trim() === ""}
-                aria-label="Send question"
+                aria-label={t("Send question")}
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-700 text-white transition-colors hover:bg-primary-800 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <ArrowUp size={16} aria-hidden />
               </button>
             </div>
             <p className="mt-1.5 text-[11px] text-gray-500">
-              Enter to send, Shift + Enter for a new line. Mock answers scripted by keyword; a person approves every action.
+              {t("Enter to send, Shift + Enter for a new line. Mock answers scripted by keyword; a person approves every action.")}
             </p>
           </form>
         </section>
 
         {/* Context */}
-        <aside aria-label="Context panel" className="hidden min-h-0 overflow-y-auto border-l border-primary-100/70 p-4 xl:block">
+        <aside aria-label={t("Context panel")} className="hidden min-h-0 overflow-y-auto border-l border-primary-100/70 p-4 xl:block">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-gray-900">Context panel</p>
+            <p className="text-sm font-semibold text-gray-900">{t("Context panel")}</p>
             <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-700">
               <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-green-600" />
-              As at {asAtLabel}
+              {t("As at")} {asAtLabel}
             </span>
           </div>
-          <p className="text-[11px] text-gray-500">All projects, governed demo data</p>
+          <p className="text-[11px] text-gray-500">{t("All projects, governed demo data")}</p>
 
-          <p className="mt-4 text-[10px] font-semibold uppercase tracking-wide text-gray-500">Portfolio KPIs</p>
+          <p className="mt-4 text-[10px] font-semibold uppercase tracking-wide text-gray-500">{t("Portfolio KPIs")}</p>
           <ul className="mt-2 space-y-2">
             {context.map((kpi) => (
               <li key={kpi.label} className="rounded-lg border border-gray-200 bg-white p-3">
                 <div className="flex items-baseline justify-between gap-2">
-                  <p className="text-[11px] text-gray-600">{kpi.label}</p>
-                  <p className={cn("text-[10px] font-semibold", TONE_TEXT[kpi.tone])}>{kpi.note}</p>
+                  <p className="text-[11px] text-gray-600">{t(kpi.label)}</p>
+                  <p className={cn("text-[10px] font-semibold", TONE_TEXT[kpi.tone])}>{t(kpi.note)}</p>
                 </div>
                 <p className="mt-0.5 text-base font-bold tabular-nums text-gray-950">{kpi.value}</p>
               </li>
             ))}
           </ul>
 
-          <p className="mt-5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">Answer basis</p>
+          <p className="mt-5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">{t("Answer basis")}</p>
           {lastAnswer ? (
             <div className="mt-2 space-y-1 rounded-lg border border-gray-200 bg-white p-3">
               <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-900">
@@ -458,14 +460,14 @@ export function AskAtlasChat({ answers, context, asAtLabel }: AskAtlasChatProps)
                   })
                   .join(", ")}
               </p>
-              <p className="text-[11px] text-gray-500">No AI model is called; numbers come from the governed data.</p>
+              <p className="text-[11px] text-gray-500"><Tr>No AI model is called; numbers come from the governed data.</Tr></p>
             </div>
           ) : (
-            <p className="mt-2 text-xs text-gray-500">Ask a question to see what the answer is based on.</p>
+            <p className="mt-2 text-xs text-gray-500">{t("Ask a question to see what the answer is based on.")}</p>
           )}
 
           <p className="mt-5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">
-            Source references ({lastAnswer?.sources.length ?? 0})
+            {t("Source references")} ({lastAnswer?.sources.length ?? 0})
           </p>
           {lastAnswer && (
             <ol className="mt-2 space-y-1.5">

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "./Tr";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -88,6 +89,7 @@ export function ProjectFilter({ options, allowAll = false }: ProjectFilterProps)
   const storeProjectId = useProjectStore((state) => state.projectId);
   const setProject = useProjectStore((state) => state.setProject);
   const [open, setOpen] = useState(false);
+  const t = useT();
 
   const projectId = getProjectIdFromPath(pathname) ?? storeProjectId;
   const selected = options.find((option) => option.id === projectId) ?? null;
@@ -122,7 +124,7 @@ export function ProjectFilter({ options, allowAll = false }: ProjectFilterProps)
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label="Filter by project"
+          aria-label={t("Filter by project")}
           className="group flex h-11 min-w-56 cursor-pointer items-center gap-3 rounded-xl border border-primary-200 bg-gradient-to-b from-white to-primary-50/70 py-1.5 pl-1.5 pr-3 text-left shadow-sm transition-all hover:border-primary-300 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary-300 data-[state=open]:border-primary-400 data-[state=open]:ring-2 data-[state=open]:ring-primary-100"
         >
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-sm">
@@ -130,10 +132,10 @@ export function ProjectFilter({ options, allowAll = false }: ProjectFilterProps)
           </span>
           <span className="min-w-0 flex-1 leading-tight">
             <span className="block text-[10px] font-medium uppercase tracking-wide text-primary-800">
-              {selectedGroup ? `Project · ${selectedGroup.label}` : "Project"}
+              {selectedGroup ? `${t("Project")} · ${t(selectedGroup.label)}` : t("Project")}
             </span>
             <span className="block truncate text-sm font-semibold text-gray-900">
-              {selected ? `${selected.id} · ${selected.customer}` : "All projects"}
+              {selected ? `${selected.id} · ${selected.customer}` : t("All projects")}
             </span>
           </span>
           <ChevronsUpDown size={16} aria-hidden className="shrink-0 text-primary-700" />
@@ -141,16 +143,16 @@ export function ProjectFilter({ options, allowAll = false }: ProjectFilterProps)
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[22rem] overflow-hidden rounded-xl border-primary-100 p-0 shadow-xl">
         <Command>
-          <CommandInput placeholder="Search project or customer" />
+          <CommandInput placeholder={t("Search project or customer")} />
           <CommandList className="max-h-80">
-            <CommandEmpty>No project found.</CommandEmpty>
+            <CommandEmpty>{t("No project found.")}</CommandEmpty>
             {allowAll && (
               <CommandGroup>
                 <CommandItem value="all projects" onSelect={() => choose(null)} className="gap-3 py-2">
                   <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 text-primary-700">
                     <Layers size={16} aria-hidden />
                   </span>
-                  <span className="flex-1 text-sm font-medium">All projects</span>
+                  <span className="flex-1 text-sm font-medium">{t("All projects")}</span>
                   {selected === null && <Check size={16} aria-hidden className="text-primary-700" />}
                 </CommandItem>
               </CommandGroup>
@@ -164,7 +166,7 @@ export function ProjectFilter({ options, allowAll = false }: ProjectFilterProps)
                   heading={
                     <span className="flex items-center gap-1.5">
                       <group.Icon size={12} aria-hidden className={group.headingClassName} />
-                      {group.label}
+                      {t(group.label)}
                       <span className="ml-auto rounded-full bg-gray-100 px-1.5 text-[10px] font-semibold tabular-nums text-gray-700">
                         {items.length}
                       </span>
@@ -204,7 +206,7 @@ export function ProjectFilter({ options, allowAll = false }: ProjectFilterProps)
                             )}
                           </span>
                           <span className="block truncate text-xs text-muted-foreground">
-                            {option.customer} · {option.stageLabel}
+                            {option.customer} · {t(option.stageLabel)}
                           </span>
                         </span>
                         <span className="shrink-0 text-xs tabular-nums text-gray-700">

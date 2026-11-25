@@ -1,3 +1,4 @@
+import { Tr } from "./Tr";
 import { Inbox } from "lucide-react";
 
 type EmptyStateProps = {
@@ -9,9 +10,9 @@ export function EmptyState({ title, description }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border p-10 text-center">
       <Inbox size={16} className="text-muted-foreground" aria-hidden />
-      <p className="text-sm font-medium">{title}</p>
+      <p className="text-sm font-medium"><Tr>{title}</Tr></p>
       {description && (
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <p className="text-sm text-muted-foreground"><Tr>{description}</Tr></p>
       )}
     </div>
   );

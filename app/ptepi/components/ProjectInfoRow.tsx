@@ -1,4 +1,5 @@
 import { formatDate, formatDateRange } from "../format";
+import { Tr } from "./Tr";
 import { HEALTH_LABELS } from "../labels";
 import type { ProjectInfo } from "../types";
 import { RupiahText } from "./RupiahText";
@@ -15,12 +16,12 @@ export function ProjectInfoRow({ info }: ProjectInfoRowProps) {
   return (
     <dl className="grid grid-cols-1 gap-5 ptepi-card p-6 sm:grid-cols-2 xl:grid-cols-5">
       <div>
-        <dt className="text-sm text-muted-foreground">Customer</dt>
+        <dt className="text-sm text-muted-foreground"><Tr>Customer</Tr></dt>
         <dd className="font-semibold">{info.customer}</dd>
         <dd className="text-xs text-muted-foreground">{info.customerFullName}</dd>
       </div>
       <div>
-        <dt className="text-sm text-muted-foreground">Contract no.</dt>
+        <dt className="text-sm text-muted-foreground"><Tr>Contract no.</Tr></dt>
         {contractNumbers.map((number) => (
           <dd key={number} className="break-all text-sm font-medium">
             {number}
@@ -28,7 +29,7 @@ export function ProjectInfoRow({ info }: ProjectInfoRowProps) {
         ))}
       </div>
       <div>
-        <dt className="text-sm text-muted-foreground">Contract value</dt>
+        <dt className="text-sm text-muted-foreground"><Tr>Contract value</Tr></dt>
         <dd className="font-semibold">
           <RupiahText value={info.contractValue} />
         </dd>
@@ -37,10 +38,10 @@ export function ProjectInfoRow({ info }: ProjectInfoRowProps) {
         </dd>
       </div>
       <div>
-        <dt className="text-sm text-muted-foreground">Dates</dt>
+        <dt className="text-sm text-muted-foreground"><Tr>Dates</Tr></dt>
         <dd className="text-sm font-medium">
           {info.startDate || info.endDate
-            ? formatDateRange(info.startDate, info.endDate)
+            ? <Tr>{formatDateRange(info.startDate, info.endDate)}</Tr>
             : "Set when the contract is signed"}
         </dd>
         {info.endDateAddendum && (
@@ -50,14 +51,14 @@ export function ProjectInfoRow({ info }: ProjectInfoRowProps) {
         )}
       </div>
       <div>
-        <dt className="text-sm text-muted-foreground">Lifecycle stage</dt>
-        <dd className="font-semibold">{info.stageLabel}</dd>
+        <dt className="text-sm text-muted-foreground"><Tr>Lifecycle stage</Tr></dt>
+        <dd className="font-semibold"><Tr>{info.stageLabel}</Tr></dd>
         <dd className="mt-1 space-y-1">
           <StatusBadge
             tone={HEALTH_TONE[info.health.rating]}
             label={HEALTH_LABELS[info.health.rating]}
           />
-          <div className="text-xs text-muted-foreground">{info.health.reason}</div>
+          <div className="text-xs text-muted-foreground"><Tr>{info.health.reason}</Tr></div>
         </dd>
       </div>
     </dl>

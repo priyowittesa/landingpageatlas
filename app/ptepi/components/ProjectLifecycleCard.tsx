@@ -1,3 +1,4 @@
+import { Tr } from "./Tr";
 import type { ReactNode } from "react";
 import { ArrowRight, Check, Flag } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -49,7 +50,7 @@ export function ProjectLifecycleCard({ lifecycle, className, action }: ProjectLi
                 step.state === "current" ? "font-semibold text-gray-950" : "text-gray-600"
               )}
             >
-              {step.label}
+              <Tr>{step.label}</Tr>
               <span className="sr-only">
                 {step.state === "done" ? " (done)" : step.state === "current" ? " (current)" : ""}
               </span>
@@ -64,14 +65,14 @@ export function ProjectLifecycleCard({ lifecycle, className, action }: ProjectLi
             <>
               <ArrowRight size={16} className="mt-0.5 shrink-0 text-primary-700" aria-hidden />
               <span>
-                <span className="font-semibold">Next move: </span>
-                {lifecycle.nextMove}
+                <span className="font-semibold"><Tr>Next move</Tr>: </span>
+                <Tr>{lifecycle.nextMove}</Tr>
               </span>
             </>
           ) : (
             <>
               <Flag size={16} className="mt-0.5 shrink-0 text-green-700" aria-hidden />
-              <span>Project closed. Every stage is complete.</span>
+              <span><Tr>Project closed. Every stage is complete.</Tr></span>
             </>
           )}
         </p>
@@ -79,7 +80,7 @@ export function ProjectLifecycleCard({ lifecycle, className, action }: ProjectLi
           <dl className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
             {lifecycle.dates.map((date) => (
               <div key={date.label}>
-                <dt className="text-xs text-muted-foreground">{date.label}</dt>
+                <dt className="text-xs text-muted-foreground"><Tr>{date.label}</Tr></dt>
                 <dd className="font-medium tabular-nums">{date.value}</dd>
               </div>
             ))}

@@ -1,3 +1,4 @@
+import { Tr } from "./Tr";
 import { SEVERITY_LABELS } from "../labels";
 import type { ProjectExceptionItem } from "../types";
 import { EmptyState } from "./EmptyState";
@@ -20,7 +21,7 @@ export function ProjectExceptionsList({ items }: ProjectExceptionsListProps) {
             tone={SEVERITY_TONE[item.severity]}
             label={SEVERITY_LABELS[item.severity]}
           />
-          <span className="text-sm">{item.label}</span>
+          <span className="text-sm"><Tr>{item.label}</Tr></span>
         </li>
       ))}
     </ul>

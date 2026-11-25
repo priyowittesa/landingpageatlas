@@ -57,10 +57,10 @@ describe("metric dictionary", () => {
 describe("PNP126 week 18 through the owners of the metrics", () => {
   const progress = selectors.getProjectProgress(epiData, "PNP126");
 
-  it("plan 73,487%, actual 28,498%, deviation -44,989", () => {
-    expect(formatPercent(progress.plan ?? 0)).toBe("73,487%");
-    expect(formatPercent(progress.actual ?? 0)).toBe("28,498%");
-    expect(formatPoints(progress.deviationPts ?? 0)).toBe("-44,989 pts");
+  it("plan 73,5%, actual 28,5%, deviation -44,989", () => {
+    expect(formatPercent(progress.plan ?? 0)).toBe("73,5%");
+    expect(formatPercent(progress.actual ?? 0)).toBe("28,5%");
+    expect(formatPoints(progress.deviationPts ?? 0)).toBe("-45 pts");
   });
 
   it("deviation is (actual - plan) x 100 as the dictionary says", () => {
@@ -68,11 +68,11 @@ describe("PNP126 week 18 through the owners of the metrics", () => {
     expect(((progress.actual ?? 0) - (progress.plan ?? 0)) * 100).toBeCloseTo(progress.deviationPts ?? 0, 3);
   });
 
-  it("cost Rp 239.270.000 and margin 22,26% follow the margin formula", () => {
+  it("cost Rp 239.270.000 and margin 22,3% follow the margin formula", () => {
     const money = selectors.getCostMargin(epiData, "PNP126");
     expect(money.cost).toBe(239_270_000);
     expect((money.recognisedRevenue - money.cost) / money.recognisedRevenue).toBeCloseTo(money.margin ?? 0, 10);
-    expect(formatPercent(money.margin ?? 0, 2)).toBe("22,26%");
+    expect(formatPercent(money.margin ?? 0, 2)).toBe("22,3%");
   });
 
   it("required pace is the points left over the weeks left", () => {

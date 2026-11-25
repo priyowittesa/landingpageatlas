@@ -1,5 +1,6 @@
 "use client";
 
+import { Tr } from "./Tr";
 import Table from "@/components/Table";
 import type { TableColumn } from "@/types/type";
 import { STAGE_STATUS_LABELS } from "../labels";
@@ -14,13 +15,13 @@ const STATUS = STAGE_STATUS_LABELS;
 const COLUMNS: TableColumn<EarningStageRow>[] = [
   {
     key: "stage",
-    header: "Stage",
+    header: <Tr>Stage</Tr>,
     render: (row) => (
       <div className="min-w-40">
         <div className="font-semibold">
-          {row.stageNo}. {row.label}
+          {row.stageNo}. <Tr>{row.label}</Tr>
         </div>
-        <div className="text-xs text-muted-foreground">{row.requiredDocument}</div>
+        <div className="text-xs text-muted-foreground"><Tr>{row.requiredDocument}</Tr></div>
         <div className="mt-1">
           <SyntheticDataBadge real={row.dataOrigin === "real"} />
         </div>
@@ -29,37 +30,37 @@ const COLUMNS: TableColumn<EarningStageRow>[] = [
   },
   {
     key: "weight",
-    header: "Weight",
+    header: <Tr>Weight</Tr>,
     className: "text-right",
     render: (row) => <PercentText fraction={row.weight} />
   },
   {
     key: "stageValue",
-    header: "Stage value",
+    header: <Tr>Stage value</Tr>,
     className: "text-right whitespace-nowrap",
     render: (row) => <RupiahText value={row.stageValue} />
   },
   {
     key: "earnedValue",
-    header: "Earned",
+    header: <Tr>Earned</Tr>,
     className: "text-right whitespace-nowrap",
     render: (row) => <RupiahText value={row.earnedValue} />
   },
   {
     key: "blockedValue",
-    header: "Blocked",
+    header: <Tr>Blocked</Tr>,
     className: "text-right whitespace-nowrap",
     render: (row) => <RupiahText value={row.blockedValue} />
   },
   {
     key: "signed",
-    header: "Signed BA",
+    header: <Tr>Signed BA</Tr>,
     className: "text-right whitespace-nowrap",
     render: (row) => `${row.signedCount} of ${row.requiredCount}`
   },
   {
     key: "status",
-    header: "Status",
+    header: <Tr>Status</Tr>,
     render: (row) => (
       <StatusBadge tone={STATUS[row.status].tone} label={STATUS[row.status].label} />
     )
