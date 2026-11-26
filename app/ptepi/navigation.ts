@@ -53,7 +53,12 @@ export const PTEPI_NAV: NavSection[] = [
           { title: "Procurement and Cost", href: "/ptepi/cost", icon: Wrench }
         ]
       },
-      { title: "Service Contracts", href: "/ptepi/service-contracts", icon: ClipboardCheckIcon },
+      { title: "Service Contracts", href: "/ptepi/service-contracts", icon: ClipboardCheckIcon }
+    ]
+  },
+  {
+    title: "Others",
+    items: [
       { title: "Nexa Intelligence", href: "/ptepi/ask-atlas", icon: BrainCircuit },
       {
         title: "Workflow & Connections",
@@ -65,12 +70,9 @@ export const PTEPI_NAV: NavSection[] = [
           { title: "Master Connection", href: "/ptepi/connections", icon: Boxes },
           { title: "Workflow Studio", href: "/ptepi/workflows", icon: Workflow }
         ]
-      }
+      },
+      { title: "Audit Log", href: "/ptepi/audit-log", icon: History }
     ]
-  },
-  {
-    title: "Others",
-    items: [{ title: "Audit Log", href: "/ptepi/audit-log", icon: History }]
   }
 ];
 

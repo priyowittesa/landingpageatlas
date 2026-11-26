@@ -409,6 +409,7 @@ export const ID_GENERATED: Record<string, string> = {
   "messages": "pesan",
   "cited sources": "sumber yang dikutip",
   "Unsave": "Batal simpan",
+  "On plan": "Sesuai rencana",
   "Pick a due-date group, then start or close an action, or open the screen it comes from. Faded buttons belong to another role.": "Pilih kelompok jatuh tempo, lalu mulai atau tutup tindakan, atau buka layar asalnya. Tombol pudar milik peran lain.",
   "Pick a role to see its next actions and act on them. Faded buttons belong to another role.": "Pilih peran untuk melihat tindakan berikutnya dan menanganinya. Tombol pudar milik peran lain.",
   "See all in the table below to assign or update": "Lihat semua di tabel di bawah untuk menugaskan atau memperbarui",

@@ -14,6 +14,37 @@
   background: var(--ptepi-canvas);
 }
 
+/*
+ * Screen header (title, project filter, data tags): slides away while scrolling down and comes
+ * back under the top bar on scroll up. Wider screens only; on a phone it just scrolls with the page.
+ */
+.ptepi-screen-header {
+  background: var(--ptepi-canvas);
+  border-bottom: 1px solid color-mix(in oklab, var(--color-primary-100) 70%, var(--border));
+}
+
+@media (min-width: 768px) and (min-height: 600px) {
+  .ptepi-screen-header {
+    position: sticky;
+    top: 3.5rem; /* height of the top bar */
+    z-index: 20;
+    transition: transform 220ms ease, opacity 220ms ease;
+  }
+
+  /* Faded as well as moved, because the top bar above it is translucent. */
+  .ptepi-screen-header[data-hidden="true"]:not(:focus-within) {
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ptepi-screen-header {
+    transition: none !important;
+  }
+}
+
 /* Cards: layered shadow and a soft border, one radius everywhere. */
 .ptepi-card {
   background: var(--background);
@@ -68,7 +99,7 @@
   outline-offset: 2px;
 }
 
-/* Cards in a screen rise in one after another. */
+/* Cards in a screen rise in one after another. Not the header: a filled animation would override its hide on scroll. */
 @keyframes ptepi-rise {
   from {
     opacity: 0;
@@ -80,7 +111,7 @@
   }
 }
 
-.ptepi-app main > div > * {
+.ptepi-app main > div > :not(.ptepi-screen-header) {
   animation: ptepi-rise 480ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 .ptepi-app main > div > *:nth-child(2) { animation-delay: 60ms; }
@@ -96,7 +127,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ptepi-app main > div > * {
+  .ptepi-app main > div > :not(.ptepi-screen-header) {
     animation: none;
   }
   .ptepi-card,

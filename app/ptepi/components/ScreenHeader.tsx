@@ -2,6 +2,7 @@ import { Tr } from "./Tr";
 import type { ReactNode } from "react";
 import { type LucideIcon } from "lucide-react";
 import { DemoSnapshotPill } from "./DemoSnapshotPill";
+import { RevealHeader } from "./RevealHeader";
 import { SyntheticDataBadge } from "./SyntheticDataBadge";
 
 export type DataTag = "synthetic" | "real";
@@ -20,7 +21,8 @@ type ScreenHeaderProps = {
 /** Page title with the data tags and the demo snapshot date as pills. The page's only h1. */
 export function ScreenHeader({ title, subtitle, actions, icon: Icon, dataTags = ["synthetic"] }: ScreenHeaderProps) {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-4">
+    // Pulled out to the edges of <main>, so content scrolls cleanly under the whole bar.
+    <RevealHeader className="-mx-6 -mt-6 flex flex-wrap items-end justify-between gap-x-4 gap-y-2 px-6 py-3 lg:-mx-15 lg:px-15">
       <div className="flex min-w-0 items-start gap-3">
         {Icon && (
           <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-800 text-white shadow-md shadow-primary-500/25">
@@ -39,6 +41,6 @@ export function ScreenHeader({ title, subtitle, actions, icon: Icon, dataTags = 
         ))}
         <DemoSnapshotPill />
       </div>
-    </header>
+    </RevealHeader>
   );
 }
