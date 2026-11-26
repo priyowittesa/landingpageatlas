@@ -27,7 +27,7 @@ export type DemoRole = {
   can: Record<ActionPermission, boolean>;
 };
 
-export const DEFAULT_DEMO_ROLE: DemoRoleId = "pm";
+export const DEFAULT_DEMO_ROLE: DemoRoleId = "director";
 
 /** Demo only: switches what the screen enables. There is no real authentication. */
 export const DEMO_ROLES: DemoRole[] = [

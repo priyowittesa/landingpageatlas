@@ -318,8 +318,11 @@ async function flows() {
   await page.getByRole("tab", { name: /Action tracker/ }).click();
   if ((await page.getByText("EXC-01").count()) === 0) fail("S8", "seeded EXC-01 missing");
 
-  // S8: role switcher disables Close for a Project Manager on a Finance action, Director can close.
+  // S8: Director (the default) can close; switching to Project Manager disables Close.
   const closeButtons = page.getByRole("button", { name: "Close", exact: true });
+  if ((await closeButtons.first().isEnabled()) !== true) fail("S8", "Director should be the default and able to close");
+  await page.getByRole("combobox", { name: "Demo role" }).click();
+  await page.getByRole("option", { name: "Project Manager" }).click();
   if ((await closeButtons.first().isEnabled()) !== false) {
     fail("S8", "Project Manager should not be able to close");
   }
