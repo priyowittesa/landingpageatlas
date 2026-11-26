@@ -133,5 +133,13 @@ html:has(.ptepi-app) {
 .ptepi-app svg[width="18"] { width: 1.125rem; height: 1.125rem; }
 .ptepi-app svg[width="20"] { width: 1.25rem; height: 1.25rem; }
 .ptepi-app label { font-size: 0.875rem; }
+/*
+ * Reading floor: the smallest sizes were too small to read comfortably on a normal laptop, so
+ * every small step moves up one notch. Body copy (text-sm) rises too, so the order of sizes stays.
+ */
+.ptepi-app .text-xs { font-size: 0.8125rem; line-height: 1.25rem; }
+.ptepi-app .text-\[0\.75rem\] { font-size: 0.8125rem; }
+.ptepi-app .text-\[0\.6875rem\] { font-size: 0.75rem; }
+.ptepi-app .text-sm { font-size: 0.9375rem; line-height: 1.45rem; }
 .ptepi-app svg[width="10"] { width: 0.625rem; height: 0.625rem; }
 .ptepi-app svg[width="11"] { width: 0.6875rem; height: 0.6875rem; }

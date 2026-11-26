@@ -93,6 +93,7 @@ export function PtepiNavItem({ node, activeHref, depth = 0 }: PtepiNavItemProps)
         onClick={() => setSidebarOpen(false)}
         aria-label={node.title}
         title={node.title}
+        aria-current={isActive ? "page" : undefined}
         className={cn(
           "flex items-center gap-3 rounded-md px-3 py-2 text-white transition-colors",
           "text-sm",

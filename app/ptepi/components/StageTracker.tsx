@@ -48,7 +48,7 @@ export function StageTracker({ stages, suggestions }: StageTrackerProps) {
 
   return (
     <>
-      <ol className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <ol className="grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-4">
         {stages.map((stage) => (
           <li key={stage.stageNo} className="flex">
             <button
@@ -86,23 +86,23 @@ export function StageTracker({ stages, suggestions }: StageTrackerProps) {
                 </div>
               </div>
 
-              <dl className="space-y-2 text-xs">
+              <dl className="space-y-2.5 text-sm">
                 <div>
-                  <dt className="text-muted-foreground"><Tr>Required document</Tr></dt>
-                  <dd className="font-medium"><Tr>{stage.requiredDocument}</Tr></dd>
+                  <dt className="text-xs text-muted-foreground"><Tr>Required document</Tr></dt>
+                  <dd className="line-clamp-2 font-medium"><Tr>{stage.requiredDocument}</Tr></dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground"><Tr>Signer</Tr></dt>
+                  <dt className="text-xs text-muted-foreground"><Tr>Signer</Tr></dt>
                   <dd className="font-medium">{stage.expectedSigner}</dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground"><Tr>Signed date</Tr></dt>
+                  <dt className="text-xs text-muted-foreground"><Tr>Signed date</Tr></dt>
                   <dd className="font-medium">{formatDate(stage.signedDate)}</dd>
                 </div>
               </dl>
 
               <div className="mt-auto space-y-1 border-t border-border pt-3">
-                <p className="line-clamp-3 text-xs text-muted-foreground"><Tr>{stage.gate.reason}</Tr></p>
+                <p className="line-clamp-2 text-sm text-gray-700"><Tr>{stage.gate.reason}</Tr></p>
               </div>
             </button>
           </li>
