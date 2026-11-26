@@ -65,9 +65,12 @@ export const PTEPI_NAV: NavSection[] = [
           { title: "Master Connection", href: "/ptepi/connections", icon: Boxes },
           { title: "Workflow Studio", href: "/ptepi/workflows", icon: Workflow }
         ]
-      },
-      { title: "Audit Log", href: "/ptepi/audit-log", icon: History }
+      }
     ]
+  },
+  {
+    title: "Others",
+    items: [{ title: "Audit Log", href: "/ptepi/audit-log", icon: History }]
   }
 ];
 

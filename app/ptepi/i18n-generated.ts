@@ -462,6 +462,7 @@ export const ID_GENERATED: Record<string, string> = {
   "Ask Nexa about this": "Tanya Nexa tentang ini",
   "Show or hide a line": "Tampilkan atau sembunyikan garis",
   Modules: "Modul",
+  Others: "Lainnya",
   "Operations Intelligence": "Intelijen Operasi",
   "Automation and AI": "Otomasi dan AI",
   "of the project, plan": "dari proyek, rencana",
