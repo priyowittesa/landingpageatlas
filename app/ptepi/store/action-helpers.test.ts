@@ -1,3 +1,4 @@
+import { getDueGroups, getOwnerLoads } from "./action-helpers";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { epiData } from "../data";
 import {
@@ -286,5 +287,22 @@ describe("demo roles", () => {
     for (const permission of ["create", "assign", "status", "close"] as const) {
       expect(canPerform(director, permission, financeAction)).toBe(true);
     }
+  });
+});
+
+describe("action focus panels", () => {
+  const seeds = buildSeedActions(epiData);
+
+  it("puts every unfinished action in exactly one due group", () => {
+    const groups = getDueGroups(seeds, epiData.asAt);
+    expect(groups.flatMap((group) => group.items)).toHaveLength(seeds.length);
+    expect(groups.every((group) => group.items.length === group.count)).toBe(true);
+  });
+
+  it("lists each owner's actions with a link to the screen that works them", () => {
+    const loads = getOwnerLoads(seeds, epiData.asAt);
+    expect(loads[0]?.barPct).toBe(100);
+    expect(loads.every((load) => load.items.length === load.total)).toBe(true);
+    expect(loads.flatMap((load) => load.items).every((item) => item.href.startsWith("/ptepi/"))).toBe(true);
   });
 });

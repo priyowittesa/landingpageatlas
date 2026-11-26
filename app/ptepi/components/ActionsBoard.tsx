@@ -2,7 +2,7 @@
 
 import { Tr, useT } from "./Tr";
 import { formatDate } from "../format";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { CircleCheck, Clock, ListTodo, Plus, TriangleAlert, UserCheck, UserRound } from "lucide-react";
 import { KpiCard } from "./KpiCard";
@@ -33,7 +33,7 @@ import {
 import { useActionsStore, type ActionStatus, type EpiAction } from "../store/actions-store";
 import { useRoleStore } from "../store/role-store";
 import { OWNER_ROLES, canPerform, getDemoRole, isRelevantTo, type DemoRole } from "../store/roles";
-import { ActionsByOwnerCard, AgingCard } from "./charts/ScreenCharts";
+import { DueQueuePanel, OwnerLoadPanel } from "./ActionFocus";
 import { AssignActionDialog, CreateActionDialog } from "./ActionDialogs";
 import { EmptyState } from "./EmptyState";
 import { StatusBadge } from "./StatusBadge";
@@ -159,6 +159,13 @@ export function ActionsBoard({ seeds, asAt, projectOptions }: ActionsBoardProps)
 
   useEffect(() => seed(seeds), [seed, seeds]);
 
+  const tableRef = useRef<HTMLElement>(null);
+  const showOwner = (ownerRole: string) => {
+    setOwner(ownerRole);
+    setPage(1);
+    tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const summary = useMemo(() => getActionSummary(actions, asAt), [actions, asAt]);
   const mine = useMemo(
     () => actions.filter((action) => action.status !== "done" && isRelevantTo(role, action)).length,
@@ -279,12 +286,12 @@ export function ActionsBoard({ seeds, asAt, projectOptions }: ActionsBoardProps)
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-5">
-        <ActionsByOwnerCard chart={ownerChart} badge={<SyntheticDataBadge />} className="xl:col-span-3" />
-        <AgingCard chart={agingChart} badge={<SyntheticDataBadge />} className="xl:col-span-2" />
+      <div className="grid grid-cols-1 items-stretch gap-5 xl:grid-cols-2">
+        <DueQueuePanel actions={actions} asAt={asAt} role={role} insight={agingChart.takeaway} />
+        <OwnerLoadPanel actions={actions} asAt={asAt} role={role} insight={ownerChart.takeaway} onShowOwner={showOwner} />
       </div>
 
-      <section className="ptepi-card overflow-hidden">
+      <section ref={tableRef} className="ptepi-card scroll-mt-20 overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-6">
           <div>
             <h2 className="text-base font-semibold"><Tr>All actions</Tr></h2>

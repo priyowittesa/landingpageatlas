@@ -47,12 +47,12 @@ export function KpiCard({
   return (
     <div
       className={cn(
-        "ptepi-card ptepi-card--lift relative overflow-hidden bg-gradient-to-br from-primary-50/80 via-background to-background p-5",
+        "ptepi-card ptepi-card--lift @container relative overflow-hidden bg-gradient-to-br from-primary-50/80 via-background to-background p-5",
         className
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <p className="text-sm font-medium text-muted-foreground">
+        <p className="min-h-12 text-base font-semibold text-gray-800">
           {metricId ? <MetricLabel metricId={metricId} /> : <GlossaryTerm>{title}</GlossaryTerm>}
         </p>
         <span
@@ -65,8 +65,13 @@ export function KpiCard({
           <Icon size={16} />
         </span>
       </div>
-      <p className="mt-3 text-2xl font-bold tracking-tight tabular-nums text-foreground">{typeof value === "string" ? <Tr>{value}</Tr> : value}</p>
-      {subtitle && <p className="mt-1 text-xs text-muted-foreground"><Tr>{subtitle}</Tr></p>}
+      <p
+        className={cn(
+          "mt-3 font-bold leading-tight tracking-tight tabular-nums text-foreground",
+          typeof value === "number" ? "text-[2.75rem]" : "text-[length:clamp(1.75rem,13cqi,2.5rem)]"
+        )}
+      >{typeof value === "string" ? <Tr>{value}</Tr> : value}</p>
+      {subtitle && <p className="mt-1.5 text-sm text-gray-600"><Tr>{subtitle}</Tr></p>}
       {footer && <div className="mt-3">{footer}</div>}
     </div>
   );

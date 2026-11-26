@@ -23,11 +23,6 @@ import type {
   WaterfallChartData,
   WeeklyIncrementChartData
 } from "../../types";
-import type {
-  ActionChartData,
-  AgingBucket,
-  OwnerStatusPoint
-} from "../../store/action-helpers";
 import { RapUsageChart } from "./RapUsageChart";
 import { CHART_COLORS } from "./chartTheme";
 import { ChartCard } from "./ChartCard";
@@ -288,68 +283,6 @@ export function CoverageCard({ chart, badge, className }: CardProps<CoverageChar
           { key: "upcoming", name: "Due (scheduled)", color: CHART_COLORS.primaryLight },
           { key: "overdue", name: "Overdue", color: CHART_COLORS.bad }
         ]}
-        formatValue={(value) => String(value)}
-      />
-    </ChartCard>
-  );
-}
-
-export function ActionsByOwnerCard({ chart, badge, className }: CardProps<ActionChartData<OwnerStatusPoint>>) {
-  return (
-    <ChartCard
-      title="Unfinished actions by owner role"
-      metricId="actionsByOwner"
-      takeaway={chart.takeaway}
-      table={chart.table}
-      badge={badge}
-      className={className}
-      empty={chart.points.length === 0 ? { title: "No unfinished actions" } : null}
-      ariaLabel="Stacked bar chart of open and in-progress actions per owner role"
-    >
-      <StackedBarChart
-        data={chart.points}
-        categoryKey="ownerRole"
-        orientation="bars"
-        labelWidth={210}
-        allowDecimals={false}
-        series={[
-          { key: "open", name: "Open", color: CHART_COLORS.primaryLight },
-          { key: "inProgress", name: "In progress", color: CHART_COLORS.actual }
-        ]}
-        formatValue={(value) => String(value)}
-      />
-    </ChartCard>
-  );
-}
-
-const AGING_COLOR: Record<AgingBucket["id"], string> = {
-  overdue: CHART_COLORS.bad,
-  week: CHART_COLORS.watch,
-  "two-weeks": CHART_COLORS.primaryLight,
-  later: CHART_COLORS.primaryLight
-};
-
-export function AgingCard({ chart, badge, className }: CardProps<ActionChartData<AgingBucket>>) {
-  return (
-    <ChartCard
-      title="Unfinished actions by due date"
-      metricId="actionAging"
-      takeaway={chart.takeaway}
-      table={chart.table}
-      badge={badge}
-      className={className}
-      empty={chart.takeaway === null ? { title: "No unfinished actions" } : null}
-      ariaLabel="Column chart of unfinished actions grouped by how soon they are due; overdue is red and due within a week is amber"
-    >
-      <StackedBarChart
-        data={chart.points}
-        categoryKey="label"
-        orientation="bars"
-        labelWidth={190}
-        allowDecimals={false}
-        showLegend={false}
-        series={[{ key: "count", name: "Actions", color: CHART_COLORS.primaryLight }]}
-        colorOf={(bucket) => AGING_COLOR[bucket.id]}
         formatValue={(value) => String(value)}
       />
     </ChartCard>

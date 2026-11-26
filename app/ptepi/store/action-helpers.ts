@@ -286,3 +286,72 @@ export function getAgingChart(actions: EpiAction[], asAt: string): ActionChartDa
     }
   };
 }
+
+// ---------------------------------------------------------------------------
+// Action tracker focus panels: the actions behind each figure
+// ---------------------------------------------------------------------------
+
+export type FocusAction = {
+  action: EpiAction;
+  /** Whole days from the as-at date to the due date; negative when overdue */
+  daysLeft: number;
+  /** Screen where the action is worked */
+  screen: string;
+  href: string;
+};
+
+const SCREEN_HREF: Record<string, (projectId: string) => string> = {
+  "Project cockpit": (id) => `/ptepi/project/${id}`,
+  "Evidence gate": (id) => `/ptepi/project/${id}/evidence`,
+  "Commercial and billing": (id) => `/ptepi/commercial?project=${id}`,
+  "Procurement and cost": (id) => `/ptepi/cost?project=${id}`,
+  "Service contracts": () => "/ptepi/service-contracts",
+  "Nexa Intelligence": () => "/ptepi/ask-atlas",
+  "Portfolio health": () => "/ptepi/portfolio"
+};
+
+const daysBetween = (from: string, to: string) => Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000);
+
+export function toFocusAction(action: EpiAction, asAt: string): FocusAction {
+  const screen = sourceScreen(action.source);
+  const href = SCREEN_HREF[screen]?.(action.projectId) ?? `/ptepi/project/${action.projectId}`;
+  return { action, daysLeft: daysBetween(asAt, action.dueDate), screen, href };
+}
+
+export type DueGroup = AgingBucket & { items: FocusAction[] };
+
+function bucketOf(days: number): AgingBucketId {
+  if (days < 0) return "overdue";
+  if (days <= AGING_WEEK_DAYS) return "week";
+  return days <= AGING_TWO_WEEKS_DAYS ? "two-weeks" : "later";
+}
+
+/** The due-date buckets with their unfinished actions, soonest first. */
+export function getDueGroups(actions: EpiAction[], asAt: string): DueGroup[] {
+  const items = sortActions(unfinished(actions)).map((action) => toFocusAction(action, asAt));
+  return getAgingBuckets(actions, asAt).map((bucket) => ({
+    ...bucket,
+    items: items.filter((item) => bucketOf(item.daysLeft) === bucket.id).sort((a, b) => a.daysLeft - b.daysLeft)
+  }));
+}
+
+export type OwnerLoad = OwnerStatusPoint & {
+  items: FocusAction[];
+  /** Bar length against the busiest owner, 0 to 100 */
+  barPct: number;
+};
+
+/** Actions shown under an opened owner role; the rest are in the table. */
+export const OWNER_PREVIEW_COUNT = 2;
+
+/** Each owner role with its unfinished actions, busiest first. */
+export function getOwnerLoads(actions: EpiAction[], asAt: string): OwnerLoad[] {
+  const points = getActionsByOwner(actions);
+  const max = points[0]?.total ?? 0;
+  const items = unfinished(actions).map((action) => toFocusAction(action, asAt));
+  return points.map((point) => ({
+    ...point,
+    barPct: max === 0 ? 0 : (point.total / max) * 100,
+    items: items.filter((item) => item.action.ownerRole === point.ownerRole).sort((a, b) => a.daysLeft - b.daysLeft)
+  }));
+}
