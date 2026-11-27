@@ -184,7 +184,7 @@ export function DueQueuePanel({ actions, asAt, role, insight, className }: Panel
                   active ? "border-primary-600 bg-primary-50 ring-1 ring-primary-600" : "border-border bg-background hover:bg-primary-50"
                 )}
               >
-                <span className={cn("text-4xl font-bold leading-none tabular-nums", group.count > 0 ? GROUP_TONE[group.id] : "text-gray-500")}>{group.count}</span>
+                <span className={cn("text-[1.75rem] font-bold leading-none tabular-nums", group.count > 0 ? GROUP_TONE[group.id] : "text-gray-500")}>{group.count}</span>
                 <span className="mt-2 text-xs font-medium text-gray-800">
                   <Tr>{group.label}</Tr>
                 </span>

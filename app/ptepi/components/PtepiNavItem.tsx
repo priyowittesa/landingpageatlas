@@ -96,7 +96,7 @@ export function PtepiNavItem({ node, activeHref, depth = 0 }: PtepiNavItemProps)
         aria-current={isActive ? "page" : undefined}
         className={cn(
           "flex items-center gap-3 rounded-md px-3 py-2 text-white transition-colors",
-          "text-sm",
+          "text-[0.8125rem]",
           highlighted
             ? cn(
                 "bg-sky-400/25 shadow-[0_0_0_1px_inset] shadow-sky-300/70 backdrop-blur-sm hover:bg-sky-400/35",
@@ -127,7 +127,7 @@ export function PtepiNavItem({ node, activeHref, depth = 0 }: PtepiNavItemProps)
         title={node.title}
         className={cn(
           "flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-white transition-colors",
-          "text-sm",
+          "text-[0.8125rem]",
           containsActive ? "bg-primary-700" : "hover:bg-primary-800"
         )}
         style={indent}

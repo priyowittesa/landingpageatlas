@@ -52,7 +52,7 @@ export function KpiCard({
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <p className="min-h-12 text-base font-semibold text-gray-800">
+        <p className="min-h-10 text-sm font-semibold text-gray-800">
           {metricId ? <MetricLabel metricId={metricId} /> : <GlossaryTerm>{title}</GlossaryTerm>}
         </p>
         <span
@@ -68,10 +68,10 @@ export function KpiCard({
       <p
         className={cn(
           "mt-3 font-bold leading-tight tracking-tight tabular-nums text-foreground",
-          typeof value === "number" ? "text-[2.75rem]" : "text-[length:clamp(1.75rem,13cqi,2.5rem)]"
+          typeof value === "number" ? "text-[1.875rem]" : "text-[length:clamp(1.375rem,11cqi,1.875rem)]"
         )}
       >{typeof value === "string" ? <Tr>{value}</Tr> : value}</p>
-      {subtitle && <p className="mt-1.5 text-sm text-gray-600"><Tr>{subtitle}</Tr></p>}
+      {subtitle && <p className="mt-1.5 text-xs text-gray-600"><Tr>{subtitle}</Tr></p>}
       {footer && <div className="mt-3">{footer}</div>}
     </div>
   );

@@ -117,7 +117,7 @@ export function OperationsBoard({ signals, seeds, asAt, asAtLabel, projectOption
                     <Icon size={16} aria-hidden className={active ? "text-primary-700" : "text-primary-200"} />
                     <Tr>{label}</Tr>
                   </span>
-                  <span className="mt-2 text-4xl font-bold leading-none tabular-nums">{counts[item]}</span>
+                  <span className="mt-2 text-[1.75rem] font-bold leading-none tabular-nums">{counts[item]}</span>
                   <span className={cn("mt-1.5 text-sm", active ? "text-gray-700" : "text-primary-100")}>
                     {item === "all" ? (
                       <>
