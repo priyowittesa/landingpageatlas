@@ -2,6 +2,7 @@ import { formatDate, formatDateRange } from "../format";
 import { Tr } from "./Tr";
 import { HEALTH_LABELS } from "../labels";
 import type { ProjectInfo } from "../types";
+import { ReasonText } from "./ReasonText";
 import { RupiahText } from "./RupiahText";
 import { StatusBadge } from "./StatusBadge";
 import { HEALTH_TONE } from "./status";
@@ -58,7 +59,7 @@ export function ProjectInfoRow({ info }: ProjectInfoRowProps) {
             tone={HEALTH_TONE[info.health.rating]}
             label={HEALTH_LABELS[info.health.rating]}
           />
-          <div className="text-xs text-muted-foreground"><Tr>{info.health.reason}</Tr></div>
+          <ReasonText text={info.health.reason} className="text-xs text-muted-foreground" />
         </dd>
       </div>
     </dl>

@@ -6,6 +6,8 @@ import { ArrowRight, Check, CircleCheck, MessageSquareText, Sparkles, UserCheck 
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { DetailDrawer, DrawerSection } from "../../components/DetailDrawer";
+import { ReasonText } from "../../components/ReasonText";
+import { isListedInReason } from "../../components/reason-list";
 import { Tr, useT } from "../../components/Tr";
 import { formatDate } from "../../format";
 import { AUTONOMY_LABELS } from "../../store/action-helpers";
@@ -69,9 +71,7 @@ export function SignalDrawer({ signal, tracked, onClose, onOpenTracker }: Signal
           </p>
 
           <DrawerSection title="Why ATLAS flagged this">
-            <p className="text-sm leading-relaxed text-gray-900">
-              <Tr>{signal.summary}</Tr>
-            </p>
+            <ReasonText text={signal.summary} className="text-sm leading-relaxed text-gray-900" />
             <dl className="grid grid-cols-2 gap-3">
               {signal.metrics.map((metric) => (
                 <div key={metric.label} className="rounded-lg border border-border px-3 py-2.5">
@@ -80,11 +80,13 @@ export function SignalDrawer({ signal, tracked, onClose, onOpenTracker }: Signal
                 </div>
               ))}
             </dl>
-            <ul className="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-gray-800">
-              {signal.evidence.map((line) => (
-                <li key={line}><Tr>{line}</Tr></li>
-              ))}
-            </ul>
+            {!isListedInReason(signal.summary, signal.evidence) && (
+              <ul className="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-gray-800">
+                {signal.evidence.map((line) => (
+                  <li key={line}><Tr>{line}</Tr></li>
+                ))}
+              </ul>
+            )}
           </DrawerSection>
 
           <DrawerSection title="What this rests on">

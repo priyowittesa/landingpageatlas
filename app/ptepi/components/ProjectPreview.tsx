@@ -8,6 +8,7 @@ import { HEALTH_LABELS } from "../labels";
 import type { PortfolioRow } from "../types";
 import { DetailDrawer, DrawerSection } from "./DetailDrawer";
 import { PercentText } from "./PercentText";
+import { ReasonText } from "./ReasonText";
 import { RupiahText } from "./RupiahText";
 import { StatusBadge } from "./StatusBadge";
 import { Tr } from "./Tr";
@@ -73,17 +74,18 @@ export function ProjectPreviewProvider({ rows, children }: { rows: PortfolioRow[
           <>
             {request?.reason && (
               <DrawerSection title="Why you are seeing this">
-                <p className="rounded-lg bg-primary-50 px-3 py-2.5 text-sm leading-relaxed text-primary-950">
-                  <Tr>{request.reason}</Tr>
-                </p>
+                <ReasonText
+                  text={request.reason}
+                  className="rounded-lg bg-primary-50 px-3 py-2.5 text-sm leading-relaxed text-primary-950"
+                />
               </DrawerSection>
             )}
 
             <DrawerSection title="Health">
-              <p className="flex items-start gap-2 text-sm text-gray-900">
+              <div className="flex items-start gap-2 text-sm text-gray-900">
                 <ShieldCheck size={16} aria-hidden className="mt-0.5 shrink-0 text-primary-700" />
-                <Tr>{row.health.reason}</Tr>
-              </p>
+                <ReasonText text={row.health.reason} />
+              </div>
             </DrawerSection>
 
             <DrawerSection title="Progress">

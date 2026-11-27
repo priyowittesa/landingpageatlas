@@ -19,6 +19,7 @@ import { ATTACHMENT_NOTES, STAGE_STATUS_LABELS } from "../labels";
 import { selectOpenMatch, useActionsStore } from "../store/actions-store";
 import type { EvidenceStage, EvidenceStatus, SuggestedAction } from "../types";
 import { PercentText } from "./PercentText";
+import { ReasonText } from "./ReasonText";
 import { RupiahText } from "./RupiahText";
 import { StatusBadge } from "./StatusBadge";
 import { SyntheticDataBadge } from "./SyntheticDataBadge";
@@ -102,7 +103,7 @@ export function StageTracker({ stages, suggestions }: StageTrackerProps) {
               </dl>
 
               <div className="mt-auto space-y-1 border-t border-border pt-3">
-                <p className="line-clamp-2 text-sm text-gray-700"><Tr>{stage.gate.reason}</Tr></p>
+                <ReasonText text={stage.gate.reason} limit={2} className="text-sm text-gray-700" />
               </div>
             </button>
           </li>
@@ -154,7 +155,7 @@ function StageDialogBody({ stage, suggestion }: StageDialogBodyProps) {
             <GateBadge stage={stage} />
             <SyntheticDataBadge real={stage.dataOrigin === "real"} />
           </div>
-          <p className="text-sm"><Tr>{stage.gate.reason}</Tr></p>
+          <ReasonText text={stage.gate.reason} className="text-sm" />
           {stage.blockedValue > 0 && (
             <p className="text-sm text-muted-foreground">
               Claimed in the report without a signed BA:{" "}

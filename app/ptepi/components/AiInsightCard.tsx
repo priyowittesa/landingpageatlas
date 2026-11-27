@@ -6,6 +6,7 @@ import { matchQuestion } from "../ask-atlas/questions";
 import { INSIGHT_QUESTION, type Insight } from "../operations/insights";
 import { Chip, KindChip, LevelChip } from "../operations/components/SignalRow";
 import { useNexaChatStore } from "../store/nexa-chat-store";
+import { ReasonText } from "./ReasonText";
 import { Tr, useT } from "./Tr";
 
 const FALLBACK_TEXT = "I cannot answer that yet. In this prototype I can answer these questions:";
@@ -75,9 +76,7 @@ export function AiInsightCard({ insights, asAtLabel }: AiInsightCardProps) {
             <h2 className="text-lg font-semibold leading-snug text-gray-950">
               <Tr>{top.title}</Tr>
             </h2>
-            <p className="mt-1 max-w-4xl text-sm leading-relaxed text-gray-800">
-              <Tr>{top.summary}</Tr>
-            </p>
+            <ReasonText text={top.summary} limit={5} className="mt-1 max-w-4xl text-sm leading-relaxed text-gray-800" />
           </div>
 
           {rest.length > 0 && (

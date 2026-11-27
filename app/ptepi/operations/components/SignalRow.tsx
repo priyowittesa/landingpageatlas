@@ -2,6 +2,7 @@
 
 import { ArrowRight, CircleCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ReasonText } from "../../components/ReasonText";
 import { Tr } from "../../components/Tr";
 import type { EpiAction } from "../../store/actions-store";
 import { SIGNAL_MODULES, type Signal } from "../signals";
@@ -90,9 +91,7 @@ export function SignalRow({ signal, tracked, onOpen }: SignalRowProps) {
               <Tr>{signal.title}</Tr>
             </button>
           </h3>
-          <p className="mt-1 text-sm leading-relaxed text-gray-700">
-            <Tr>{signal.summary}</Tr>
-          </p>
+          <ReasonText text={signal.summary} limit={3} className="mt-1 text-sm leading-relaxed text-gray-700" />
         </div>
 
         <dl className="flex shrink-0 items-center gap-6">

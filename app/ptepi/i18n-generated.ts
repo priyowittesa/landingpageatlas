@@ -361,6 +361,7 @@ export const ID_GENERATED: Record<string, string> = {
     "Asisten tidak pernah mengeksekusi. Setiap tindakan di sini adalah rekomendasi, draf, atau permintaan kepada pemilik yang ditunjuk.",
   "Action created for": "Tindakan dibuat untuk",
   "Why ATLAS flagged this": "Mengapa ATLAS menandai ini",
+  "more": "lainnya",
   "What this rests on": "Dasar angka ini",
   "Suggested action": "Tindakan yang disarankan",
   "Take action": "Ambil tindakan",
